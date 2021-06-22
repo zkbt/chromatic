@@ -82,7 +82,6 @@ setup(
     install_requires=[
         "numpy",
         "scipy",
-        "ipython",
         "matplotlib>=3.0",
         "jupyter",
         "astropy>=4.0",

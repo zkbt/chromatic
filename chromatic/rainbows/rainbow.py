@@ -1,8 +1,9 @@
 from ..imports import *
 from ..talker import Talker
+from ..resampling import *
 
 
-class Rainbow:
+class Rainbow(Talker):
     """
     Rainbow objects represent the flux of an object
     as a function of both wavelength and time.
@@ -84,6 +85,124 @@ class Rainbow:
         n = self.__class__.__name__
         return f"<{n} ({self.nwave}w, {self.ntime}t)>"
 
+    def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
+        """
+        Bin the rainbow in wavelength and/or time.
+
+        Parameters
+        ----------
+        dt : astropy.units.Quantity
+            The d(time) bin size for creating a grid
+            that is uniform in linear space.
+        time : array of astropy.units.Quantity
+            An array of times, if you just want to give
+            it an entirely custom array.
+
+        The time-setting order of precendence is:
+            1) time
+            2) dt
+
+        R : float
+            The spectral resolution for creating a grid
+            that is uniform in logarithmic space.
+        dw : astropy.units.Quantity
+            The d(wavelength) bin size for creating a grid
+            that is uniform in linear space.
+        wavelength : array of astropy.units.Quantity
+            An array of wavelengths, if you just want to give
+            it an entirely custom array.
+
+        The wavelength-setting order of precendence is:
+            1) wavelength
+            2) dw
+            3) R
+        """
+        if np.any([dt, time, R, dw, wavelength]) == False:
+            return self
+
+        if np.any([dt, time]):
+            binned_in_time = self.bin_in_time(dt=dt, time=time)
+        else:
+            binned_in_time = self
+
+        if np.any([dw, R, wavelength]):
+            binned = binned_in_time.bin_in_wavelength(R=R, dw=dw, wavelength=wavelength)
+        else:
+            binned = binned_in_time
+
+        return binned
+
+    def bin_in_time(self, dt=None, time=None):
+        """
+        Bin the rainbow in time.
+
+        Parameters
+        ----------
+        dt : astropy.units.Quantity
+            The d(time) bin size for creating a grid
+            that is uniform in linear space.
+        time : array of astropy.units.Quantity
+            An array of times, if you just want to give
+            it an entirely custom array.
+
+        The time-setting order of precendence is:
+            1) time
+            2) dt
+        """
+
+        if (time is None) and (dt is None):
+            return self
+
+        binkw = dict(weighting="inversevariance", drop_nans=False)
+        if time is not None:
+            binkw["newx"] = time
+        elif dt is not None:
+            binkw["dx"] = dt
+
+        new = Rainbow()
+        new.wavelike = {**self.wavelike}
+        new.wscale = self.wscale
+
+        # bin the timelike variables
+        # TODO (add more careful treatment of uncertainty + DQ)
+        new.timelike = {}
+        for k in self.timelike:
+            bt, bv = bintogrid(
+                x=self.timelike["time"], y=self.timelike[k], unc=None, **binkw
+            )
+            new.timelike[k] = bv
+        new.timelike[k] = bt
+
+        # bin the flux like variables
+        # TODO (add more careful treatment of uncertainty + DQ)
+        # TODO (think about cleverer bintogrid for 2D arrays)
+        new.fluxlike = {}
+        for k in self.fluxlike:
+            self.speak(f" binning {k} in time")
+            for w in tqdm(range(new.nwave)):
+                if self.uncertainty is None:
+                    bt, bv = bintogrid(
+                        x=self.time, y=self.fluxlike[k][w, :], unc=None, **binkw
+                    )
+                    bu = None
+                else:
+                    bt, bv, bu = bintogrid(
+                        x=self.time, y=self.fluxlike[k][w, :], unc=self.uncertainty[w, :], **binkw
+                    )
+
+
+                if k not in new.fluxlike:
+                    new_shape = (new.nwave, new.ntime)
+                    new.fluxlike[k] = np.zeros(new_shape)
+                    # TODO make this more robust to units
+
+                if k == 'uncertainty':
+                    new.fluxlike[k][w, :] = bu
+                else:
+                    new.fluxlike[k][w, :] = bv
+
+        return new
+
     def imshow(
         self,
         ax=None,
@@ -119,7 +238,7 @@ class Rainbow:
 
         with quantity_support():
             plt.sca(ax)
-            plt.imshow(self.flux, extent=extent, aspect=aspect, origin=origin)
+            plt.imshow(self.flux, extent=extent, aspect=aspect, origin=origin, **kw)
             if self.wscale == "linear":
                 plt.ylabel(f"Wavelength ({w_unit.to_string('latex_inline')})")
             elif self.wscale == "log":

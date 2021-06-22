@@ -158,7 +158,7 @@ def fluxconservingresample(
     cdfin = np.cumsum(yinforcdf)
 
     # create an interpolator for that CDF
-    cdfinterpolator = scipy.interpolate.interp1d(
+    cdfinterpolator = interp1d(
         xinforcdf,
         cdfin,
         kind="linear",
@@ -320,27 +320,36 @@ def bintogrid(
         returned, newx and newy.
 
     # TODO: confirm nans in input arrays are handled OK
+    # TODO: confirm units in y and unc are handled OK
     """
+
+    try:
+        x_unit = x.unit
+        x_without_unit = x.value
+    except AttributeError:
+        x_unit = 1
+        x_without_unit = x
 
     # make up a grid, if one wasn't specified
     if newx is None:
-        newx = np.arange(np.min(x), np.max(x) + dx, dx)
+        dx_without_unit = u.Quantity(dx).to(x_unit).value
+        newx = np.arange(np.min(x_without_unit), np.max(x_without_unit) + dx_without_unit, dx_without_unit)
 
     # don't complain about zero-divisions in here (to allow infinite uncertainties)
     with np.errstate(divide="ignore", invalid="ignore"):
 
         # resample the sums onto that new grid
         if unc is None:
-            weights = np.ones_like(x)
+            weights = np.ones_like(x_without_unit)
         else:
             if weighting == "inversevariance":
                 weights = 1 / unc ** 2
             else:
-                weights = np.ones_like(x)
+                weights = np.ones_like(x_without_unit)
 
         # calculate weight integrals for the bin array
-        numerator = fluxconservingresample(x, y * weights, newx)
-        denominator = fluxconservingresample(x, weights, newx)
+        numerator = fluxconservingresample(x_without_unit, y * weights, newx)
+        denominator = fluxconservingresample(x_without_unit, weights, newx)
 
         # the binned weighted means on the new grid
         newy = numerator / denominator
@@ -356,9 +365,9 @@ def bintogrid(
 
     # if no uncertainties were given, don't return uncertainties
     if unc is None:
-        return newx[ok], newy[ok]
+        return newx[ok]*x_unit, newy[ok]
     else:
-        return newx[ok], newy[ok], newunc[ok]
+        return newx[ok]*x_unit, newy[ok], newunc[ok]
 
 
 def bintoR(

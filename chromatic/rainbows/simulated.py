@@ -25,6 +25,20 @@ class SimulatedRainbow(Rainbow):
             uncertainty on the flux for each each
             wavelength-time data point will be 1%.
 
+        tlim : list or array of astropy.units.Quantity
+            The [min, max] times for creating the time grid.
+            These should have astropy units of time.
+        dt : astropy.units.Quantity
+            The d(time) bin size for creating a grid
+            that is uniform in linear space.
+        time : array of astropy.units.Quantity
+            An array of times, if you just want to give
+            it an entirely custom array.
+
+        The time-setting order of precendence is:
+            1) time
+            2) tlim + dt
+
         wlim : list or array of astropy.units.Quantity
             The [min, max] wavelengths for creating the grid.
             These should have astropy units of wavelength.
@@ -42,20 +56,6 @@ class SimulatedRainbow(Rainbow):
             1) wavelength
             2) wlim + dw
             3) wlim + R
-
-        tlim : list or array of astropy.units.Quantity
-            The [min, max] times for creating the time grid.
-            These should have astropy units of time.
-        dt : astropy.units.Quantity
-            The d(time) bin size for creating a grid
-            that is uniform in linear space.
-        time : array of astropy.units.Quantity
-            An array of times, if you just want to give
-            it an entirely custom array.
-
-        The time-setting order of precendence is:
-            1) time
-            2) tlim + dt
         """
         Rainbow.__init__(self)
 
