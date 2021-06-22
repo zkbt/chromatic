@@ -426,8 +426,15 @@ def bintoR(
     # TODO: confirm nans in input arrays are handled OK
     """
 
+    try:
+        x_unit = x.unit
+        x_without_unit = x.value
+    except AttributeError:
+        x_unit = 1
+        x_without_unit = x
+
     # create a new grid of x at the given resolution
-    lnx = np.log(x)
+    lnx = np.log(x_without_unit)
     dnewlnx = 1.0 / R
 
     # set the limits of the new xgrid (in log space)
@@ -446,9 +453,9 @@ def bintoR(
         blnx, by = bintogrid(
             lnx, y, unc, newx=newlnx, weighting=weighting, drop_nans=drop_nans
         )
-        return np.exp(blnx), by
+        return np.exp(blnx)*x_unit, by
     else:
         blnx, by, bunc = bintogrid(
             lnx, y, unc, newx=newlnx, weighting=weighting, drop_nans=drop_nans
         )
-        return np.exp(blnx), by, bunc
+        return np.exp(blnx)*x_unit, by, bunc

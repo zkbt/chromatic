@@ -40,6 +40,9 @@ class Rainbow(Talker):
         self.fluxlike["uncertainty"] = uncertainty
 
     @property
+    def _nametag(self):
+        return f'🌈({self.nwave}w, {self.ntime}t)'
+    @property
     def wavelength(self):
         return self.wavelike["wavelength"]
 
@@ -117,19 +120,14 @@ class Rainbow(Talker):
             2) dw
             3) R
         """
-        if np.any([dt, time, R, dw, wavelength]) == False:
-            return self
 
-        if np.any([dt, time]):
-            binned_in_time = self.bin_in_time(dt=dt, time=time)
-        else:
-            binned_in_time = self
+        # bin first in time
+        binned_in_time = self.bin_in_time(dt=dt, time=time)
 
-        if np.any([dw, R, wavelength]):
-            binned = binned_in_time.bin_in_wavelength(R=R, dw=dw, wavelength=wavelength)
-        else:
-            binned = binned_in_time
+        # then bin in wavelength
+        binned = binned_in_time.bin_in_wavelength(R=R, dw=dw, wavelength=wavelength)
 
+        # return the binned object
         return binned
 
     def bin_in_time(self, dt=None, time=None):
@@ -150,36 +148,44 @@ class Rainbow(Talker):
             2) dt
         """
 
+        # if no bin information is provided, don't bin
         if (time is None) and (dt is None):
             return self
 
+        # set up binning parameters
         binkw = dict(weighting="inversevariance", drop_nans=False)
         if time is not None:
             binkw["newx"] = time
+            self.speak(f'binning to time={time}')
         elif dt is not None:
             binkw["dx"] = dt
+            self.speak(f'binning to dt={dt}')
 
+        # create a new, empty Rainbow
         new = Rainbow()
+
+        # populate the wavelength information
         new.wavelike = {**self.wavelike}
         new.wscale = self.wscale
 
-        # bin the timelike variables
+        # bin the time-like variables
         # TODO (add more careful treatment of uncertainty + DQ)
         new.timelike = {}
         for k in self.timelike:
             bt, bv = bintogrid(
-                x=self.timelike["time"], y=self.timelike[k], unc=None, **binkw
+                x=self.time, y=self.timelike[k], unc=None, **binkw
             )
             new.timelike[k] = bv
         new.timelike[k] = bt
 
-        # bin the flux like variables
+        # bin the flux-like variables
         # TODO (add more careful treatment of uncertainty + DQ)
         # TODO (think about cleverer bintogrid for 2D arrays)
         new.fluxlike = {}
         for k in self.fluxlike:
-            self.speak(f" binning {k} in time")
-            for w in tqdm(range(new.nwave)):
+            self.speak(f" binning '{k}' in time")
+            self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+            for w in range(new.nwave):
                 if self.uncertainty is None:
                     bt, bv = bintogrid(
                         x=self.time, y=self.fluxlike[k][w, :], unc=None, **binkw
@@ -200,7 +206,99 @@ class Rainbow(Talker):
                     new.fluxlike[k][w, :] = bu
                 else:
                     new.fluxlike[k][w, :] = bv
+            self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
+        return new
 
+    def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
+        """
+        Bin the rainbow in wavelength.
+
+        Parameters
+        ----------
+        R : float
+            The spectral resolution for creating a grid
+            that is uniform in logarithmic space.
+        dw : astropy.units.Quantity
+            The d(wavelength) bin size for creating a grid
+            that is uniform in linear space.
+        wavelength : array of astropy.units.Quantity
+            An array of wavelengths, if you just want to give
+            it an entirely custom array.
+
+        The wavelength-setting order of precendence is:
+            1) wavelength
+            2) dw
+            3) R
+        """
+
+        # if no bin information is provided, don't bin
+        if (wavelength is None) and (dw is None) and (R is None):
+            return self
+
+        # set up binning parameters
+        binkw = dict(weighting="inversevariance", drop_nans=False)
+        if wavelength is not None:
+            binning_function = bintogrid
+            binkw["newx"] = wavelength
+            wscale = '?'
+            self.speak(f'binning to wavelength={wavelength}')
+        elif dw is not None:
+            binning_function = bintogrid
+            binkw["dx"] = dw
+            wscale = 'linear'
+            self.speak(f'binning to dw={dw}')
+        elif R is not None:
+            binning_function = bintoR
+            binkw["R"] = R
+            wscale = 'log'
+            self.speak(f'binning to R={R}')
+
+        # create a new, empty Rainbow
+        new = Rainbow()
+
+        # populate the time information
+        new.timelike = {**self.timelike}
+
+        # bin the time-like variables
+        # TODO (add more careful treatment of uncertainty + DQ)
+        new.wavelike = {}
+        for k in self.wavelike:
+            bt, bv = binning_function(
+                x=self.wavelength, y=self.wavelike[k], unc=None, **binkw
+            )
+            new.wavelike[k] = bv
+        new.wavelike[k] = bt
+
+        # bin the flux-like variables
+        # TODO (add more careful treatment of uncertainty + DQ)
+        # TODO (think about cleverer bintogrid for 2D arrays)
+        new.fluxlike = {}
+        for k in self.fluxlike:
+            self.speak(f" binning '{k}' in wavelength")
+            self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+            for t in range(new.ntime):
+                if self.uncertainty is None:
+                    bt, bv = binning_function(
+                        x=self.wavelength, y=self.fluxlike[k][:, t], unc=None, **binkw
+                    )
+                    bu = None
+                else:
+                    bt, bv, bu = binning_function(
+                        x=self.wavelength, y=self.fluxlike[k][:, t], unc=self.uncertainty[:, t], **binkw
+                    )
+
+
+                if k not in new.fluxlike:
+                    new_shape = (new.nwave, new.ntime)
+                    new.fluxlike[k] = np.zeros(new_shape)
+                    # TODO make this more robust to units
+
+                if k == 'uncertainty':
+                    new.fluxlike[k][:, t] = bu
+                else:
+                    new.fluxlike[k][:, t] = bv
+            self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
+        new.wscale = wscale
         return new
 
     def imshow(
@@ -214,6 +312,7 @@ class Rainbow(Talker):
         **kw,
     ):
 
+        self.speak(f'imshowing {self}')
         if ax is None:
             ax = plt.gca()
 

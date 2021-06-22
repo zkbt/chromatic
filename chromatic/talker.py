@@ -10,6 +10,7 @@ if sys.version_info[0] < 3:
 
 shortcuts = None
 
+# TODO this whole thing is overly complicated. simplify?
 
 class Talker(object):
     """
@@ -25,7 +26,7 @@ class Talker(object):
     line = np.inf
 
     @property
-    def nametag(self):
+    def _nametag(self):
         return self.__class__.__name__.lower()
 
     def speak(self, string="", level=0, progress=False):
@@ -61,8 +62,8 @@ class Talker(object):
         Otherwise, it won't.
         """
         if self._mute == False:
-            self._prefix = prelude + "{spacing}[{name}] ".format(
-                name=self.nametag, spacing=" " * level
+            self._prefix = prelude + "{spacing}{name}: ".format(
+                name=self._nametag, spacing=" " * level
             )
             self._prefix = "{0:>16}".format(self._prefix)
             equalspaces = " " * len(self._prefix)
@@ -84,6 +85,6 @@ class Talker(object):
         Print a summary of the contents of this object.
         """
 
-        self.speak("Here is a brief summary of {}.".format(self.nametag))
+        self.speak("Here is a brief summary of {}.".format(self._nametag))
         s = "\n" + pprint.pformat(self.__dict__)
         print(s.replace("\n", "\n" + " " * (len(self._prefix) + 1)) + "\n")
