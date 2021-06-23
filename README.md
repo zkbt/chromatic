@@ -1,5 +1,5 @@
 # chromatic
-Tools for visualizing spectrosopic light curves, with flux as a function of wavelength and time.
+Tools for visualizing spectroscopic light curves, with flux as a function of wavelength and time.
 
 This is *super* in development right now!
 
@@ -14,9 +14,9 @@ If you want to be able to modify the code yourself, please also feel free to for
 ```
 git clone https://github.com/zkbt/chromatic.git
 cd chromatic
-pip install -e .
+pip install -e '.[develop]'
 ```
-This will link the installed version of the `chromatic` package to your local repository. Changes you make to the code in the repository should be reflected in the version Python sees when it tries to `import chromatic`.
+This will link the installed version of the `chromatic` package to your local repository. Changes you make to the code in the repository should be reflected in the version Python sees when it tries to `import chromatic`. Including the `[develop]` will install the dependencies for the package itself, as well as the extra dependencies required for development (for testing or writing documentation). 
 
 ## Usage
 

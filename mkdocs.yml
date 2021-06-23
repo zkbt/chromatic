@@ -1,0 +1,30 @@
+site_name: chromatic
+site_url: https://zkbt.github.com/chromatic
+nav:
+    - Home: index.md
+    - Basics : basics.ipynb
+    - Binning : binning.ipynb
+    - Visualizing : visualizing.ipynb
+    - API: api.md
+theme:
+  name: "material"
+repo_url: https://github.com/zkbt/chromatic/
+plugins:
+  - search
+  - mkdocs-jupyter:
+      execute : True
+      include_source : True
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          selection:
+            docstring_style: "numpy"
+          rendering:
+            show_source: False
+      custom_templates: templates
+      watch:
+        - chromatic
+
+# this is super borrowed from Christina Hedges' fabulous
+# https://christinahedges.github.io/astronomy_workflow/

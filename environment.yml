@@ -1,0 +1,27 @@
+name: ers-transit
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - jupyter
+  - git
+  - matplotlib
+  - numpy
+  - scipy
+  - astropy
+  - bokeh
+  - h5py
+  - pandas
+  - pytest
+  - pyyaml
+  - requests
+  - nbsphinx
+  - tqdm
+  - lmfit
+  - batman-package
+  - dynesty
+  - pip
+  - pip:
+      - svo-filters
+      - git+https://github.com/kevin218/Eureka.git@release/v0.1
