@@ -83,7 +83,6 @@ setup(
         "numpy",
         "scipy",
         "matplotlib>=3.0",
-        "jupyter",
         "astropy>=4.0",
         "tqdm",
     ],
@@ -93,12 +92,14 @@ setup(
     extras_require={"develop":[
                     "pytest",
                     "black",
+                    "jupyter",
                     "mkdocs",
                     "mkdocs-material",
                     "mkdocstrings",
                     "pytkdocs[numpy-style]",
                     "mkdocs-jupyter"],
-                    "cartoons": ["rainbow-connection>=0.0.7"]},
+                    "cartoons":
+                    ["rainbow-connection>=0.0.7"]},
     # (I think just leave this set to False)
     zip_safe=False,
     # under what license is this code released?
