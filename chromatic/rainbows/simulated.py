@@ -13,9 +13,6 @@ class SimulatedRainbow(Rainbow):
         dw=None,
         wavelength=None,
         star_flux=None,
-        planet=False,
-        planet_params={},
-        planet_radius=0.1,
     ):
         """
         Create a simulated rainbow object.
@@ -30,7 +27,7 @@ class SimulatedRainbow(Rainbow):
             wavelength-time data point will be 1%.
 
         tlim : list or array of astropy.units.Quantity
-            The [min, max] times for creating the time grid.
+            The pip install -e '.[develop]'[min, max] times for creating the time grid.
             These should have astropy units of time.
         dt : astropy.units.Quantity
             The d(time) bin size for creating a grid
@@ -97,12 +94,6 @@ class SimulatedRainbow(Rainbow):
             # have the same shape.
             if len(star_flux) == len(self.wavelike["wavelength"]):
                 self.fluxlike["model"] = np.transpose([star_flux] * self.shape[1])
-
-        # Include a planet, if desired.
-        if planet == True:
-            self.add_planet_transit(
-                planet_params=planet_params, planet_radius=planet_radius
-            )
 
         # Set uncertainty.
         self.fluxlike["uncertainty"] = self.fluxlike["model"] / signal_to_noise
@@ -214,7 +205,7 @@ class SimulatedRainbow(Rainbow):
         # this should break if the units aren't length
         w_unit.to("m")
 
-    def add_planet_transit(self, planet_params={}, planet_radius=0.1):
+    def inject_transit(self, planet_params={}, planet_radius=0.1):
 
         """
         Simulate a wavelength-dependent planetary transit using
@@ -225,6 +216,9 @@ class SimulatedRainbow(Rainbow):
         Make it faster
         Check and make sure things are correct in terms of units.
         implement astropy units?
+        handle errors differently?
+        make this return a rainbow() object with the planet added instead
+        of modifying in place?
 
         Parameters
         ----------
@@ -309,3 +303,6 @@ class SimulatedRainbow(Rainbow):
             planet_flux[i] = m.light_curve(params)
 
         self.fluxlike["model"] = self.fluxlike["model"] * planet_flux
+        self.fluxlike["flux"] = np.random.normal(
+            self.fluxlike["model"], self.fluxlike["uncertainty"]
+        )

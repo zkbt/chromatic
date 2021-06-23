@@ -14,10 +14,6 @@ def test_simulated_rainbow():
     g = SimulatedRainbow(
         wavelength=np.logspace(0, 1) * u.micron, star_flux=np.logspace(0, 1)
     )
-    h = SimulatedRainbow(planet=True)
-    i = SimulatedRainbow(planet=True, planet_params={"per": 0.1})
-    j = SimulatedRainbow(
-        wavelength=np.logspace(0, 1) * u.micron,
-        planet=True,
-        planet_radius=np.zeros(50) + 0.1,
-    )
+    h = SimulatedRainbow(wavelength=np.logspace(0, 1) * u.micron)
+    h.inject_transit(planet_params={"per": 0.1})
+    h.inject_transit(planet_radius=np.zeros(50) + 0.1)
