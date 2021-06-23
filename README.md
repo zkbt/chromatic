@@ -1,22 +1,29 @@
 # chromatic
-Tools for visualizing spectrosopic light curves, with flux as a function of wavelength and time.
+Tools for visualizing spectroscopic light curves, with flux as a function of wavelength and time.
 
 This is *super* in development right now!
 
 ## Installation
-You should be able to install this by running
+If you want to install this code just to use it, you can simply run
 ```
 pip install git+https://github.com/zkbt/chromatic.git
 ```
-from a UNIX prompt.
 
-If you want to be able to modify the code yourself, please also feel free to fork/clone this repository onto your own computer and install directly from that editable package. For example, this might look like:
+If you want to install this code while being able to edit and develop it, you can fork and/or clone this repository onto your own computer and then install it directly as an editable package by running
 ```
 git clone https://github.com/zkbt/chromatic.git
 cd chromatic
-pip install -e .
+pip install -e '.[develop]'
 ```
-This will link the installed version of the `chromatic` package to your local repository. Changes you make to the code in the repository should be reflected in the version Python sees when it tries to `import chromatic`.
+This will point your environment's `chromatic` package to point to this local folder, meaning that any changes you make in the repository will be reflected what Python sees when it tries to `import chromatic`. Including the `[develop]` will install both the dependencies for the package itself and the extra dependencies required for development (= testing and documentation).
+
+## Contributing
+
+If you want to contribute to this project, especially as part of the ERS Pre-Launch Hackathon, please join the #hack-chromatic channel on the ERS slack.
+
+To be careful we don't mess with each other's stuff, let's *please* avoid doing any code development on the `main` branch or pushing any code directly to `main`. If you want to work on something to contribute, please create a new branch, develop in that branch, and the submit a pull request to merge that branch back into `main`. Christina Hedges' [Astronomy Workflow](https://christinahedges.github.io/astronomy_workflow/notebooks/1.0-basics/git-basics.html) gives a great intro if this feels complicated to you!
+
+*And for context, Zach is a little new to trying to manage a big collaborative code project myself, so if there are things we could be doing better, please let him know!*
 
 ## Usage
 

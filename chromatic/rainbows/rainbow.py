@@ -5,17 +5,16 @@ from ..resampling import *
 
 class Rainbow(Talker):
     """
-    Rainbow objects represent the flux of an object
-    as a function of both wavelength and time.
+    Rainbow objects represent the flux of an object as a function of both wavelength and time.
     """
 
     def __init__(self, wavelength=None, time=None, flux=None, uncertainty=None, **kw):
         """
-        Initialize a generic Rainbow object.
+        Initialize a Rainbow object.
 
         Parameters
         ----------
-        wave : astropy.unit.Quantity
+        wavelength : astropy.unit.Quantity
             A 1D array of wavelengths, in any unit.
         time : astropy.unit.Quantity or astropy.unit.Time
             A 1D array of times, in any unit.
@@ -92,6 +91,14 @@ class Rainbow(Talker):
         """
         Bin the rainbow in wavelength and/or time.
 
+        The time-setting order of precendence is
+        [`time`, `dt`], meaning that if `time` is set,
+        any values given for `dt` will be ignored.
+        The wavelength-setting order of precendence is
+        [`wavelength`, `dw`, `R`], meaning that if `wavelength`
+        is set any values of `dw` or `R` will be ignored, and
+        if `dw` is set any value of `R` will be ignored.
+
         Parameters
         ----------
         dt : astropy.units.Quantity
@@ -100,11 +107,6 @@ class Rainbow(Talker):
         time : array of astropy.units.Quantity
             An array of times, if you just want to give
             it an entirely custom array.
-
-        The time-setting order of precendence is:
-            1) time
-            2) dt
-
         R : float
             The spectral resolution for creating a grid
             that is uniform in logarithmic space.
@@ -114,11 +116,6 @@ class Rainbow(Talker):
         wavelength : array of astropy.units.Quantity
             An array of wavelengths, if you just want to give
             it an entirely custom array.
-
-        The wavelength-setting order of precendence is:
-            1) wavelength
-            2) dw
-            3) R
         """
 
         # bin first in time
@@ -311,6 +308,19 @@ class Rainbow(Talker):
         origin="upper",
         **kw,
     ):
+        '''
+        imshow flux as a function of time (x = time, y = wavelength, color = flux).
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes
+            The axes into which to make this plot.
+        w_unit : str, astropy.unit.Unit
+            The unit for plotting wavelengths.
+        t_unit : str, astropy.unit.Unit
+            The unit for plotting times.
+
+        '''
 
         self.speak(f'imshowing {self}')
         if ax is None:
