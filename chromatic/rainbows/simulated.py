@@ -299,7 +299,10 @@ class SimulatedRainbow(Rainbow):
 
         for i in range(len(self.wavelike["wavelength"])):
             params.rp = rprs[i]
-            m = batman.TransitModel(params, self.timelike["time"])
+            try:
+                m
+            except NameError:
+                m = batman.TransitModel(params, self.timelike["time"].to('day').value)
             planet_flux[i] = m.light_curve(params)
 
         self.fluxlike["model"] = self.fluxlike["model"] * planet_flux
