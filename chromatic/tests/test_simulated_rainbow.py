@@ -11,3 +11,13 @@ def test_simulated_rainbow():
     e = SimulatedRainbow(wlim=[0.1, 1] * u.micron, dw=1 * u.nm)
     assert e.wscale == "linear"
     f = SimulatedRainbow(wavelength=np.logspace(0, 1) * u.micron)
+    g = SimulatedRainbow(
+        wavelength=np.logspace(0, 1) * u.micron, star_flux=np.logspace(0, 1)
+    )
+    h = SimulatedRainbow(planet=True)
+    i = SimulatedRainbow(planet=True, planet_params={"per": 0.1})
+    j = SimulatedRainbow(
+        wavelength=np.logspace(0, 1) * u.micron,
+        planet=True,
+        planet_radius=np.zeros(50) + 0.1,
+    )
