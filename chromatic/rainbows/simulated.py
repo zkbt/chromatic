@@ -226,8 +226,8 @@ class SimulatedRainbow(Rainbow):
         planet_params : Dictionary
             Values for planetary parameters for use in batman modelling.
             Any values not supplied will be set to defaults:
-                "t0" = time of inferior conjunction (default 0)
-                "per" = orbital period (hours) (detault 1)
+                "t0" = time of inferior conjunction (days) (default 0)
+                "per" = orbital period (days) (detault 1)
                 "a" = semi-major axis (units of stellar radii) (default 15)
                 "inc" = inclination (degrees) (default 90)
                 "ecc" = eccentricity (default 0)
@@ -302,7 +302,7 @@ class SimulatedRainbow(Rainbow):
             try:
                 m
             except NameError:
-                m = batman.TransitModel(params, self.timelike["time"].to('day').value)
+                m = batman.TransitModel(params, self.timelike["time"].to("day").value)
             planet_flux[i] = m.light_curve(params)
 
         self.fluxlike["model"] = self.fluxlike["model"] * planet_flux
