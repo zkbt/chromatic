@@ -142,7 +142,7 @@ class Rainbow(Talker):
         """
         Subtract the flux of a rainbow from an input array (or another rainbow)
         and output in a new rainbow object.
-        Currently only supports flux addition.
+        Currently only supports flux subtraction.
 
         Parameters
         ----------
@@ -191,7 +191,7 @@ class Rainbow(Talker):
         """
         Multiply the flux of a rainbow and an input array (or another rainbow)
         and output in a new rainbow object.
-        Currently only supports flux addition.
+        Currently only supports flux multiplication.
 
         Parameters
         ----------
@@ -240,7 +240,7 @@ class Rainbow(Talker):
         """
         Divide the flux of a rainbow and an input array (or another rainbow)
         and output in a new rainbow object.
-        Currently only supports flux addition.
+        Currently only supports flux division.
 
         Parameters
         ----------
