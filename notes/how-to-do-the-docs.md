@@ -16,3 +16,5 @@ Then, we edited the `docs/api.md` file to point to the objects and methods we wa
 Then, we used the `mkdocs-jupyter` plugin to be able use jupyter notebooks as the source for writing docs, following the examples on their pages. We added some notebooks to the `docs/` diretory and pointed to them in the `mkdocs.yml` file.
 
 Then, we ran `mkdocs serve`, and woah, a live version of the docs appeared at http://127.0.0.1:8000/. It was particularly cool (and way better than `sphinx` that I could make a change to any of the files and simply reload the page to see them update live into the docs). Hooray!
+
+Then, we ran `mkdocs gh-deploy`, and double woah, it deployed a pretty version of the docs up at zkbt.github.io/chromatic!
