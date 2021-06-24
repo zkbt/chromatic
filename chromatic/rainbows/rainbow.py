@@ -303,6 +303,7 @@ class Rainbow(Talker):
     def imshow(
         self,
         ax=None,
+        quantity='flux',
         w_unit="micron",
         t_unit="hour",
         aspect="auto",
@@ -349,7 +350,7 @@ class Rainbow(Talker):
 
         with quantity_support():
             plt.sca(ax)
-            plt.imshow(self.flux, extent=extent, aspect=aspect, origin=origin, **kw)
+            plt.imshow(self.fluxlike[quantity], extent=extent, aspect=aspect, origin=origin, **kw)
             if self.wscale == "linear":
                 plt.ylabel(f"Wavelength ({w_unit.to_string('latex_inline')})")
             elif self.wscale == "log":

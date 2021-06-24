@@ -85,6 +85,7 @@ setup(
         "matplotlib>=3.0",
         "astropy>=4.0",
         "tqdm",
+        "batman-package"
     ],
     # what version of Python is required?
     python_requires=">=3.6",  # f-strings are introduced in 3.6!
