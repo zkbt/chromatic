@@ -40,7 +40,8 @@ class Rainbow(Talker):
 
     @property
     def _nametag(self):
-        return f'🌈({self.nwave}w, {self.ntime}t)'
+        return f"🌈({self.nwave}w, {self.ntime}t)"
+
     @property
     def wavelength(self):
         return self.wavelike["wavelength"]
@@ -86,6 +87,203 @@ class Rainbow(Talker):
     def __repr__(self):
         n = self.__class__.__name__
         return f"<{n} ({self.nwave}w, {self.ntime}t)>"
+
+    def __add__(self, object):
+        """
+        Add the flux of a rainbow and an input array (or another rainbow)
+        and output in a new rainbow object.
+        Currently only supports flux addition.
+
+        Parameters
+        ----------
+        object : Array or float.
+            Multiple options:
+            1) float
+            2) 1D array with same length as wavelength axis
+            3) 1D array with same length as time axis
+            4) 2D array with same shape as rainbow flux
+            5) Rainbow object with same dimensions as self.
+
+        Returns
+        ----------
+        rainbow : Rainbow() with the same parameters as self but with added
+        flux.
+        """
+
+        # Create new Rainbow() to store results in.
+        result = copy.deepcopy(self)
+
+        if type(object) == float or type(object) == int:  # Float or integer.
+            result.fluxlike["flux"] += object
+
+        elif object.shape == self.shape:  # Object either fluxlike or another rainbow
+            try:
+                result.fluxlike["flux"] += object.fluxlike["flux"]
+            except AttributeError:
+                result.fluxlike["flux"] += object
+
+        elif object.shape[0] == len(
+            self.wavelike["wavelength"]
+        ):  # Add along wavelength axis
+
+            # Once again we flip the object to account for how wavelengths
+            # is handled.  May be able to remove np.flip in future.
+            result.fluxlike["flux"] += np.transpose([np.flip(object)] * self.shape[1])
+
+        elif object.shape[0] == len(self.timelike["time"]):  # Add along time axis.
+            result.fluxlike["flux"] += np.tile(object, (self.shape[0], 1))
+
+        else:
+            print("Invalid shape in addition: " + str(object.shape))
+            return
+        return result
+
+    def __sub__(self, object):
+        """
+        Subtract the flux of a rainbow from an input array (or another rainbow)
+        and output in a new rainbow object.
+        Currently only supports flux addition.
+
+        Parameters
+        ----------
+        object : Array or float.
+            Multiple options:
+            1) float
+            2) 1D array with same length as wavelength axis
+            3) 1D array with same length as time axis
+            4) 2D array with same shape as rainbow flux
+            5) Rainbow object with same dimensions as self.
+
+        Returns
+        ----------
+        rainbow : Rainbow() with the same parameters as self but with subtracted
+        flux.
+        """
+
+        # Create new Rainbow() to store results in.
+        result = copy.deepcopy(self)
+
+        if type(object) == float or type(object) == int:  # Float or integer.
+            result.fluxlike["flux"] -= object
+
+        elif object.shape == self.shape:  # Object either fluxlike or another rainbow
+            try:
+                result.fluxlike["flux"] -= object.fluxlike["flux"]
+            except AttributeError:
+                result.fluxlike["flux"] -= object
+
+        elif object.shape[0] == len(
+            self.wavelike["wavelength"]
+        ):  # Add along wavelength axis
+            # Once again we flip the object to account for how wavelengths
+            # is handled.  May be able to remove np.flip in future.
+            result.fluxlike["flux"] -= np.transpose([np.flip(object)] * self.shape[1])
+
+        elif object.shape[0] == len(self.timelike["time"]):  # Add along time axis.
+            result.fluxlike["flux"] -= np.tile(object, (self.shape[0], 1))
+
+        else:
+            print("Invalid shape in addition: " + str(object.shape))
+            return
+        return result
+
+    def __mul__(self, object):
+        """
+        Multiply the flux of a rainbow and an input array (or another rainbow)
+        and output in a new rainbow object.
+        Currently only supports flux addition.
+
+        Parameters
+        ----------
+        object : Array or float.
+            Multiple options:
+            1) float
+            2) 1D array with same length as wavelength axis
+            3) 1D array with same length as time axis
+            4) 2D array with same shape as rainbow flux
+            5) Rainbow object with same dimensions as self.
+
+        Returns
+        ----------
+        rainbow : Rainbow() with the same parameters as self but with multiplied
+        flux.
+        """
+
+        # Create new Rainbow() to store results in.
+        result = copy.deepcopy(self)
+
+        if type(object) == float or type(object) == int:  # Float or integer.
+            result.fluxlike["flux"] *= object
+
+        elif object.shape == self.shape:  # Object either fluxlike or another rainbow
+            try:
+                result.fluxlike["flux"] *= object.fluxlike["flux"]
+            except AttributeError:
+                result.fluxlike["flux"] *= object
+
+        elif object.shape[0] == len(
+            self.wavelike["wavelength"]
+        ):  # Add along wavelength axis
+            # Once again we flip the object to account for how wavelengths
+            # is handled.  May be able to remove np.flip in future.
+            result.fluxlike["flux"] *= np.transpose([np.flip(object)] * self.shape[1])
+
+        elif object.shape[0] == len(self.timelike["time"]):  # Add along time axis.
+            result.fluxlike["flux"] *= np.tile(object, (self.shape[0], 1))
+
+        else:
+            print("Invalid shape in addition: " + str(object.shape))
+            return
+        return result
+
+    def __truediv__(self, object):
+        """
+        Divide the flux of a rainbow and an input array (or another rainbow)
+        and output in a new rainbow object.
+        Currently only supports flux addition.
+
+        Parameters
+        ----------
+        object : Array or float.
+            Multiple options:
+            1) float
+            2) 1D array with same length as wavelength axis
+            3) 1D array with same length as time axis
+            4) 2D array with same shape as rainbow flux
+            5) Rainbow object with same dimensions as self.
+
+        Returns
+        ----------
+        rainbow : Rainbow() with the same parameters as self but with divided
+        flux.
+        """
+
+        # Create new Rainbow() to store results in.
+        result = copy.deepcopy(self)
+
+        if type(object) == float or type(object) == int:  # Float or integer.
+            result.fluxlike["flux"] /= object
+
+        elif object.shape == self.shape:  # Object either fluxlike or another rainbow
+            try:
+                result.fluxlike["flux"] /= object.fluxlike["flux"]
+            except AttributeError:
+                result.fluxlike["flux"] /= object
+
+        elif object.shape[0] == len(
+            self.wavelike["wavelength"]
+        ):  # Add along wavelength axis
+            # Once again we flip the object to account for how wavelengths
+            # is handled.  May be able to remove np.flip in future.
+            result.fluxlike["flux"] /= np.transpose([np.flip(object)] * self.shape[1])
+
+        elif object.shape[0] == len(self.timelike["time"]):  # Add along time axis.
+            result.fluxlike["flux"] /= np.tile(object, (self.shape[0], 1))
+
+        else:
+            print("Invalid shape in addition: " + str(object.shape))
+            return
+        return result
 
     def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
         """
@@ -153,10 +351,10 @@ class Rainbow(Talker):
         binkw = dict(weighting="inversevariance", drop_nans=False)
         if time is not None:
             binkw["newx"] = time
-            self.speak(f'binning to time={time}')
+            self.speak(f"binning to time={time}")
         elif dt is not None:
             binkw["dx"] = dt
-            self.speak(f'binning to dt={dt}')
+            self.speak(f"binning to dt={dt}")
 
         # create a new, empty Rainbow
         new = Rainbow()
@@ -169,9 +367,7 @@ class Rainbow(Talker):
         # TODO (add more careful treatment of uncertainty + DQ)
         new.timelike = {}
         for k in self.timelike:
-            bt, bv = bintogrid(
-                x=self.time, y=self.timelike[k], unc=None, **binkw
-            )
+            bt, bv = bintogrid(x=self.time, y=self.timelike[k], unc=None, **binkw)
             new.timelike[k] = bv
         new.timelike[k] = bt
 
@@ -190,16 +386,18 @@ class Rainbow(Talker):
                     bu = None
                 else:
                     bt, bv, bu = bintogrid(
-                        x=self.time, y=self.fluxlike[k][w, :], unc=self.uncertainty[w, :], **binkw
+                        x=self.time,
+                        y=self.fluxlike[k][w, :],
+                        unc=self.uncertainty[w, :],
+                        **binkw,
                     )
-
 
                 if k not in new.fluxlike:
                     new_shape = (new.nwave, new.ntime)
                     new.fluxlike[k] = np.zeros(new_shape)
                     # TODO make this more robust to units
 
-                if k == 'uncertainty':
+                if k == "uncertainty":
                     new.fluxlike[k][w, :] = bu
                 else:
                     new.fluxlike[k][w, :] = bv
@@ -237,18 +435,18 @@ class Rainbow(Talker):
         if wavelength is not None:
             binning_function = bintogrid
             binkw["newx"] = wavelength
-            wscale = '?'
-            self.speak(f'binning to wavelength={wavelength}')
+            wscale = "?"
+            self.speak(f"binning to wavelength={wavelength}")
         elif dw is not None:
             binning_function = bintogrid
             binkw["dx"] = dw
-            wscale = 'linear'
-            self.speak(f'binning to dw={dw}')
+            wscale = "linear"
+            self.speak(f"binning to dw={dw}")
         elif R is not None:
             binning_function = bintoR
             binkw["R"] = R
-            wscale = 'log'
-            self.speak(f'binning to R={R}')
+            wscale = "log"
+            self.speak(f"binning to R={R}")
 
         # create a new, empty Rainbow
         new = Rainbow()
@@ -281,16 +479,18 @@ class Rainbow(Talker):
                     bu = None
                 else:
                     bt, bv, bu = binning_function(
-                        x=self.wavelength, y=self.fluxlike[k][:, t], unc=self.uncertainty[:, t], **binkw
+                        x=self.wavelength,
+                        y=self.fluxlike[k][:, t],
+                        unc=self.uncertainty[:, t],
+                        **binkw,
                     )
-
 
                 if k not in new.fluxlike:
                     new_shape = (new.nwave, new.ntime)
                     new.fluxlike[k] = np.zeros(new_shape)
                     # TODO make this more robust to units
 
-                if k == 'uncertainty':
+                if k == "uncertainty":
                     new.fluxlike[k][:, t] = bu
                 else:
                     new.fluxlike[k][:, t] = bv
@@ -308,7 +508,7 @@ class Rainbow(Talker):
         origin="upper",
         **kw,
     ):
-        '''
+        """
         imshow flux as a function of time (x = time, y = wavelength, color = flux).
 
         Parameters
@@ -320,9 +520,9 @@ class Rainbow(Talker):
         t_unit : str, astropy.unit.Unit
             The unit for plotting times.
 
-        '''
+        """
 
-        self.speak(f'imshowing {self}')
+        self.speak(f"imshowing {self}")
         if ax is None:
             ax = plt.gca()
 
