@@ -84,8 +84,8 @@ class Rainbow(Talker):
         return np.prod(self.shape)
 
     def __repr__(self):
-        n = self.__class__.__name__
-        return f"<{n} ({self.nwave}w, {self.ntime}t)>"
+        n = self.__class__.__name__.replace('Rainbow', '🌈')
+        return f"<{n}({self.nwave}w, {self.ntime}t)>"
 
     def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
         """
@@ -117,6 +117,8 @@ class Rainbow(Talker):
             An array of wavelengths, if you just want to give
             it an entirely custom array.
         """
+
+        #self.speak(f'binning')
 
         # bin first in time
         binned_in_time = self.bin_in_time(dt=dt, time=time)
@@ -153,10 +155,10 @@ class Rainbow(Talker):
         binkw = dict(weighting="inversevariance", drop_nans=False)
         if time is not None:
             binkw["newx"] = time
-            self.speak(f'binning to time={time}')
+            #self.speak(f'binning to time={time}')
         elif dt is not None:
             binkw["dx"] = dt
-            self.speak(f'binning to dt={dt}')
+            #self.speak(f'binning to dt={dt}')
 
         # create a new, empty Rainbow
         new = Rainbow()
@@ -180,8 +182,8 @@ class Rainbow(Talker):
         # TODO (think about cleverer bintogrid for 2D arrays)
         new.fluxlike = {}
         for k in self.fluxlike:
-            self.speak(f" binning '{k}' in time")
-            self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+            #self.speak(f" binning '{k}' in time")
+            #self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
             for w in range(new.nwave):
                 if self.uncertainty is None:
                     bt, bv = bintogrid(
@@ -203,7 +205,7 @@ class Rainbow(Talker):
                     new.fluxlike[k][w, :] = bu
                 else:
                     new.fluxlike[k][w, :] = bv
-            self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
+            #self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
         return new
 
     def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
@@ -238,17 +240,17 @@ class Rainbow(Talker):
             binning_function = bintogrid
             binkw["newx"] = wavelength
             wscale = '?'
-            self.speak(f'binning to wavelength={wavelength}')
+            #self.speak(f'binning to wavelength={wavelength}')
         elif dw is not None:
             binning_function = bintogrid
             binkw["dx"] = dw
             wscale = 'linear'
-            self.speak(f'binning to dw={dw}')
+            #self.speak(f'binning to dw={dw}')
         elif R is not None:
             binning_function = bintoR
             binkw["R"] = R
             wscale = 'log'
-            self.speak(f'binning to R={R}')
+            #self.speak(f'binning to R={R}')
 
         # create a new, empty Rainbow
         new = Rainbow()
@@ -271,8 +273,8 @@ class Rainbow(Talker):
         # TODO (think about cleverer bintogrid for 2D arrays)
         new.fluxlike = {}
         for k in self.fluxlike:
-            self.speak(f" binning '{k}' in wavelength")
-            self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+            #self.speak(f" binning '{k}' in wavelength")
+            #self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
             for t in range(new.ntime):
                 if self.uncertainty is None:
                     bt, bv = binning_function(
@@ -294,7 +296,7 @@ class Rainbow(Talker):
                     new.fluxlike[k][:, t] = bu
                 else:
                     new.fluxlike[k][:, t] = bv
-            self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
+            #self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
         new.wscale = wscale
         return new
 
@@ -322,7 +324,7 @@ class Rainbow(Talker):
 
         '''
 
-        self.speak(f'imshowing {self}')
+        #self.speak(f'imshowing')
         if ax is None:
             ax = plt.gca()
 

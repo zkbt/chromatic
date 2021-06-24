@@ -1,5 +1,5 @@
 from ..rainbows import *
-
+from .setup_tests import *
 
 def test_basic_rainbow():
 
@@ -27,7 +27,7 @@ def test_bin_in_time():
     imshowkw = dict( vmin=0.98, vmax=1.02)
     s.imshow(ax=ax[0], **imshowkw)
     b.imshow(ax=ax[1], **imshowkw)
-    plt.show()
+    plt.savefig(os.path.join(test_directory, 'imshow-bin-time-demonstration.pdf'))
 
 def test_bin_in_wavelength():
 
@@ -41,7 +41,7 @@ def test_bin_in_wavelength():
     imshowkw = dict( vmin=0.98, vmax=1.02)
     s.imshow(ax=ax[0], **imshowkw)
     b.imshow(ax=ax[1], **imshowkw)
-    plt.show()
+    plt.savefig(os.path.join(test_directory, 'imshow-bin-wavelength-demonstration.pdf'))
 
 def test_bin():
 
@@ -59,4 +59,4 @@ def test_bin():
     b.imshow(ax=ax[1], **imshowkw)
     plt.title('Binned')
     plt.tight_layout()
-    plt.show()
+    plt.savefig(os.path.join(test_directory, 'imshow-bin-demonstration.pdf'))

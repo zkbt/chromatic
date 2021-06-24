@@ -1,5 +1,5 @@
 from ..rainbows import *
-
+from .setup_tests import *
 
 def test_simulated_rainbow():
 
