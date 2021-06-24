@@ -113,29 +113,39 @@ class Rainbow(Talker):
         # Create new Rainbow() to store results in.
         result = copy.deepcopy(self)
 
-        if type(object) == float or type(object) == int:  # Float or integer.
-            result.fluxlike["flux"] += object
-
-        elif object.shape == self.shape:  # Object either fluxlike or another rainbow
-            try:
+        try:  # Object is rainbow
+            if np.array_equal(
+                self.wavelike["wavelength"], object.wavelike["wavelength"]
+            ) and np.array_equal(self.timelike["time"], object.timelike["time"]):
                 result.fluxlike["flux"] += object.fluxlike["flux"]
-            except AttributeError:
+            else:
+                print("Objects do not share wavelength/time axes")
+                return
+
+        except AttributeError:  # Object is not rainbow
+
+            if type(object) == float or type(object) == int:  # Float or integer.
                 result.fluxlike["flux"] += object
 
-        elif object.shape[0] == len(
-            self.wavelike["wavelength"]
-        ):  # Add along wavelength axis
+            elif self.shape == object.shape:  # fluxlike
+                result.fluxlike["flux"] += object
 
-            # Once again we flip the object to account for how wavelengths
-            # is handled.  May be able to remove np.flip in future.
-            result.fluxlike["flux"] += np.transpose([np.flip(object)] * self.shape[1])
+            elif len(object) == len(
+                self.wavelike["wavelength"]
+            ):  # Add along wavelength axis
 
-        elif object.shape[0] == len(self.timelike["time"]):  # Add along time axis.
-            result.fluxlike["flux"] += np.tile(object, (self.shape[0], 1))
+                # Once again we flip the object to account for how wavelengths
+                # is handled.  May be able to remove np.flip in future.
+                result.fluxlike["flux"] += np.transpose(
+                    [np.flip(object)] * self.shape[1]
+                )
 
-        else:
-            print("Invalid shape in addition: " + str(object.shape))
-            return
+            elif len(object) == len(self.timelike["time"]):  # Add along time axis.
+                result.fluxlike["flux"] += np.tile(object, (self.shape[0], 1))
+
+            else:
+                print("Invalid shape in addition: " + str(object.shape))
+                return
         return result
 
     def __sub__(self, object):
@@ -163,28 +173,38 @@ class Rainbow(Talker):
         # Create new Rainbow() to store results in.
         result = copy.deepcopy(self)
 
-        if type(object) == float or type(object) == int:  # Float or integer.
-            result.fluxlike["flux"] -= object
-
-        elif object.shape == self.shape:  # Object either fluxlike or another rainbow
-            try:
+        try:  # Object is rainbow.
+            if np.array_equal(
+                self.wavelike["wavelength"], object.wavelike["wavelength"]
+            ) and np.array_equal(self.timelike["time"], object.timelike["time"]):
                 result.fluxlike["flux"] -= object.fluxlike["flux"]
-            except AttributeError:
+            else:
+                print("Objects do not share wavelength/time axes")
+                return
+
+        except AttributeError:
+
+            if type(object) == float or type(object) == int:  # Float or integer.
                 result.fluxlike["flux"] -= object
 
-        elif object.shape[0] == len(
-            self.wavelike["wavelength"]
-        ):  # Add along wavelength axis
-            # Once again we flip the object to account for how wavelengths
-            # is handled.  May be able to remove np.flip in future.
-            result.fluxlike["flux"] -= np.transpose([np.flip(object)] * self.shape[1])
+            elif self.shape == object.shape:  # fluxlike
+                result.fluxlike["flux"] -= object
 
-        elif object.shape[0] == len(self.timelike["time"]):  # Add along time axis.
-            result.fluxlike["flux"] -= np.tile(object, (self.shape[0], 1))
+            elif len(object) == len(
+                self.wavelike["wavelength"]
+            ):  # Add along wavelength axis
+                # Once again we flip the object to account for how wavelengths
+                # is handled.  May be able to remove np.flip in future.
+                result.fluxlike["flux"] -= np.transpose(
+                    [np.flip(object)] * self.shape[1]
+                )
 
-        else:
-            print("Invalid shape in addition: " + str(object.shape))
-            return
+            elif len(object) == len(self.timelike["time"]):  # Add along time axis.
+                result.fluxlike["flux"] -= np.tile(object, (self.shape[0], 1))
+
+            else:
+                print("Invalid shape in subtraction: " + str(object.shape))
+                return
         return result
 
     def __mul__(self, object):
@@ -212,28 +232,38 @@ class Rainbow(Talker):
         # Create new Rainbow() to store results in.
         result = copy.deepcopy(self)
 
-        if type(object) == float or type(object) == int:  # Float or integer.
-            result.fluxlike["flux"] *= object
-
-        elif object.shape == self.shape:  # Object either fluxlike or another rainbow
-            try:
+        try:  # Object is rainbow
+            if np.array_equal(
+                self.wavelike["wavelength"], object.wavelike["wavelength"]
+            ) and np.array_equal(self.timelike["time"], object.timelike["time"]):
                 result.fluxlike["flux"] *= object.fluxlike["flux"]
-            except AttributeError:
+            else:
+                print("Objects do not share wavelength/time axes")
+                return
+
+        except AttributeError:
+
+            if type(object) == float or type(object) == int:  # Float or integer.
                 result.fluxlike["flux"] *= object
 
-        elif object.shape[0] == len(
-            self.wavelike["wavelength"]
-        ):  # Add along wavelength axis
-            # Once again we flip the object to account for how wavelengths
-            # is handled.  May be able to remove np.flip in future.
-            result.fluxlike["flux"] *= np.transpose([np.flip(object)] * self.shape[1])
+            elif self.shape == object.shape:  # fluxlike
+                result.fluxlike["flux"] *= object
 
-        elif object.shape[0] == len(self.timelike["time"]):  # Add along time axis.
-            result.fluxlike["flux"] *= np.tile(object, (self.shape[0], 1))
+            elif len(object) == len(
+                self.wavelike["wavelength"]
+            ):  # Add along wavelength axis
+                # Once again we flip the object to account for how wavelengths
+                # is handled.  May be able to remove np.flip in future.
+                result.fluxlike["flux"] *= np.transpose(
+                    [np.flip(object)] * self.shape[1]
+                )
 
-        else:
-            print("Invalid shape in addition: " + str(object.shape))
-            return
+            elif len(object) == len(self.timelike["time"]):  # Add along time axis.
+                result.fluxlike["flux"] *= np.tile(object, (self.shape[0], 1))
+
+            else:
+                print("Invalid shape in multiplication: " + str(object.shape))
+                return
         return result
 
     def __truediv__(self, object):
@@ -261,28 +291,38 @@ class Rainbow(Talker):
         # Create new Rainbow() to store results in.
         result = copy.deepcopy(self)
 
-        if type(object) == float or type(object) == int:  # Float or integer.
-            result.fluxlike["flux"] /= object
-
-        elif object.shape == self.shape:  # Object either fluxlike or another rainbow
-            try:
+        try:  # Object is another rainbow.
+            if np.array_equal(
+                self.wavelike["wavelength"], object.wavelike["wavelength"]
+            ) and np.array_equal(self.timelike["time"], object.timelike["time"]):
                 result.fluxlike["flux"] /= object.fluxlike["flux"]
-            except AttributeError:
+            else:
+                print("Objects do not share wavelength/time axes")
+                return
+
+        except AttributeError:
+
+            if type(object) == float or type(object) == int:  # float
                 result.fluxlike["flux"] /= object
 
-        elif object.shape[0] == len(
-            self.wavelike["wavelength"]
-        ):  # Add along wavelength axis
-            # Once again we flip the object to account for how wavelengths
-            # is handled.  May be able to remove np.flip in future.
-            result.fluxlike["flux"] /= np.transpose([np.flip(object)] * self.shape[1])
+            elif self.shape == object.shape:  # fluxlike array
+                result.fluxlike["flux"] /= object
 
-        elif object.shape[0] == len(self.timelike["time"]):  # Add along time axis.
-            result.fluxlike["flux"] /= np.tile(object, (self.shape[0], 1))
+            elif len(object) == len(
+                self.wavelike["wavelength"]
+            ):  # Add along wavelength axis
+                # Once again we flip the object to account for how wavelengths
+                # is handled.  May be able to remove np.flip in future.
+                result.fluxlike["flux"] /= np.transpose(
+                    [np.flip(object)] * self.shape[1]
+                )
 
-        else:
-            print("Invalid shape in addition: " + str(object.shape))
-            return
+            elif len(object) == len(self.timelike["time"]):  # Add along time axis.
+                result.fluxlike["flux"] /= np.tile(object, (self.shape[0], 1))
+
+            else:
+                print("Invalid shape in division: " + str(object.shape))
+                return
         return result
 
     def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
