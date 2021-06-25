@@ -1,5 +1,5 @@
 from .rainbow import *
-
+import batman as batman
 
 class SimulatedRainbow(Rainbow):
     def __init__(

@@ -13,3 +13,7 @@ def test_imshow():
     SimulatedRainbow(dw=0.2 * u.micron).imshow(ax=ax[1], w_unit="nm")
 
     plt.savefig(os.path.join(test_directory, 'imshow-demonstration.pdf'))
+
+def test_plot():
+    SimulatedRainbow(R=10).plot()
+    plt.close()

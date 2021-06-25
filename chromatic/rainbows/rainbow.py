@@ -361,3 +361,16 @@ class Rainbow(Talker):
             if colorbar:
                 plt.colorbar(ax=ax)
         return ax
+
+    def plot(self, spacing = None):
+        """
+        Plot
+
+        Returns
+        -------
+        None.
+
+        """
+        from chromatic import viz
+        viz.wavelength_plot(self.flux, self.time, self.wavelength, 
+                            step_size=spacing)
