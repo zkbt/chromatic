@@ -90,6 +90,7 @@ class Rainbow(Talker):
                 except KeyError:
                     pass
         raise AttributeError()
+
     # TODO - what should we do with __setattr__?
     #   actually allow to reset things in metadata?
     #   give a warning that you try to set something you shouldn't?
@@ -190,11 +191,11 @@ class Rainbow(Talker):
                 self.wavelike["wavelength"]
             ):  # Add along wavelength axis
 
-                # Once again we flip the object to account for how wavelengths
-                # is handled.  May be able to remove np.flip in future.
-                result.fluxlike["flux"] += np.transpose(
-                    [np.flip(object)] * self.shape[1]
-                )
+                result.fluxlike["flux"] += np.transpose([object] * self.shape[1])
+                if self.nwave == self.ntime:
+                    raise RuntimeError(
+                        f"{self} has same number of wavelengths and times; we can't tell which is which."
+                    )
 
             elif len(object) == len(self.timelike["time"]):  # Add along time axis.
                 result.fluxlike["flux"] += np.tile(object, (self.shape[0], 1))
@@ -249,11 +250,11 @@ class Rainbow(Talker):
             elif len(object) == len(
                 self.wavelike["wavelength"]
             ):  # Add along wavelength axis
-                # Once again we flip the object to account for how wavelengths
-                # is handled.  May be able to remove np.flip in future.
-                result.fluxlike["flux"] -= np.transpose(
-                    [np.flip(object)] * self.shape[1]
-                )
+                result.fluxlike["flux"] -= np.transpose([object] * self.shape[1])
+                if self.nwave == self.ntime:
+                    raise RuntimeError(
+                        f"{self} has same number of wavelengths and times; we can't tell which is which."
+                    )
 
             elif len(object) == len(self.timelike["time"]):  # Add along time axis.
                 result.fluxlike["flux"] -= np.tile(object, (self.shape[0], 1))
@@ -308,11 +309,11 @@ class Rainbow(Talker):
             elif len(object) == len(
                 self.wavelike["wavelength"]
             ):  # Add along wavelength axis
-                # Once again we flip the object to account for how wavelengths
-                # is handled.  May be able to remove np.flip in future.
-                result.fluxlike["flux"] *= np.transpose(
-                    [np.flip(object)] * self.shape[1]
-                )
+                result.fluxlike["flux"] *= np.transpose([object] * self.shape[1])
+                if self.nwave == self.ntime:
+                    raise RuntimeError(
+                        f"{self} has same number of wavelengths and times; we can't tell which is which."
+                    )
 
             elif len(object) == len(self.timelike["time"]):  # Add along time axis.
                 result.fluxlike["flux"] *= np.tile(object, (self.shape[0], 1))
@@ -367,12 +368,11 @@ class Rainbow(Talker):
             elif len(object) == len(
                 self.wavelike["wavelength"]
             ):  # Add along wavelength axis
-                # Once again we flip the object to account for how wavelengths
-                # is handled.  May be able to remove np.flip in future.
-                result.fluxlike["flux"] /= np.transpose(
-                    [np.flip(object)] * self.shape[1]
-                )
-
+                result.fluxlike["flux"] /= np.transpose([object] * self.shape[1])
+                if self.nwave == self.ntime:
+                    raise RuntimeError(
+                        f"{self} has same number of wavelengths and times; we can't tell which is which."
+                    )
             elif len(object) == len(self.timelike["time"]):  # Add along time axis.
                 result.fluxlike["flux"] /= np.tile(object, (self.shape[0], 1))
 
