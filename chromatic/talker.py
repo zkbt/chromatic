@@ -12,6 +12,7 @@ shortcuts = None
 
 # TODO this whole thing is overly complicated. simplify?
 
+
 class Talker(object):
     """
     Objects the inherit from Talker have...

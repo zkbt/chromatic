@@ -8,6 +8,8 @@ class Rainbow(Talker):
     Rainbow objects represent the flux of an object as a function of both wavelength and time.
     """
 
+    _core_dictionaries = ["fluxlike", "timelike", "wavelike", "metadata"]
+
     def __init__(self, wavelength=None, time=None, flux=None, uncertainty=None, **kw):
         """
         Initialize a Rainbow object.
@@ -22,8 +24,10 @@ class Rainbow(Talker):
             A 2D array of flux values.
         uncertainty : np.array
             A 2D array of uncertainties, associated with the flux.
-
         """
+
+        # metadata are arbitrary types of information we need
+        self.metadata = {}
 
         # wavelike quanities are 1D arrays with nwave elements
         self.wavelike = {}
@@ -38,36 +42,79 @@ class Rainbow(Talker):
         self.fluxlike["flux"] = flux
         self.fluxlike["uncertainty"] = uncertainty
 
+        self._guess_wscale()
+
+    def _guess_wscale(self):
+        """
+        Try to guess the wscale from the wavelengths.
+        """
+
+        # give up if there's no wavelength array
+        if self.wavelength is None:
+            return "?"
+
+        # calculate difference arrays
+        w = self.wavelength.value
+        dw = np.diff(w)
+        dlogw = np.diff(np.log(w))
+
+        # test the three options
+        if np.all(dw == dw[0]):
+            self.metadata["wscale"] = "linear"
+        elif np.all(dlogw == dlogw[0]):
+            self.metadata["wscale"] = "log"
+        else:
+            self.metadata["wscale"] = "?"
+
+    def __getattr__(self, key):
+        """
+        If an attribute/method isn't explicitly defined,
+        try to pull it from one of the core dictionaries.
+
+        Let's say you want to get the 2D uncertainty array
+        but don't want to type `self.fluxlike['uncertainty']`.
+        You could instead type `self.uncertainty`, and this
+        would try to search through the four standard
+        dictionaries to pull out the first `uncertainty`
+        it finds.
+
+        Parameters
+        ----------
+        key : str
+            The attribute we're trying to get.
+        """
+        if key not in self._core_dictionaries:
+            for dictionary_name in self._core_dictionaries:
+                try:
+                    return self.__dict__[dictionary_name][key]
+                except KeyError:
+                    pass
+
+    # TODO - what should we do with __setattr__?
+    #   actually allow to reset things in metadata?
+    #   give a warning that you try to set something you shouldn't?
+    #   if things have the right size, just organize them
+
     @property
     def _nametag(self):
+        """
+        This short phrase will preface everything
+        said with `self.speak()`.
+        """
         return f"🌈({self.nwave}w, {self.ntime}t)"
 
     @property
-    def wavelength(self):
-        return self.wavelike["wavelength"]
-
-    # @wavelength.setter
-    # def wavelength(self, value):
-    #    self.wavelike['wavelength'] = value
-
-    @property
-    def time(self):
-        return self.timelike["time"]
-
-    @property
-    def flux(self):
-        return self.fluxlike["flux"]
-
-    @property
-    def uncertainty(self):
-        return self.fluxlike["uncertainty"]
-
-    @property
     def shape(self):
+        """
+        The shape of the flux array (nwave, ntime)
+        """
         return (self.nwave, self.ntime)
 
     @property
     def nwave(self):
+        """
+        The number of wavelengths
+        """
         if self.wavelength is None:
             return 0
         else:
@@ -75,6 +122,9 @@ class Rainbow(Talker):
 
     @property
     def ntime(self):
+        """
+        The number of times
+        """
         if self.time is None:
             return 0
         else:
@@ -82,9 +132,15 @@ class Rainbow(Talker):
 
     @property
     def nflux(self):
+        """
+        The number of fluxes
+        """
         return np.prod(self.shape)
 
     def __repr__(self):
+        """
+        How should this object be represented as a string?
+        """
         n = self.__class__.__name__.replace("Rainbow", "🌈")
         return f"<{n}({self.nwave}w, {self.ntime}t)>"
 
@@ -403,7 +459,7 @@ class Rainbow(Talker):
 
         # populate the wavelength information
         new.wavelike = {**self.wavelike}
-        new.wscale = self.wscale
+        new.metadata["wscale"] = self.wscale
 
         # bin the time-like variables
         # TODO (add more careful treatment of uncertainty + DQ)
@@ -477,7 +533,6 @@ class Rainbow(Talker):
         if wavelength is not None:
             binning_function = bintogrid
             binkw["newx"] = wavelength
-
             wscale = "?"
             # self.speak(f'binning to wavelength={wavelength}')
         elif dw is not None:
@@ -538,7 +593,7 @@ class Rainbow(Talker):
                 else:
                     new.fluxlike[k][:, t] = bv
             # self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
-        new.wscale = wscale
+        new.metadata["wscale"] = wscale
         return new
 
     def imshow(
@@ -567,7 +622,6 @@ class Rainbow(Talker):
         """
 
         # self.speak(f'imshowing')
-
         if ax is None:
             ax = plt.gca()
 
@@ -609,3 +663,24 @@ class Rainbow(Talker):
             if colorbar:
                 plt.colorbar(ax=ax)
         return ax
+
+    def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
+        """
+        Plot
+
+        Returns
+        -------
+        None.
+
+        """
+        from chromatic import viz
+
+        viz.wavelength_plot(
+            self.flux,
+            self.time,
+            self.wavelength,
+            step_size=spacing,
+            ax=ax,
+            plotkw={},
+            fontkw={},
+        )

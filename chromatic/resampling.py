@@ -333,7 +333,11 @@ def bintogrid(
     # make up a grid, if one wasn't specified
     if newx is None:
         dx_without_unit = u.Quantity(dx).to(x_unit).value
-        newx = np.arange(np.min(x_without_unit), np.max(x_without_unit) + dx_without_unit, dx_without_unit)
+        newx = np.arange(
+            np.min(x_without_unit),
+            np.max(x_without_unit) + dx_without_unit,
+            dx_without_unit,
+        )
 
     # don't complain about zero-divisions in here (to allow infinite uncertainties)
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -365,9 +369,9 @@ def bintogrid(
 
     # if no uncertainties were given, don't return uncertainties
     if unc is None:
-        return newx[ok]*x_unit, newy[ok]
+        return newx[ok] * x_unit, newy[ok]
     else:
-        return newx[ok]*x_unit, newy[ok], newunc[ok]
+        return newx[ok] * x_unit, newy[ok], newunc[ok]
 
 
 def bintoR(
@@ -453,9 +457,9 @@ def bintoR(
         blnx, by = bintogrid(
             lnx, y, unc, newx=newlnx, weighting=weighting, drop_nans=drop_nans
         )
-        return np.exp(blnx)*x_unit, by
+        return np.exp(blnx) * x_unit, by
     else:
         blnx, by, bunc = bintogrid(
             lnx, y, unc, newx=newlnx, weighting=weighting, drop_nans=drop_nans
         )
-        return np.exp(blnx)*x_unit, by, bunc
+        return np.exp(blnx) * x_unit, by, bunc
