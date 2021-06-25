@@ -1,6 +1,7 @@
 from ..rainbows import *
 from .setup_tests import *
 
+
 def test_imshow():
     plt.figure()
     SimulatedRainbow(R=10).imshow()
@@ -12,8 +13,9 @@ def test_imshow():
     SimulatedRainbow(R=10).imshow(w_unit="nm", ax=ax[0])
     SimulatedRainbow(dw=0.2 * u.micron).imshow(ax=ax[1], w_unit="nm")
 
-    plt.savefig(os.path.join(test_directory, 'imshow-demonstration.pdf'))
+    plt.savefig(os.path.join(test_directory, "imshow-demonstration.pdf"))
+
 
 def test_plot():
     SimulatedRainbow(R=10).plot()
-    plt.close()
+    plt.savefig(os.path.join(test_directory, "plot-demonstration.pdf"))
