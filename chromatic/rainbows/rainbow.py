@@ -631,15 +631,15 @@ class Rainbow(Talker):
             extent = [
                 (min(self.time) / t_unit).decompose(),
                 (max(self.time) / t_unit).decompose(),
-                (min(self.wavelength) / w_unit).decompose(),
                 (max(self.wavelength) / w_unit).decompose(),
+                (min(self.wavelength) / w_unit).decompose(),
             ]
         elif self.wscale == "log":
             extent = [
                 (min(self.time) / t_unit).decompose(),
                 (max(self.time) / t_unit).decompose(),
-                np.log10(min(self.wavelength) / w_unit),
                 np.log10(max(self.wavelength) / w_unit),
+                np.log10(min(self.wavelength) / w_unit),
             ]
         else:
             raise RuntimeError("Can't imshow without knowing wscale.")
