@@ -64,20 +64,24 @@ def eureadka(filename):
     
     event = loadevent(filename,load=[])
     
-    eureka_data_times = event.mhdr['EXPMID'] #UT time for the midpoint of exposure
-    eureka_data_wave = event.wave
-    eureka_data_flux = event.stdspec
-    eureka_data_err = event.stdvar
+    if meta file exists:
+        meta = loadevent(filename,load=[])
+       
+    
+    data_times = event.mhdr['EXPMID'] #UT time for the midpoint of exposure
+    data_wave = event.subwave[meta.src_ypos]
+    data_flux = event.stdspec
+    data_err = event.stdvar
     
     timelike = {}
-    timelike['time'] = eureka_data_times
+    timelike['time'] = ata_times
     
     wavelike = {}
-    wavelike['wavelength'] = eureka_data_wave
+    wavelike['wavelength'] = data_wave
     
     fluxlike = {}
-    fluxlike['flux'] = eureka_data_flux
-    fluxlike['error'] = eureka_data_err
+    fluxlike['flux'] = data_flux
+    fluxlike['error'] = data_err
     
     return timelike, wavelike, fluxlike
     
