@@ -17,14 +17,9 @@ def test_imshow():
     fi, ax = plt.subplots(2, 1, sharex=True)
     SimulatedRainbow(R=10).imshow(w_unit="nm", ax=ax[0])
     SimulatedRainbow(dw=0.2 * u.micron).imshow(ax=ax[1], w_unit="nm")
-<<<<<<< HEAD
-
     plt.savefig(os.path.join(test_directory, "imshow-demonstration.pdf"))
 
 
 def test_plot():
     SimulatedRainbow(R=10).plot()
     plt.savefig(os.path.join(test_directory, "plot-demonstration.pdf"))
-=======
-    plt.savefig(os.path.join(test_directory, 'imshow-demonstration.pdf'))
->>>>>>> main
