@@ -34,3 +34,7 @@ def test_inject_transit():
     )
     i.imshow(ax=ax[1], vmin=0.975, vmax=1.005)
     plt.savefig(os.path.join(test_directory, "transit-injection-demonstration.pdf"))
+
+    h.inject_transit(
+        planet_params={"limb_dark": "quadratic", "u": np.ones((h.nwave, 2))}
+    )
