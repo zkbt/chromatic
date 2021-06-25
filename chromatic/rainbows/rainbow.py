@@ -687,6 +687,19 @@ class Rainbow(Talker):
 
     def animate_lightcurve(self, savename, fps=5, figsize=(10, 6), **kw):
 
+        """
+        Create an animation that shows how the lightcurve of the data change
+        with wavelength.
+
+        Parameters
+        ----------
+        savename : Name of file you'd like to save results in.  Currently
+            supports .gif files.
+        fps : frames/second of animation
+        figsize : size of figure
+
+        """
+
         fig, ax = plt.subplots(figsize=figsize)
         ln, = plt.plot([], [], **kw)
 
@@ -723,10 +736,21 @@ class Rainbow(Talker):
             blit=True,
         )
         ani.save(savename, fps=fps)
-        plt.show()
+        # plt.show()
 
     def animate_spectra(self, savename, fps=5, figsize=(10, 6), **kw):
+        """
+        Create an animation that shows how the wavelength vs flux of the
+        observations change with time.
 
+        Parameters
+        ----------
+        savename : Name of file you'd like to save results in.  Currently
+            supports .gif files.
+        fps : frames/second of animation
+        figsize : size of figure
+
+        """
         fig, ax = plt.subplots(figsize=figsize)
         xdata, ydata = [], []
         ln, = plt.plot([], [], **kw)
@@ -765,4 +789,4 @@ class Rainbow(Talker):
             blit=True,
         )
         ani.save(savename, fps=fps)
-        plt.show()
+        # plt.show()
