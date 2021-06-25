@@ -80,7 +80,7 @@ class SimulatedRainbow(Rainbow):
         self._setup_fake_time_grid(tlim=tlim, dt=dt, time=time)
 
         # Save SNR.
-        self.signal_to_noise = signal_to_noise
+        self.metadata['signal_to_noise'] = signal_to_noise
 
         # If the flux of the star is not given,
         # assume a continuum-normlized flux where fx=1 at all wavelengths.
@@ -178,8 +178,8 @@ class SimulatedRainbow(Rainbow):
 
             w_unit = wlim[0].unit
             if dw is None:
-                self.R = R
-                self.wscale = "log"
+                self.metadata['R'] = R
+                self.metadata['wscale'] = "log"
 
                 logw_min = np.log(wlim[0] / w_unit)
                 logw_max = np.log(wlim[1] / w_unit)
@@ -187,8 +187,8 @@ class SimulatedRainbow(Rainbow):
                 wavelength = np.exp(logw) * w_unit
 
             elif dw is not None:
-                self.dw = dw
-                self.wscale = "linear"
+                self.metadata['dw'] = dw
+                self.metadata['wscale'] = "linear"
                 wavelength = (
                     np.arange(wlim[0] / w_unit, wlim[1] / w_unit, self.dw / w_unit)
                     * w_unit
@@ -197,7 +197,7 @@ class SimulatedRainbow(Rainbow):
         # or just make sure the wavelength grid has units
         elif wavelength is not None:
             w_unit = wavelength.unit
-            self.wscale = "?"
+            self.metadata['wscale'] = "?"
 
         # make sure the wavelength array has units
         self.wavelike["wavelength"] = u.Quantity(wavelength)
