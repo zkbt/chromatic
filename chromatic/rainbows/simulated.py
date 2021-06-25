@@ -291,8 +291,6 @@ class SimulatedRainbow(Rainbow):
             rprs = np.zeros(len(self.wavelike["wavelength"])) + planet_radius
         else:
             rprs = planet_radius
-            # Account for how rainbow indexes wavelengths.
-            rprs = np.flip(rprs)
 
         planet_flux = np.zeros(
             (len(self.wavelike["wavelength"]), len(self.timelike["time"]))
