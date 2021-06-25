@@ -180,7 +180,7 @@ class SimulatedRainbow(Rainbow):
             w_unit = wlim[0].unit
             if dw is None:
                 self.metadata["R"] = R
-                self.metadata["wscale"] = "log"
+                #self.metadata["wscale"] = "log"
 
                 logw_min = np.log(wlim[0] / w_unit)
                 logw_max = np.log(wlim[1] / w_unit)
@@ -189,7 +189,7 @@ class SimulatedRainbow(Rainbow):
 
             elif dw is not None:
                 self.metadata["dw"] = dw
-                self.metadata["wscale"] = "linear"
+                #self.metadata["wscale"] = "linear"
                 wavelength = (
                     np.arange(wlim[0] / w_unit, wlim[1] / w_unit, self.dw / w_unit)
                     * w_unit
@@ -198,10 +198,10 @@ class SimulatedRainbow(Rainbow):
         # or just make sure the wavelength grid has units
         elif wavelength is not None:
             w_unit = wavelength.unit
-            self.metadata["wscale"] = "?"
 
         # make sure the wavelength array has units
         self.wavelike["wavelength"] = u.Quantity(wavelength)
+        self._guess_wscale()
 
         # this should break if the units aren't length
         w_unit.to("m")
@@ -304,7 +304,8 @@ class SimulatedRainbow(Rainbow):
                 m = batman.TransitModel(params, self.timelike["time"].to("day").value)
             planet_flux[i] = m.light_curve(params)
 
-        self.fluxlike["model"] = self.fluxlike["model"] * planet_flux
-        self.fluxlike["flux"] = np.random.normal(
-            self.fluxlike["model"], self.fluxlike["uncertainty"]
-        )
+        result = copy.deepcopy(self)
+        result.fluxlike["model"] *= planet_flux
+        result.fluxlike["flux"] *= planet_flux
+
+        return result

@@ -59,9 +59,9 @@ class Rainbow(Talker):
         dlogw = np.diff(np.log(w))
 
         # test the three options
-        if np.all(dw == dw[0]):
+        if np.all(np.isclose(dw, dw[0])):
             self.metadata["wscale"] = "linear"
-        elif np.all(dlogw == dlogw[0]):
+        elif np.all(np.isclose(dlogw, dlogw[0])):
             self.metadata["wscale"] = "log"
         else:
             self.metadata["wscale"] = "?"
@@ -623,7 +623,7 @@ class Rainbow(Talker):
 
         # self.speak(f'imshowing')
         if ax is None:
-            ax = plt.gca()
+            ax = plt.subplot()
 
         w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
