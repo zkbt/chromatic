@@ -684,3 +684,85 @@ class Rainbow(Talker):
             plotkw={},
             fontkw={},
         )
+
+    def animate_lightcurve(self, savename, fps=5, figsize=(10, 6), **kw):
+
+        fig, ax = plt.subplots(figsize=figsize)
+        ln, = plt.plot([], [], **kw)
+
+        def init():
+            ax.set_xlim(
+                np.min(self.timelike["time"].value), np.max(self.timelike["time"].value)
+            )
+            ax.set_ylim(
+                0.995 * np.min(self.fluxlike["flux"]),
+                1.005 * np.max(self.fluxlike["flux"]),
+            )
+            ax.set_xlabel("Time ({})".format(self.timelike["time"].unit), fontsize=14)
+            ax.set_ylabel("Relative Flux", fontsize=14)
+            return (ln,)
+
+        def update(frame):
+            x = self.timelike["time"].value
+            y = self.fluxlike["flux"][frame]
+            ax.set_title(
+                "Wavelength: {wl:0.2f} ".format(
+                    wl=self.wavelike["wavelength"].value[frame]
+                )
+                + str(self.wavelike["wavelength"].unit),
+                fontsize=14,
+            )
+            ln.set_data(x, y)
+            return (ln,)
+
+        ani = matplotlib.animation.FuncAnimation(
+            fig,
+            update,
+            frames=np.arange(0, len(self.wavelike["wavelength"])),
+            init_func=init,
+            blit=True,
+        )
+        ani.save(savename, fps=fps)
+        plt.show()
+
+    def animate_spectra(self, savename, fps=5, figsize=(10, 6), **kw):
+
+        fig, ax = plt.subplots(figsize=figsize)
+        xdata, ydata = [], []
+        ln, = plt.plot([], [], **kw)
+
+        def init():
+            ax.set_xlim(
+                np.min(self.wavelike["wavelength"].value),
+                np.max(self.wavelike["wavelength"].value),
+            )
+            ax.set_ylim(
+                0.995 * np.min(self.fluxlike["flux"]),
+                1.005 * np.max(self.fluxlike["flux"]),
+            )
+            ax.set_xlabel(
+                "Wavelength ({})".format(self.wavelike["wavelength"].unit), fontsize=14
+            )
+            ax.set_ylabel("Relative Flux", fontsize=14)
+            return (ln,)
+
+        def update(frame):
+            x = self.wavelike["wavelength"].value
+            y = self.fluxlike["flux"][:, frame]
+            ax.set_title(
+                "Time: {t:0.2f} ".format(t=self.timelike["time"].value[frame])
+                + str(self.timelike["time"].unit),
+                fontsize=14,
+            )
+            ln.set_data(x, y)
+            return (ln,)
+
+        ani = matplotlib.animation.FuncAnimation(
+            fig,
+            update,
+            frames=np.arange(0, len(self.timelike["time"])),
+            init_func=init,
+            blit=True,
+        )
+        ani.save(savename, fps=fps)
+        plt.show()
