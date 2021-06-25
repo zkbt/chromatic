@@ -89,7 +89,7 @@ class Rainbow(Talker):
                     return self.__dict__[dictionary_name][key]
                 except KeyError:
                     pass
-
+        raise AttributeError()
     # TODO - what should we do with __setattr__?
     #   actually allow to reset things in metadata?
     #   give a warning that you try to set something you shouldn't?
