@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy, pkg_resources, os, glob, warnings
 from tqdm import tqdm
+import copy
 
 # astropy
 from astropy.io import ascii, fits
