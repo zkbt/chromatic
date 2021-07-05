@@ -135,3 +135,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+chromatic/S3_wasp43b_Data_Save.dat
+chromatic/tests/test_Data_Save.dat
