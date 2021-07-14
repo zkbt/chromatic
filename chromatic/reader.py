@@ -67,10 +67,11 @@ def eureadka(filename,metaname):
     meta = loadevent(metaname,load=[])
        
     
-    t = event.mhdr['EXPMID'] #UT time for the midpoint of exposure
-    w = event.wave[:, meta.xwindow[0]:meta.xwindow[1]]
+    t = event.int_times['int_mid_BJD_TDB'] #UT time for the midpoint of exposure
     f = event.optspec[:, meta.xwindow[0]:meta.xwindow[1]]
-    e = event.opterr[:, meta.xwindow[0]:meta.xwindow[1]]
+    e = event.opterr[:, meta.xwindow[0]:meta.xwindow[1]]    
+    w = event.subwave[meta.src_ypos, meta.xwindow[0]:meta.xwindow[1]]
+    #this assumes the wavelength axis is the same for all exposures
     
     timelike = {}
     timelike['time'] = t
