@@ -3,6 +3,7 @@ from ..talker import Talker
 from ..resampling import *
 from .readers import *
 
+
 class Rainbow(Talker):
     """
     Rainbow objects represent the flux of an object as a function of both wavelength and time.
@@ -14,19 +15,23 @@ class Rainbow(Talker):
     waveaxis = 0
     timeaxis = 1
 
-    def __init__(self, filepath=None,
-                       format=None,
-                       wavelength=None,
-                        time=None,
-                        flux=None,
-                        uncertainty=None,
-                        wavelike=None,
-                        timelike=None,
-                        fluxlike=None,
-                        metadata=None, **kw):
-        '''
+    def __init__(
+        self,
+        filepath=None,
+        format=None,
+        wavelength=None,
+        time=None,
+        flux=None,
+        uncertainty=None,
+        wavelike=None,
+        timelike=None,
+        fluxlike=None,
+        metadata=None,
+        **kw,
+    ):
+        """
         Initialize a Rainbow object.
-        '''
+        """
         # metadata are arbitrary types of information we need
         self.metadata = {}
 
@@ -40,21 +45,26 @@ class Rainbow(Talker):
         self.fluxlike = {}
 
         # try to intialize from the exact dictionaries needed
-        if ((type(wavelike) == dict) and
-            (type(timelike) == dict) and
-            (type(fluxlike) == dict)):
-            self._initialize_from_dictionaries(wavelike=wavelike,
-                                               timelike=timelike,
-                                               fluxlike=fluxlike,
-                                               metadata=metadata)
+        if (
+            (type(wavelike) == dict)
+            and (type(timelike) == dict)
+            and (type(fluxlike) == dict)
+        ):
+            self._initialize_from_dictionaries(
+                wavelike=wavelike,
+                timelike=timelike,
+                fluxlike=fluxlike,
+                metadata=metadata,
+            )
         # then try to initialize from arrays
-        elif ((wavelength is not None) and
-              (time is not None) and
-              (flux is not None)):
-            self._initialize_from_arrays(wavelength=wavelength,
-                                         time=time,
-                                         flux=flux,
-                                         uncertainty=uncertainty, **kw)
+        elif (wavelength is not None) and (time is not None) and (flux is not None):
+            self._initialize_from_arrays(
+                wavelength=wavelength,
+                time=time,
+                flux=flux,
+                uncertainty=uncertainty,
+                **kw,
+            )
         # then try to initialize from a file
         elif (type(filepath) == str) or (type(filepath) == list):
             self._initialize_from_file(filepath=filepath, format=format)
@@ -62,8 +72,10 @@ class Rainbow(Talker):
         # finally, tidy up by guessing the wavelength scale
         self._guess_wscale()
 
-    def _initialize_from_dictionaries(self, wavelike={}, timelike={}, fluxlike={}, metadata={}):
-        '''
+    def _initialize_from_dictionaries(
+        self, wavelike={}, timelike={}, fluxlike={}, metadata={}
+    ):
+        """
         Populate from dictionaries in the correct format.
 
         Parameters
@@ -86,7 +98,7 @@ class Rainbow(Talker):
             A dictionary containing all other metadata
             associated with the dataset, generally lots of
             individual parameters or comments.
-        '''
+        """
 
         # update the four core dictionaries
         self.wavelike.update(**wavelike)
@@ -97,9 +109,10 @@ class Rainbow(Talker):
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
 
-
-    def _initialize_from_arrays(self, wavelength=None, time=None, flux=None, uncertainty=None, **kw):
-        '''
+    def _initialize_from_arrays(
+        self, wavelength=None, time=None, flux=None, uncertainty=None, **kw
+    ):
+        """
         Populate from arrays.
 
         Parameters
@@ -112,7 +125,7 @@ class Rainbow(Talker):
             A 2D array of flux values.
         uncertainty : np.array
             A 2D array of uncertainties, associated with the flux.
-        '''
+        """
 
         # store the wavelength
         self.wavelike["wavelength"] = wavelength
@@ -130,7 +143,7 @@ class Rainbow(Talker):
     def _initialize_from_file(self, filepath=None, format=None):
 
         # make sure we're dealing with a real filename
-        assert(filepath is not None)
+        assert filepath is not None
 
         # pick the appropriate reader
         reader = guess_reader(filepath=filepath, format=format)
@@ -139,7 +152,7 @@ class Rainbow(Talker):
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
 
-    def _guess_wscale(self, relative_tolerance = 0.01):
+    def _guess_wscale(self, relative_tolerance=0.01):
         """
         Try to guess the wscale from the wavelengths.
         """
@@ -163,20 +176,20 @@ class Rainbow(Talker):
 
     @property
     def wavelength(self):
-        return self.wavelike.get('wavelength', None)
+        return self.wavelike.get("wavelength", None)
 
     @property
     def time(self):
-        return self.timelike.get('time', None)
+        return self.timelike.get("time", None)
 
     @property
     def flux(self):
-        return self.fluxlike.get('flux', None)
+        return self.fluxlike.get("flux", None)
 
     @property
     def uncertainty(self):
 
-        return self.fluxlike.get('uncertainty', None)
+        return self.fluxlike.get("uncertainty", None)
 
     def __getattr__(self, key):
         """
@@ -251,24 +264,28 @@ class Rainbow(Talker):
         return np.prod(self.shape)
 
     def _validate_core_dictionaries(self):
-        '''
+        """
         Do some simple checks to make sure this Rainbow
         is populated with the minimal data needed to do anything.
         It shouldn't be run before the Rainbow is fully
         initialized; otherwise, it might complain about
         a half-populated object.
-        '''
+        """
 
         # does the flux have the right shape?
         if self.shape != self.flux.shape:
-            message = 'Flux array shape does not match (wavelength, time).'
+            message = "Flux array shape does not match (wavelength, time)."
             if self.shape == self.flux.shape[::-1]:
-                warnings.warn(f'''
+                warnings.warn(
+                    f"""
                 {message}
-                Any chance it's transposed?''')
+                Any chance it's transposed?"""
+                )
             else:
-                warnings.warn(f'''
-                {message}''')
+                warnings.warn(
+                    f"""
+                {message}"""
+                )
 
     def __repr__(self):
         """
@@ -514,9 +531,9 @@ class Rainbow(Talker):
         return result
 
     def normalize(self):
-        '''
+        """
         Normalize by dividing through by the median spectrum.
-        '''
+        """
 
         # TODO, think about more careful treatment of uncertainties + good/bad data
         return self / np.nanmedian(self.flux, axis=self.timeaxis)
@@ -618,12 +635,13 @@ class Rainbow(Talker):
             # self.speak(f" binning '{k}' in time")
             # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
 
-            if k == 'uncertainty':
-                warnings.warn('''
+            if k == "uncertainty":
+                warnings.warn(
+                    """
                 Uncertainties aren't being handled well yet...
-                ''')
+                """
+                )
                 continue
-
 
             for w in range(new.nwave):
                 if self.uncertainty is None:
@@ -719,10 +737,12 @@ class Rainbow(Talker):
         for k in self.fluxlike:
             # self.speak(f" binning '{k}' in wavelength")
             # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
-            if k == 'uncertainty':
-                warnings.warn('''
+            if k == "uncertainty":
+                warnings.warn(
+                    """
                 Uncertainties aren't being handled well yet...
-                ''')
+                """
+                )
                 continue
 
             for t in range(new.ntime):
