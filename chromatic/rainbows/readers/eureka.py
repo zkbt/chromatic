@@ -84,8 +84,8 @@ def eureadka(filename):
     wavelike['wavelength'] = w*u.micron # TODO: check wavelength units
 
     fluxlike = {}
-    fluxlike['flux'] = f#.transpose()
-    fluxlike['error'] = e#.transpose()
+    fluxlike['flux'] = f.transpose()
+    fluxlike['error'] = e.transpose()
 
     return wavelike, timelike, fluxlike
     # TO-DO: add relevant metadata
