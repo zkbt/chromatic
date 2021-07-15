@@ -330,6 +330,13 @@ def bintogrid(
         x_unit = 1
         x_without_unit = x
 
+    try:
+        y_unit = y.unit
+        y_without_unit = y.value
+    except AttributeError:
+        y_unit = 1
+        y_without_unit = y
+
     # make up a grid, if one wasn't specified
     if newx is None:
         dx_without_unit = u.Quantity(dx).to(x_unit).value
@@ -352,7 +359,7 @@ def bintogrid(
                 weights = np.ones_like(x_without_unit)
 
         # calculate weight integrals for the bin array
-        numerator = fluxconservingresample(x_without_unit, y * weights, newx)
+        numerator = fluxconservingresample(x_without_unit, y_without_unit * weights, newx)
         denominator = fluxconservingresample(x_without_unit, weights, newx)
 
         # the binned weighted means on the new grid
@@ -369,9 +376,9 @@ def bintogrid(
 
     # if no uncertainties were given, don't return uncertainties
     if unc is None:
-        return newx[ok] * x_unit, newy[ok]
+        return newx[ok] * x_unit, newy[ok] * y_unit
     else:
-        return newx[ok] * x_unit, newy[ok], newunc[ok]
+        return newx[ok] * x_unit, newy[ok] * y_unit, newunc[ok]
 
 
 def bintoR(
