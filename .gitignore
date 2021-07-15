@@ -1,11 +1,10 @@
 # a few extra things to watch out for
 .DS_Store
-*.ipynb
 *.mp4
 *.png
 *.pdf
 *.dat
-
+sandbox/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

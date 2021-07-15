@@ -1,16 +1,102 @@
 from ..imports import *
 from ..talker import Talker
 from ..resampling import *
-
+from .readers import *
 
 class Rainbow(Talker):
     """
     Rainbow objects represent the flux of an object as a function of both wavelength and time.
     """
 
-    def __init__(self, wavelength=None, time=None, flux=None, uncertainty=None, **kw):
-        """
+    _core_dictionaries = ["fluxlike", "timelike", "wavelike", "metadata"]
+
+    # define which axis is which
+    waveaxis = 0
+    timeaxis = 1
+
+    def __init__(self, filepath=None,
+                       format=None,
+                       wavelength=None,
+                        time=None,
+                        flux=None,
+                        uncertainty=None,
+                        wavelike=None,
+                        timelike=None,
+                        fluxlike=None,
+                        metadata=None, **kw):
+        '''
         Initialize a Rainbow object.
+        '''
+        # metadata are arbitrary types of information we need
+        self.metadata = {}
+
+        # wavelike quanities are 1D arrays with nwave elements
+        self.wavelike = {}
+
+        # timelike quantities are 1D arrays with ntime elements
+        self.timelike = {}
+
+        # fluxlike quantities are 2D arrays with nwave x time elements
+        self.fluxlike = {}
+
+        # try to intialize from the exact dictionaries needed
+        if ((type(wavelike) == dict) and
+            (type(timelike) == dict) and
+            (type(fluxlike) == dict)):
+            self._initialize_from_dictionaries(wavelike=wavelike,
+                                               timelike=timelike,
+                                               fluxlike=fluxlike,
+                                               metadata=metadata)
+        # then try to initialize from arrays
+        elif ((wavelength is not None) and
+              (time is not None) and
+              (flux is not None)):
+            self._initialize_from_arrays(wavelength=wavelength,
+                                         time=time,
+                                         flux=flux,
+                                         uncertainty=uncertainty, **kw)
+        # then try to initialize from a file
+        elif type(filepath) == str:
+            self._initialize_from_file(filepath=filepath, format=format)
+
+        # finally, tidy up by guessing the wavelength scale
+        self._guess_wscale()
+
+    def _initialize_from_dictionaries(self, wavelike={}, timelike={}, fluxlike={}, metadata={}):
+        '''
+        Populate from dictionaries in the correct format.
+
+        Parameters
+        ----------
+        wavelike : dict
+            A dictionary containing 1D arrays with the same
+            shape as the wavelength axis. It must at least
+            contain the key 'wavelength', which should have
+            astropy units of wavelength associated with it.
+        timelike : dict
+            A dictionary containing 1D arrays with the same
+            shape as the time axis. It must at least
+            contain the key 'time', which should have
+            astropy units of time associated with it.
+        fluxlike : dict
+            A dictionary containing 2D arrays with the shape
+            of (nwave, ntime), like flux. It must at least
+            contain the key 'flux'.
+        metadata : dict
+            A dictionary containing all other metadata
+            associated with the dataset, generally lots of
+            individual parameters or comments.
+        '''
+
+        # update the four core dictionaries
+        self.wavelike.update(**wavelike)
+        self.timelike.update(**timelike)
+        self.fluxlike.update(**fluxlike)
+        self.metadata.update(**metadata)
+
+    def _initialize_from_arrays(self, wavelength=None, time=None, flux=None, uncertainty=None, **kw):
+        '''
+        Populate from arrays.
 
         Parameters
         ----------
@@ -22,51 +108,116 @@ class Rainbow(Talker):
             A 2D array of flux values.
         uncertainty : np.array
             A 2D array of uncertainties, associated with the flux.
+        '''
 
-        """
-
-        # wavelike quanities are 1D arrays with nwave elements
-        self.wavelike = {}
+        # store the wavelength
         self.wavelike["wavelength"] = wavelength
 
-        # timelike quantities are 1D arrays with ntime elements
-        self.timelike = {}
+        # store the time
         self.timelike["time"] = time
 
-        # fluxlike quantities are 2D arrays with nwave x time elements
-        self.fluxlike = {}
+        # store the flux and uncertainty
         self.fluxlike["flux"] = flux
         self.fluxlike["uncertainty"] = uncertainty
 
-    @property
-    def _nametag(self):
-        return f'🌈({self.nwave}w, {self.ntime}t)'
+    def _initialize_from_file(self, filepath=None, format=None):
+
+        # make sure we're dealing with a real filename
+        assert(filepath is not None)
+
+        # pick the appropriate reader
+        reader = guess_reader(filepath=filepath, format=format)
+        reader(self, filepath)
+
+    def _guess_wscale(self, relative_tolerance = 0.01):
+        """
+        Try to guess the wscale from the wavelengths.
+        """
+
+        # give up if there's no wavelength array
+        if self.wavelength is None:
+            return "?"
+
+        # calculate difference arrays
+        w = self.wavelength.value
+        dw = np.diff(w)
+        dlogw = np.diff(np.log(w))
+
+        # test the three options
+        if np.allclose(dw, dw[0], rtol=relative_tolerance):
+            self.metadata["wscale"] = "linear"
+        elif np.allclose(dlogw, dlogw[0], rtol=relative_tolerance):
+            self.metadata["wscale"] = "log"
+        else:
+            self.metadata["wscale"] = "?"
+
     @property
     def wavelength(self):
-        return self.wavelike["wavelength"]
-
-    # @wavelength.setter
-    # def wavelength(self, value):
-    #    self.wavelike['wavelength'] = value
+        return self.wavelike.get('wavelength', None)
 
     @property
     def time(self):
-        return self.timelike["time"]
+        return self.timelike.get('time', None)
 
     @property
     def flux(self):
-        return self.fluxlike["flux"]
+        return self.fluxlike.get('flux', None)
 
     @property
     def uncertainty(self):
-        return self.fluxlike["uncertainty"]
+
+        return self.fluxlike.get('uncertainty', None)
+
+    def __getattr__(self, key):
+        """
+        If an attribute/method isn't explicitly defined,
+        try to pull it from one of the core dictionaries.
+
+        Let's say you want to get the 2D uncertainty array
+        but don't want to type `self.fluxlike['uncertainty']`.
+        You could instead type `self.uncertainty`, and this
+        would try to search through the four standard
+        dictionaries to pull out the first `uncertainty`
+        it finds.
+
+        Parameters
+        ----------
+        key : str
+            The attribute we're trying to get.
+        """
+        if key not in self._core_dictionaries:
+            for dictionary_name in self._core_dictionaries:
+                try:
+                    return self.__dict__[dictionary_name][key]
+                except KeyError:
+                    pass
+        raise AttributeError()
+
+    # TODO - what should we do with __setattr__?
+    #   actually allow to reset things in metadata?
+    #   give a warning that you try to set something you shouldn't?
+    #   if things have the right size, just organize them
+
+    @property
+    def _nametag(self):
+        """
+        This short phrase will preface everything
+        said with `self.speak()`.
+        """
+        return f"🌈({self.nwave}w, {self.ntime}t)"
 
     @property
     def shape(self):
+        """
+        The shape of the flux array (nwave, ntime)
+        """
         return (self.nwave, self.ntime)
 
     @property
     def nwave(self):
+        """
+        The number of wavelengths
+        """
         if self.wavelength is None:
             return 0
         else:
@@ -74,6 +225,9 @@ class Rainbow(Talker):
 
     @property
     def ntime(self):
+        """
+        The number of times
+        """
         if self.time is None:
             return 0
         else:
@@ -81,11 +235,261 @@ class Rainbow(Talker):
 
     @property
     def nflux(self):
+        """
+        The number of fluxes
+        """
         return np.prod(self.shape)
 
     def __repr__(self):
-        n = self.__class__.__name__
-        return f"<{n} ({self.nwave}w, {self.ntime}t)>"
+        """
+        How should this object be represented as a string?
+        """
+        n = self.__class__.__name__.replace("Rainbow", "🌈")
+        return f"<{n}({self.nwave}w, {self.ntime}t)>"
+
+    def __add__(self, object):
+        """
+        Add the flux of a rainbow and an input array (or another rainbow)
+        and output in a new rainbow object.
+        Currently only supports flux addition.
+
+        Parameters
+        ----------
+        object : Array or float.
+            Multiple options:
+            1) float
+            2) 1D array with same length as wavelength axis
+            3) 1D array with same length as time axis
+            4) 2D array with same shape as rainbow flux
+            5) Rainbow object with same dimensions as self.
+
+        Returns
+        ----------
+        rainbow : Rainbow() with the same parameters as self but with added
+        flux.
+        """
+
+        # Create new Rainbow() to store results in.
+        result = copy.deepcopy(self)
+
+        try:  # Object is rainbow
+            if np.array_equal(
+                self.wavelike["wavelength"], object.wavelike["wavelength"]
+            ) and np.array_equal(self.timelike["time"], object.timelike["time"]):
+                result.fluxlike["flux"] += object.fluxlike["flux"]
+            else:
+                print("Objects do not share wavelength/time axes")
+                return
+
+        except AttributeError:  # Object is not rainbow
+
+            if type(object) == float or type(object) == int:  # Float or integer.
+                result.fluxlike["flux"] += object
+
+            elif self.shape == object.shape:  # fluxlike
+                result.fluxlike["flux"] += object
+
+            elif len(object) == len(
+                self.wavelike["wavelength"]
+            ):  # Add along wavelength axis
+
+                result.fluxlike["flux"] += np.transpose([object] * self.shape[1])
+                if self.nwave == self.ntime:
+                    raise RuntimeError(
+                        f"{self} has same number of wavelengths and times; we can't tell which is which."
+                    )
+
+            elif len(object) == len(self.timelike["time"]):  # Add along time axis.
+                result.fluxlike["flux"] += np.tile(object, (self.shape[0], 1))
+
+            else:
+                print("Invalid shape in addition: " + str(object.shape))
+                return
+        return result
+
+    def __sub__(self, object):
+        """
+        Subtract the flux of a rainbow from an input array (or another rainbow)
+        and output in a new rainbow object.
+        Currently only supports flux subtraction.
+
+        Parameters
+        ----------
+        object : Array or float.
+            Multiple options:
+            1) float
+            2) 1D array with same length as wavelength axis
+            3) 1D array with same length as time axis
+            4) 2D array with same shape as rainbow flux
+            5) Rainbow object with same dimensions as self.
+
+        Returns
+        ----------
+        rainbow : Rainbow() with the same parameters as self but with subtracted
+        flux.
+        """
+
+        # Create new Rainbow() to store results in.
+        result = copy.deepcopy(self)
+
+        try:  # Object is rainbow.
+            if np.array_equal(
+                self.wavelike["wavelength"], object.wavelike["wavelength"]
+            ) and np.array_equal(self.timelike["time"], object.timelike["time"]):
+                result.fluxlike["flux"] -= object.fluxlike["flux"]
+            else:
+                print("Objects do not share wavelength/time axes")
+                return
+
+        except AttributeError:
+
+            if type(object) == float or type(object) == int:  # Float or integer.
+                result.fluxlike["flux"] -= object
+
+            elif self.shape == object.shape:  # fluxlike
+                result.fluxlike["flux"] -= object
+
+            elif len(object) == len(
+                self.wavelike["wavelength"]
+            ):  # Add along wavelength axis
+                result.fluxlike["flux"] -= np.transpose([object] * self.shape[1])
+                if self.nwave == self.ntime:
+                    raise RuntimeError(
+                        f"{self} has same number of wavelengths and times; we can't tell which is which."
+                    )
+
+            elif len(object) == len(self.timelike["time"]):  # Add along time axis.
+                result.fluxlike["flux"] -= np.tile(object, (self.shape[0], 1))
+
+            else:
+                print("Invalid shape in subtraction: " + str(object.shape))
+                return
+        return result
+
+    def __mul__(self, object):
+        """
+        Multiply the flux of a rainbow and an input array (or another rainbow)
+        and output in a new rainbow object.
+        Currently only supports flux multiplication.
+
+        Parameters
+        ----------
+        object : Array or float.
+            Multiple options:
+            1) float
+            2) 1D array with same length as wavelength axis
+            3) 1D array with same length as time axis
+            4) 2D array with same shape as rainbow flux
+            5) Rainbow object with same dimensions as self.
+
+        Returns
+        ----------
+        rainbow : Rainbow() with the same parameters as self but with multiplied
+        flux.
+        """
+
+        # Create new Rainbow() to store results in.
+        result = copy.deepcopy(self)
+
+        try:  # Object is rainbow
+            if np.array_equal(
+                self.wavelike["wavelength"], object.wavelike["wavelength"]
+            ) and np.array_equal(self.timelike["time"], object.timelike["time"]):
+                result.fluxlike["flux"] *= object.fluxlike["flux"]
+            else:
+                print("Objects do not share wavelength/time axes")
+                return
+
+        except AttributeError:
+
+            if type(object) == float or type(object) == int:  # Float or integer.
+                result.fluxlike["flux"] *= object
+
+            elif self.shape == object.shape:  # fluxlike
+                result.fluxlike["flux"] *= object
+
+            elif len(object) == len(
+                self.wavelike["wavelength"]
+            ):  # Add along wavelength axis
+                result.fluxlike["flux"] *= np.transpose([object] * self.shape[1])
+                if self.nwave == self.ntime:
+                    raise RuntimeError(
+                        f"{self} has same number of wavelengths and times; we can't tell which is which."
+                    )
+
+            elif len(object) == len(self.timelike["time"]):  # Add along time axis.
+                result.fluxlike["flux"] *= np.tile(object, (self.shape[0], 1))
+
+            else:
+                print("Invalid shape in multiplication: " + str(object.shape))
+                return
+        return result
+
+    def __truediv__(self, object):
+        """
+        Divide the flux of a rainbow and an input array (or another rainbow)
+        and output in a new rainbow object.
+        Currently only supports flux division.
+
+        Parameters
+        ----------
+        object : Array or float.
+            Multiple options:
+            1) float
+            2) 1D array with same length as wavelength axis
+            3) 1D array with same length as time axis
+            4) 2D array with same shape as rainbow flux
+            5) Rainbow object with same dimensions as self.
+
+        Returns
+        ----------
+        rainbow : Rainbow() with the same parameters as self but with divided
+        flux.
+        """
+
+        # Create new Rainbow() to store results in.
+        result = copy.deepcopy(self)
+
+        try:  # Object is another rainbow.
+            if np.array_equal(
+                self.wavelike["wavelength"], object.wavelike["wavelength"]
+            ) and np.array_equal(self.timelike["time"], object.timelike["time"]):
+                result.fluxlike["flux"] /= object.fluxlike["flux"]
+            else:
+                print("Objects do not share wavelength/time axes")
+                return
+
+        except AttributeError:
+
+            if type(object) == float or type(object) == int:  # float
+                result.fluxlike["flux"] /= object
+
+            elif self.shape == object.shape:  # fluxlike array
+                result.fluxlike["flux"] /= object
+
+            elif len(object) == len(
+                self.wavelike["wavelength"]
+            ):  # Add along wavelength axis
+                result.fluxlike["flux"] /= np.transpose([object] * self.shape[1])
+                if self.nwave == self.ntime:
+                    raise RuntimeError(
+                        f"{self} has same number of wavelengths and times; we can't tell which is which."
+                    )
+            elif len(object) == len(self.timelike["time"]):  # Add along time axis.
+                result.fluxlike["flux"] /= np.tile(object, (self.shape[0], 1))
+
+            else:
+                print("Invalid shape in division: " + str(object.shape))
+                return
+        return result
+
+    def normalize(self):
+        '''
+        Normalize by dividing through by the median spectrum.
+        '''
+
+        # TODO, think about more careful treatment of uncertainties + good/bad data
+        return self / np.nanmedian(self.flux, axis=self.timeaxis)
 
     def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
         """
@@ -117,6 +521,8 @@ class Rainbow(Talker):
             An array of wavelengths, if you just want to give
             it an entirely custom array.
         """
+
+        # self.speak(f'binning')
 
         # bin first in time
         binned_in_time = self.bin_in_time(dt=dt, time=time)
@@ -153,25 +559,23 @@ class Rainbow(Talker):
         binkw = dict(weighting="inversevariance", drop_nans=False)
         if time is not None:
             binkw["newx"] = time
-            self.speak(f'binning to time={time}')
+            # self.speak(f'binning to time={time}')
         elif dt is not None:
             binkw["dx"] = dt
-            self.speak(f'binning to dt={dt}')
+            # self.speak(f'binning to dt={dt}')
 
         # create a new, empty Rainbow
         new = Rainbow()
 
         # populate the wavelength information
         new.wavelike = {**self.wavelike}
-        new.wscale = self.wscale
+        new.metadata["wscale"] = self.wscale
 
         # bin the time-like variables
         # TODO (add more careful treatment of uncertainty + DQ)
         new.timelike = {}
         for k in self.timelike:
-            bt, bv = bintogrid(
-                x=self.time, y=self.timelike[k], unc=None, **binkw
-            )
+            bt, bv = bintogrid(x=self.time, y=self.timelike[k], unc=None, **binkw)
             new.timelike[k] = bv
         new.timelike[k] = bt
 
@@ -180,8 +584,14 @@ class Rainbow(Talker):
         # TODO (think about cleverer bintogrid for 2D arrays)
         new.fluxlike = {}
         for k in self.fluxlike:
-            self.speak(f" binning '{k}' in time")
-            self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+            # self.speak(f" binning '{k}' in time")
+            # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+
+            if k == 'uncertainty':
+                warnings.warn("Uncertainties aren't being handled well yet...")
+                continue
+
+
             for w in range(new.nwave):
                 if self.uncertainty is None:
                     bt, bv = bintogrid(
@@ -190,20 +600,22 @@ class Rainbow(Talker):
                     bu = None
                 else:
                     bt, bv, bu = bintogrid(
-                        x=self.time, y=self.fluxlike[k][w, :], unc=self.uncertainty[w, :], **binkw
+                        x=self.time,
+                        y=self.fluxlike[k][w, :],
+                        unc=self.uncertainty[w, :],
+                        **binkw,
                     )
-
 
                 if k not in new.fluxlike:
                     new_shape = (new.nwave, new.ntime)
                     new.fluxlike[k] = np.zeros(new_shape)
                     # TODO make this more robust to units
 
-                if k == 'uncertainty':
+                if k == "uncertainty":
                     new.fluxlike[k][w, :] = bu
                 else:
                     new.fluxlike[k][w, :] = bv
-            self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
+            # self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
         return new
 
     def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
@@ -237,18 +649,18 @@ class Rainbow(Talker):
         if wavelength is not None:
             binning_function = bintogrid
             binkw["newx"] = wavelength
-            wscale = '?'
-            self.speak(f'binning to wavelength={wavelength}')
+            wscale = "?"
+            # self.speak(f'binning to wavelength={wavelength}')
         elif dw is not None:
             binning_function = bintogrid
             binkw["dx"] = dw
-            wscale = 'linear'
-            self.speak(f'binning to dw={dw}')
+            wscale = "linear"
+            # self.speak(f'binning to dw={dw}')
         elif R is not None:
             binning_function = bintoR
             binkw["R"] = R
-            wscale = 'log'
-            self.speak(f'binning to R={R}')
+            wscale = "log"
+            # self.speak(f'binning to R={R}')
 
         # create a new, empty Rainbow
         new = Rainbow()
@@ -271,8 +683,12 @@ class Rainbow(Talker):
         # TODO (think about cleverer bintogrid for 2D arrays)
         new.fluxlike = {}
         for k in self.fluxlike:
-            self.speak(f" binning '{k}' in wavelength")
-            self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+            # self.speak(f" binning '{k}' in wavelength")
+            # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+            if k == 'uncertainty':
+                warnings.warn("Uncertainties aren't being handled well yet...")
+                continue
+
             for t in range(new.ntime):
                 if self.uncertainty is None:
                     bt, bv = binning_function(
@@ -281,26 +697,29 @@ class Rainbow(Talker):
                     bu = None
                 else:
                     bt, bv, bu = binning_function(
-                        x=self.wavelength, y=self.fluxlike[k][:, t], unc=self.uncertainty[:, t], **binkw
+                        x=self.wavelength,
+                        y=self.fluxlike[k][:, t],
+                        unc=self.uncertainty[:, t],
+                        **binkw,
                     )
-
 
                 if k not in new.fluxlike:
                     new_shape = (new.nwave, new.ntime)
                     new.fluxlike[k] = np.zeros(new_shape)
                     # TODO make this more robust to units
 
-                if k == 'uncertainty':
+                if k == "uncertainty":
                     new.fluxlike[k][:, t] = bu
                 else:
                     new.fluxlike[k][:, t] = bv
-            self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
-        new.wscale = wscale
+            # self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
+        new.metadata["wscale"] = wscale
         return new
 
     def imshow(
         self,
         ax=None,
+        quantity="flux",
         w_unit="micron",
         t_unit="hour",
         aspect="auto",
@@ -308,7 +727,7 @@ class Rainbow(Talker):
         origin="upper",
         **kw,
     ):
-        '''
+        """
         imshow flux as a function of time (x = time, y = wavelength, color = flux).
 
         Parameters
@@ -320,9 +739,9 @@ class Rainbow(Talker):
         t_unit : str, astropy.unit.Unit
             The unit for plotting times.
 
-        '''
+        """
 
-        self.speak(f'imshowing {self}')
+        # self.speak(f'imshowing')
         if ax is None:
             ax = plt.gca()
 
@@ -332,22 +751,28 @@ class Rainbow(Talker):
             extent = [
                 (min(self.time) / t_unit).decompose(),
                 (max(self.time) / t_unit).decompose(),
-                (min(self.wavelength) / w_unit).decompose(),
                 (max(self.wavelength) / w_unit).decompose(),
+                (min(self.wavelength) / w_unit).decompose(),
             ]
         elif self.wscale == "log":
             extent = [
                 (min(self.time) / t_unit).decompose(),
                 (max(self.time) / t_unit).decompose(),
-                np.log10(min(self.wavelength) / w_unit),
                 np.log10(max(self.wavelength) / w_unit),
+                np.log10(min(self.wavelength) / w_unit),
             ]
         else:
             raise RuntimeError("Can't imshow without knowing wscale.")
 
         with quantity_support():
             plt.sca(ax)
-            plt.imshow(self.flux, extent=extent, aspect=aspect, origin=origin, **kw)
+            plt.imshow(
+                self.fluxlike[quantity],
+                extent=extent,
+                aspect=aspect,
+                origin=origin,
+                **kw,
+            )
             if self.wscale == "linear":
                 plt.ylabel(f"Wavelength ({w_unit.to_string('latex_inline')})")
             elif self.wscale == "log":
@@ -358,3 +783,24 @@ class Rainbow(Talker):
             if colorbar:
                 plt.colorbar(ax=ax)
         return ax
+
+    def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
+        """
+        Plot
+
+        Returns
+        -------
+        None.
+
+        """
+        from chromatic import viz
+
+        viz.wavelength_plot(
+            self.flux,
+            self.time,
+            self.wavelength,
+            step_size=spacing,
+            ax=ax,
+            plotkw={},
+            fontkw={},
+        )

@@ -85,21 +85,24 @@ setup(
         "matplotlib>=3.0",
         "astropy>=4.0",
         "tqdm",
+        "batman-package",
     ],
     # what version of Python is required?
     python_requires=">=3.6",  # f-strings are introduced in 3.6!
     # requirements in `key` will install with `pip install exoplanet-chromatic[key]`
-    extras_require={"develop":[
-                    "pytest",
-                    "black",
-                    "jupyter",
-                    "mkdocs",
-                    "mkdocs-material",
-                    "mkdocstrings",
-                    "pytkdocs[numpy-style]",
-                    "mkdocs-jupyter"],
-                    "cartoons":
-                    ["rainbow-connection>=0.0.7"]},
+    extras_require={
+        "develop": [
+            "pytest",
+            "black",
+            "jupyter",
+            "mkdocs",
+            "mkdocs-material",
+            "mkdocstrings",
+            "pytkdocs[numpy-style]",
+            "mkdocs-jupyter",
+        ],
+        "cartoons": ["rainbow-connection>=0.0.7"],
+    },
     # (I think just leave this set to False)
     zip_safe=False,
     # under what license is this code released?
