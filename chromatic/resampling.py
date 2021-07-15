@@ -359,15 +359,20 @@ def bintogrid(
                 weights = np.ones_like(x_without_unit)
 
         # calculate weight integrals for the bin array
-        numerator = fluxconservingresample(x_without_unit, y_without_unit * weights, newx)
-        denominator = fluxconservingresample(x_without_unit, weights, newx)
+        ok = np.isnan(y_without_unit) == False
+        if np.any(ok):
+            # TO-DO: check this nan handling on input arrays is OK?
+            numerator = fluxconservingresample(x_without_unit[ok], (y_without_unit * weights)[ok], newx)
+            denominator = fluxconservingresample(x_without_unit[ok], (weights)[ok], newx)
 
-        # the binned weighted means on the new grid
-        newy = numerator / denominator
+            # the binned weighted means on the new grid
+            newy = numerator / denominator
 
-        # the standard error on the means, for those bins
-        newunc = np.sqrt(1 / denominator)
-
+            # the standard error on the means, for those bins
+            newunc = np.sqrt(1 / denominator)
+        else:
+            newy = np.nan*newx
+            newunc = np.nan*newx
     # remove any empty bins
     if drop_nans:
         ok = np.isfinite(newy)
@@ -378,8 +383,8 @@ def bintogrid(
     if unc is None:
         return newx[ok] * x_unit, newy[ok] * y_unit
     else:
-        return newx[ok] * x_unit, newy[ok] * y_unit, newunc[ok]
-
+        return newx[ok] * x_unit, newy[ok] * y_unit, newunc[ok] * y_unit
+        # TODO: check units on uncertainties
 
 def bintoR(
     x, y, unc=None, R=50, xlim=None, weighting="inversevariance", drop_nans=True

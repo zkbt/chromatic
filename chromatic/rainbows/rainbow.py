@@ -56,7 +56,7 @@ class Rainbow(Talker):
                                          flux=flux,
                                          uncertainty=uncertainty, **kw)
         # then try to initialize from a file
-        elif type(filepath) == str:
+        elif (type(filepath) == str) or (type(filepath) == list):
             self._initialize_from_file(filepath=filepath, format=format)
 
         # finally, tidy up by guessing the wavelength scale
@@ -587,6 +587,7 @@ class Rainbow(Talker):
 
         # set up binning parameters
         binkw = dict(weighting="inversevariance", drop_nans=False)
+        # TODO: make sure drop_nans doesn't skip rows or columns unexpectedly
         if time is not None:
             binkw["newx"] = time
             # self.speak(f'binning to time={time}')
@@ -648,6 +649,7 @@ class Rainbow(Talker):
                 else:
                     new.fluxlike[k][w, :] = bv
             # self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
+        new._validate_core_dictionaries()
         return new
 
     def bin_in_wavelength(self, R=None, dw=None, wavelength=None):

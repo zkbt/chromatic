@@ -1,8 +1,6 @@
 from .stsci import *
 from .eureka import *
 
-readers = ['from_x1dints', 'from_eureka']
-
 def guess_reader(filepath, format=None):
     '''
     A wrapper to guess the appropriate from the filename
@@ -21,7 +19,7 @@ def guess_reader(filepath, format=None):
     import fnmatch, glob
 
     # get all the possible filenames (= expand wildcard)
-    filenames = glob.glob(filepath)
+    filenames = expand_filenames(filepath)
 
     # test a few different things to find the best reader
     if format is not None:
