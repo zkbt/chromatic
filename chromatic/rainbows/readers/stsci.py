@@ -4,7 +4,8 @@ __all__ = ['from_x1dints']
 
 def from_x1dints(rainbow, filepath):
     '''
-    Populate a Rainbow from an STScI pipeline x1dints file.
+    Populate a Rainbow from an STScI pipeline x1dints file,
+    or a group of x1dints files for multiple segments.
 
     Parameters
     ----------
@@ -82,9 +83,15 @@ def from_x1dints(rainbow, filepath):
             # increment the running integration total
             i_time += 1
 
+    if i_time != rainbow.ntime:
+        warnings.warn(f'''
+        The x1dints header(s) indicate there should be {rainbow.ntime} integrations,
+        but only {i_time} columns of the flux array were populated. Are you
+        perhaps missing some segment files?
+        ''')
     # try to guess wscale (and then kludge and call it linear)
-    rainbow._guess_wscale()
-    rainbow.metadata['wscale'] = 'linear' # TODO: fix this kludge
+    #rainbow._guess_wscale()
+    #rainbow.metadata['wscale'] = 'linear' # TODO: fix this kludge
 
     # remove units
     rainbow.fluxlike['flux'] /= u.Jy # TODO: fix and/or test this kludge

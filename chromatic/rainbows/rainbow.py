@@ -94,6 +94,10 @@ class Rainbow(Talker):
         self.fluxlike.update(**fluxlike)
         self.metadata.update(**metadata)
 
+        # validate that something reasonable got populated
+        self._validate_core_dictionaries()
+
+
     def _initialize_from_arrays(self, wavelength=None, time=None, flux=None, uncertainty=None, **kw):
         '''
         Populate from arrays.
@@ -120,6 +124,9 @@ class Rainbow(Talker):
         self.fluxlike["flux"] = flux
         self.fluxlike["uncertainty"] = uncertainty
 
+        # validate that something reasonable got populated
+        self._validate_core_dictionaries()
+
     def _initialize_from_file(self, filepath=None, format=None):
 
         # make sure we're dealing with a real filename
@@ -128,6 +135,9 @@ class Rainbow(Talker):
         # pick the appropriate reader
         reader = guess_reader(filepath=filepath, format=format)
         reader(self, filepath)
+
+        # validate that something reasonable got populated
+        self._validate_core_dictionaries()
 
     def _guess_wscale(self, relative_tolerance = 0.01):
         """
@@ -239,6 +249,26 @@ class Rainbow(Talker):
         The number of fluxes
         """
         return np.prod(self.shape)
+
+    def _validate_core_dictionaries(self):
+        '''
+        Do some simple checks to make sure this Rainbow
+        is populated with the minimal data needed to do anything.
+        It shouldn't be run before the Rainbow is fully
+        initialized; otherwise, it might complain about
+        a half-populated object.
+        '''
+
+        # does the flux have the right shape?
+        if self.shape != self.flux.shape:
+            message = 'Flux array shape does not match (wavelength, time).'
+            if self.shape == self.flux.shape[::-1]:
+                warnings.warn(f'''
+                {message}
+                Any chance it's transposed?''')
+            else:
+                warnings.warn(f'''
+                {message}''')
 
     def __repr__(self):
         """
@@ -588,7 +618,9 @@ class Rainbow(Talker):
             # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
 
             if k == 'uncertainty':
-                warnings.warn("Uncertainties aren't being handled well yet...")
+                warnings.warn('''
+                Uncertainties aren't being handled well yet...
+                ''')
                 continue
 
 
@@ -686,7 +718,9 @@ class Rainbow(Talker):
             # self.speak(f" binning '{k}' in wavelength")
             # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
             if k == 'uncertainty':
-                warnings.warn("Uncertainties aren't being handled well yet...")
+                warnings.warn('''
+                Uncertainties aren't being handled well yet...
+                ''')
                 continue
 
             for t in range(new.ntime):

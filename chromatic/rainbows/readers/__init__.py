@@ -28,5 +28,5 @@ def guess_reader(filepath, format=None):
         return locals()[f'from_{format}']
     elif fnmatch.fnmatch(filenames[0], '*x1dints.fits'):
         return from_x1dints
-    elif fnmatch.fnmatch(filenames[0], '*S3_*_Save.dat'):
+    elif fnmatch.fnmatch(filenames[0], '*S3_*_Save.dat') or fnmatch.fnmatch(filenames[0], '*S3_*_Save.h5'):
         return from_eureka
