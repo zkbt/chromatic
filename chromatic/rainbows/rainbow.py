@@ -1,7 +1,7 @@
 from ..imports import *
 from ..talker import Talker
 from ..resampling import *
-
+from .readers import *
 
 class Rainbow(Talker):
     """
@@ -9,6 +9,10 @@ class Rainbow(Talker):
     """
 
     _core_dictionaries = ["fluxlike", "timelike", "wavelike", "metadata"]
+
+    # define which axis is which
+    waveaxis = 0
+    timeaxis = 1
 
     def __init__(self, wavelength=None, time=None, flux=None, uncertainty=None, **kw):
         """
@@ -65,6 +69,23 @@ class Rainbow(Talker):
             self.metadata["wscale"] = "log"
         else:
             self.metadata["wscale"] = "?"
+
+    @property
+    def wavelength(self):
+        return self.wavelike['wavelength']
+
+    @property
+    def time(self):
+        return self.timelike['time']
+
+    @property
+    def flux(self):
+        return self.fluxlike['flux']
+
+    @property
+    def uncertainty(self):
+
+        return self.fluxlike.get('uncertainty', None)
 
     def __getattr__(self, key):
         """
@@ -381,6 +402,14 @@ class Rainbow(Talker):
                 return
         return result
 
+    def normalize(self):
+        '''
+        Normalize by dividing through by the median spectrum.
+        '''
+
+        # TODO, think about more careful treatment of uncertainties + good/bad data
+        return self / np.nanmedian(self.flux, axis=self.timeaxis)
+
     def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
         """
         Bin the rainbow in wavelength and/or time.
@@ -476,6 +505,12 @@ class Rainbow(Talker):
         for k in self.fluxlike:
             # self.speak(f" binning '{k}' in time")
             # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+
+            if k == 'uncertainty':
+                warnings.warn("Uncertainties aren't being handled well yet...")
+                continue
+
+
             for w in range(new.nwave):
                 if self.uncertainty is None:
                     bt, bv = bintogrid(
@@ -569,6 +604,10 @@ class Rainbow(Talker):
         for k in self.fluxlike:
             # self.speak(f" binning '{k}' in wavelength")
             # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
+            if k == 'uncertainty':
+                warnings.warn("Uncertainties aren't being handled well yet...")
+                continue
+
             for t in range(new.ntime):
                 if self.uncertainty is None:
                     bt, bv = binning_function(
@@ -684,3 +723,6 @@ class Rainbow(Talker):
             plotkw={},
             fontkw={},
         )
+
+Rainbow.from_eureka = from_eureka
+Rainbow.from_x1dints = from_x1dints
