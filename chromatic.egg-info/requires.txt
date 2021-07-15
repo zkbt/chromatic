@@ -3,7 +3,7 @@ scipy
 matplotlib>=3.0
 astropy>=4.0
 tqdm
-copy
+batman-package
 
 [cartoons]
 rainbow-connection>=0.0.7

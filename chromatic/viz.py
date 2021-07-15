@@ -60,7 +60,7 @@ def wavelength_plot(
         if np.any(np.isfinite(lc)):
             # normalize this light curve to one.
             cont_level = np.nanmedian(lc[cont_time == 1])
-            plot_flux = -i * step_size + lc #/ cont_level
+            plot_flux = -i * step_size + lc  # / cont_level
 
             color = (0, 0.3 - 0.3 * (i / nsteps), i / nsteps)
             assert (np.isfinite(plot_flux) == True).all()
