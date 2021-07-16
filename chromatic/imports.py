@@ -1,6 +1,7 @@
 # basics
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import copy, pkg_resources, os, glob, warnings
 from tqdm import tqdm
 import copy
