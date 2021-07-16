@@ -685,108 +685,229 @@ class Rainbow(Talker):
             fontkw={},
         )
 
-    def animate_lightcurve(self, savename, fps=5, figsize=(10, 6), **kw):
-
+    def _setup_animated_plot(self, ax=None, figsize=None, plotkw={}, textkw={}):
         """
-        Create an animation that shows how the lightcurve of the data change
-        with wavelength.
+        Wrapper to set up the basics of animate-able plot.
+
+        This works for any general plot that has a single-color
+        line or set of points (using `plt.plot`), with a text
+        label in the upper right corner.
 
         Parameters
         ----------
-        savename : Name of file you'd like to save results in.  Currently
-            supports .gif files.
-        fps : frames/second of animation
-        figsize : size of figure
-
+        ax : matplotlib.axes.Axes
+            The axes into which the plot should be drawn.
+            If None, a new one will be created.
+        figsize : tuple
+            (width, height) of the figure, if one needs
+            to be created (= if ax isn't specified)
+        plotkw : dict
+            A dictionary of keywords to be passed to `plt.plot`
+        textkw : dict
+            A dictionary of keywords to be passed to `plt.text`
         """
 
-        fig, ax = plt.subplots(figsize=figsize)
-        ln, = plt.plot([], [], **kw)
+        # make sure the ax and figure are defined
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig = ax.get_figure()
 
-        def init():
-            ax.set_xlim(
-                np.min(self.timelike["time"].value), np.max(self.timelike["time"].value)
+        default_plotkw = dict()
+        plot = plt.plot([], [], **default_plotkw, **plotkw)[0]
+
+        default_textkw = dict(
+            x=0.98, y=0.96, s="", ha="right", va="top", transform=ax.transAxes
+        )
+        text = plt.text(**default_textkw, **textkw)
+
+        # return a dictionary with things that will be useful to hang onto
+        return dict(fig=fig, ax=ax, plot=plot, text=text)
+
+    def animate_lightcurves(
+        self,
+        filename="animated-lightcurves.gif",
+        fps=5,
+        figsize=None,
+        xlim=[None, None],
+        ylim=[None, None],
+        plotkw={},
+        textkw={},
+    ):
+        """
+        Create an animation that shows how the lightcurve changes
+        as we flip through every wavelength.
+
+        Parameters
+        ----------
+        filename : str
+            Name of file you'd like to save results in.
+            Currently supports only .gif files.
+        fps : float
+            frames/second of animation
+        figsize : tuple
+            (width, height) of the figure
+        xlim : tuple
+            Custom xlimits for the plot
+        ylim : tuple
+            Custom ylimits for the plot
+        plotkw : dict
+            A dictionary of keywords to be passed to `plt.plot`
+        textkw : dict
+            A dictionary of keywords to be passed to `plt.text`
+        """
+
+        with quantity_support():
+
+            # keep track of the things needed for the animation
+            self._animate_lightcurves_components = self._setup_animated_plot(
+                figsize=figsize, plotkw=plotkw, textkw=textkw
             )
+
+            ax = self._animate_lightcurves_components["ax"]
+
+            # set the plot limits
+            ax.set_xlim(xlim[0] or np.min(self.time), xlim[1] or np.max(self.time))
             ax.set_ylim(
-                0.995 * np.min(self.fluxlike["flux"]),
-                1.005 * np.max(self.fluxlike["flux"]),
+                ylim[0] or 0.995 * np.min(self.flux),
+                ylim[1] or 1.005 * np.max(self.flux),
             )
-            ax.set_xlabel("Time ({})".format(self.timelike["time"].unit), fontsize=14)
-            ax.set_ylabel("Relative Flux", fontsize=14)
-            return (ln,)
+            # set the axis labels
+            ax.set_xlabel(f"Time ({self.time.unit.to_string('latex_inline')})")
+            ax.set_ylabel(f"Relative Flux")
 
-        def update(frame):
-            x = self.timelike["time"].value
-            y = self.fluxlike["flux"][frame]
-            ax.set_title(
-                "Wavelength: {wl:0.2f} ".format(
-                    wl=self.wavelike["wavelength"].value[frame]
+            def update(frame):
+                """
+                This function will be called to update each frame
+                of the animation.
+
+                Parameters
+                ----------
+                frame : int
+                    An integer that will advance with each frame.
+                """
+
+                # pull out the x and y values to plot
+                x = self.time
+                y = self.flux[frame]
+
+                # update the label in the corner
+                self._animate_lightcurves_components["text"].set_text(
+                    f"w = {self.wavelength[frame].value:0.2f} {self.wavelength.unit.to_string('latex')}"
                 )
-                + str(self.wavelike["wavelength"].unit),
-                fontsize=14,
+
+                # update the plot data
+                self._animate_lightcurves_components["plot"].set_data(x, y)
+
+                return (
+                    self._animate_lightcurves_components["text"],
+                    self._animate_lightcurves_components["plot"],
+                )
+
+            # hold onto this update function in case we need it elsewhere
+            self._animate_lightcurves_components["update"] = update
+
+            # make and save the animation
+            ani = matplotlib.animation.FuncAnimation(
+                self._animate_lightcurves_components["fig"],
+                update,
+                frames=np.arange(0, self.nwave),
+                blit=True,
             )
-            ln.set_data(x, y)
-            return (ln,)
+            ani.save(filename, fps=fps)
 
-        ani = matplotlib.animation.FuncAnimation(
-            fig,
-            update,
-            frames=np.arange(0, len(self.wavelike["wavelength"])),
-            init_func=init,
-            blit=True,
-        )
-        ani.save(savename, fps=fps)
-        # plt.show()
-
-    def animate_spectra(self, savename, fps=5, figsize=(10, 6), **kw):
+    def animate_spectra(
+        self,
+        filename="animated-spectra.gif",
+        fps=5,
+        figsize=None,
+        xlim=[None, None],
+        ylim=[None, None],
+        plotkw={},
+        textkw={},
+    ):
         """
-        Create an animation that shows how the wavelength vs flux of the
-        observations change with time.
+        Create an animation that shows how the lightcurve changes
+        as we flip through every wavelength.
 
         Parameters
         ----------
-        savename : Name of file you'd like to save results in.  Currently
-            supports .gif files.
-        fps : frames/second of animation
-        figsize : size of figure
-
+        filename : str
+            Name of file you'd like to save results in.
+            Currently supports only .gif files.
+        fps : float
+            frames/second of animation
+        figsize : tuple
+            (width, height) of the figure
+        xlim : tuple
+            Custom xlimits for the plot
+        ylim : tuple
+            Custom ylimits for the plot
+        plotkw : dict
+            A dictionary of keywords to be passed to `plt.plot`
+        textkw : dict
+            A dictionary of keywords to be passed to `plt.text`
         """
-        fig, ax = plt.subplots(figsize=figsize)
-        xdata, ydata = [], []
-        ln, = plt.plot([], [], **kw)
 
-        def init():
+        with quantity_support():
+
+            # keep track of the things needed for the animation
+            self._animate_spectra_components = self._setup_animated_plot(
+                figsize=figsize, plotkw=plotkw, textkw=textkw
+            )
+
+            ax = self._animate_spectra_components["ax"]
+
+            # set the plot limits
             ax.set_xlim(
-                np.min(self.wavelike["wavelength"].value),
-                np.max(self.wavelike["wavelength"].value),
+                xlim[0] or np.min(self.wavelength), xlim[1] or np.max(self.wavelength)
             )
             ax.set_ylim(
-                0.995 * np.min(self.fluxlike["flux"]),
-                1.005 * np.max(self.fluxlike["flux"]),
+                ylim[0] or 0.995 * np.min(self.flux),
+                ylim[1] or 1.005 * np.max(self.flux),
             )
+            # set the axis labels
             ax.set_xlabel(
-                "Wavelength ({})".format(self.wavelike["wavelength"].unit), fontsize=14
+                f"Wavelength ({self.wavelength.unit.to_string('latex_inline')})"
             )
-            ax.set_ylabel("Relative Flux", fontsize=14)
-            return (ln,)
+            ax.set_ylabel(f"Relative Flux")
 
-        def update(frame):
-            x = self.wavelike["wavelength"].value
-            y = self.fluxlike["flux"][:, frame]
-            ax.set_title(
-                "Time: {t:0.2f} ".format(t=self.timelike["time"].value[frame])
-                + str(self.timelike["time"].unit),
-                fontsize=14,
+            def update(frame):
+                """
+                This function will be called to update each frame
+                of the animation.
+
+                Parameters
+                ----------
+                frame : int
+                    An integer that will advance with each frame.
+                """
+
+                # pull out the x and y values to plot
+                x = self.wavelength
+                y = self.flux[:, frame]
+
+                # update the label in the corner
+                self._animate_spectra_components["text"].set_text(
+                    f"t = {self.time[frame].value:0.2f} {self.time.unit.to_string('latex')}"
+                )
+
+                # update the plot data
+                self._animate_spectra_components["plot"].set_data(x, y)
+
+                return (
+                    self._animate_spectra_components["text"],
+                    self._animate_spectra_components["plot"],
+                )
+
+            # hold onto this update function in case we need it elsewhere
+            self._animate_spectra_components["update"] = update
+
+            # make and save the animation
+            ani = matplotlib.animation.FuncAnimation(
+                self._animate_spectra_components["fig"],
+                update,
+                frames=np.arange(0, self.ntime),
+                blit=True,
             )
-            ln.set_data(x, y)
-            return (ln,)
-
-        ani = matplotlib.animation.FuncAnimation(
-            fig,
-            update,
-            frames=np.arange(0, len(self.timelike["time"])),
-            init_func=init,
-            blit=True,
-        )
-        ani.save(savename, fps=fps)
-        # plt.show()
+            ani.save(filename, fps=fps)

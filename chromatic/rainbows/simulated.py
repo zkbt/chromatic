@@ -180,7 +180,7 @@ class SimulatedRainbow(Rainbow):
             w_unit = wlim[0].unit
             if dw is None:
                 self.metadata["R"] = R
-                #self.metadata["wscale"] = "log"
+                # self.metadata["wscale"] = "log"
 
                 logw_min = np.log(wlim[0] / w_unit)
                 logw_max = np.log(wlim[1] / w_unit)
@@ -189,7 +189,7 @@ class SimulatedRainbow(Rainbow):
 
             elif dw is not None:
                 self.metadata["dw"] = dw
-                #self.metadata["wscale"] = "linear"
+                # self.metadata["wscale"] = "linear"
                 wavelength = (
                     np.arange(wlim[0] / w_unit, wlim[1] / w_unit, self.dw / w_unit)
                     * w_unit

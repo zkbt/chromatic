@@ -1,6 +1,7 @@
 # a few extra things to watch out for
 .DS_Store
 *.mp4
+*.gif
 *.png
 *.pdf
 sandbox/

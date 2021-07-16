@@ -123,20 +123,3 @@ def test_rainbow_operations():
         c + wl_like
     with pytest.raises(Exception):
         c - wl_like
-
-
-def test_animate():
-    star_wl = np.arange(0.5, 5, 0.2)
-    star_fx = np.ones(len(star_wl)) + np.linspace(-0.01, 0.01, len(star_wl))
-    planet_radius = np.linspace(0.1, 0.2, len(star_wl))
-    d = SimulatedRainbow(
-        dw=0.2 * u.micron, star_flux=star_fx, dt=10 * u.minute, signal_to_noise=1000
-    )
-    e = d.inject_transit(planet_radius=planet_radius)
-    pltkw = dict(color="black", marker="o", linewidth=0)
-    e.animate_lightcurve(
-        os.path.join(test_directory, "animate-lightcurve-demonstration.gif"), **pltkw
-    )
-    e.animate_spectra(
-        os.path.join(test_directory, "animate-spectra-demonstration.gif"), **pltkw
-    )
