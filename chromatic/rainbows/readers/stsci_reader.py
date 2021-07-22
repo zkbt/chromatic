@@ -14,7 +14,7 @@ def read_stsci(filename):
 
     # pull out some variables
     t = data['bjdtdb']
-    f = data['optspec']    #these are just placeholder names, this is in development
+    f = data['optspec']
     e = data['opterr']
     w = data['wave_1d']
     # this assumes the wavelength axis is the same for all exposures
