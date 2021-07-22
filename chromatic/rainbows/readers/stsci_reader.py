@@ -13,10 +13,10 @@ def read_stsci(filename):
 
 
     # pull out some variables
-    t = data['time']
-    f = data['flux']    #these are just placeholder names, this is in development
-    e = data['err']
-    w = data['wavelength']
+    t = data['bjdtdb']
+    f = data['optspec']    #these are just placeholder names, this is in development
+    e = data['opterr']
+    w = data['wave_1d']
     # this assumes the wavelength axis is the same for all exposures
 
     timelike = {}
