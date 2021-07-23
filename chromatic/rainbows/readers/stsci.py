@@ -1,3 +1,6 @@
+"""
+Define a reader for STScI pipeline x1dints.fits files.
+"""
 from ...imports import *
 
 __all__ = ["from_x1dints", "expand_filenames"]

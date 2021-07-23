@@ -1,5 +1,4 @@
 from ...imports import *
-import h5py as h5
 
 
 __all__ = ["from_eureka"]
@@ -36,6 +35,7 @@ def loadevent(filename, load=[], loadfilename=None):  # from Eureka source code
     """
 
     from astropy.io import fits
+    import h5py as h5
 
     handle = open(filename + ".dat", "rb")
     event = pickle.load(handle, encoding="latin1")
