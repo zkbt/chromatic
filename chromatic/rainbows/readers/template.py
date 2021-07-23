@@ -41,6 +41,9 @@ would be to do something like the following
     keyword that allows the user to explicitly specify that
     the abcdefgh reader should be used.)
 
+    5. Submit a pull request to the github repository for
+    this package, so that other folks can use your handy
+    new reader too!
 """
 
 # import the general list of packages
