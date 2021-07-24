@@ -30,3 +30,14 @@ import batman
 
 # define a driectory where we can put any necessary data files
 data_directory = pkg_resources.resource_filename("chromatic", "data")
+
+
+def expand_filenames(filepath):
+    """
+    A wrapper to expand a string or list into a list of filenames.
+    """
+    if type(filepath) == list:
+        filenames = filepath
+    else:
+        filenames = np.sort(glob.glob(filepath))
+    return filenames

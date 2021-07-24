@@ -2,6 +2,7 @@ from ..imports import *
 from ..talker import Talker
 from ..resampling import *
 from .readers import *
+from .writers import *
 
 
 class Rainbow(Talker):
@@ -136,6 +137,26 @@ class Rainbow(Talker):
 
         # finally, tidy up by guessing the wavelength scale
         self._guess_wscale()
+
+    def save(self, filepath="test.rainbow.npy", format=None):
+        """
+        Save this Rainbow out to a file.
+
+        Parameters
+        ----------
+        filepath : str
+            The filepath pointing to the file to be written.
+            (For now, it needs a `.rainbow.npy` extension.)
+        format : str
+            The file format of the file to be written. If None,
+            the format will be guessed automatically from the
+            filepath."""
+
+        # figure out the best writer
+        writer = guess_writer(filepath, format=format)
+
+        # use that writer to save the file
+        writer(self, filepath)
 
     def _initialize_from_dictionaries(
         self, wavelike={}, timelike={}, fluxlike={}, metadata={}
@@ -673,6 +694,27 @@ class Rainbow(Talker):
                 print("Invalid shape in division: " + str(object.shape))
                 return
         return result
+
+    def __eq__(self, other):
+        """
+        Test whether (self) == (other).
+        """
+        # start by assuming the Rainbows are identical
+        same = True
+
+        # loop through the core dictionaries
+        for d in self._core_dictionaries:
+
+            # pull out each core dictionary from both
+            d1, d2 = vars(self)[d], vars(other)[d]
+
+            # loop through elements of each dictionary
+            for k in d1:
+
+                # test that all elements match for both
+                same *= np.all(d1[k] == d2.get(k, None))
+
+        return same
 
     def normalize(self):
         """

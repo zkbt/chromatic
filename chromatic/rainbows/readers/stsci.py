@@ -3,15 +3,7 @@ Define a reader for STScI pipeline x1dints.fits files.
 """
 from ...imports import *
 
-__all__ = ["from_x1dints", "expand_filenames"]
-
-
-def expand_filenames(filepath):
-    if type(filepath) == list:
-        filenames = filepath
-    else:
-        filenames = np.sort(glob.glob(filepath))
-    return filenames
+__all__ = ["from_x1dints"]
 
 
 def from_x1dints(rainbow, filepath):

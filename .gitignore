@@ -5,6 +5,7 @@
 *.png
 *.pdf
 *.dat
+*.npy
 sandbox/
 docs/example-datasets/
 

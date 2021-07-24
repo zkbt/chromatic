@@ -1,6 +1,5 @@
 from ...imports import *
 
-
 __all__ = ["from_eureka"]
 
 
