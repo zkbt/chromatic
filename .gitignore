@@ -4,6 +4,7 @@
 *.gif
 *.png
 *.pdf
+*.dat
 sandbox/
 docs/example-datasets/
 
@@ -136,3 +137,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+*.fits
+chromatic/tests/example-extracted-datasets/eureka-extraction/S3_wasp43b_Table_Save.txt
+chromatic/rainbows/readers/Untitled.ipynb
+chromatic/tests/test_reader.ipynb

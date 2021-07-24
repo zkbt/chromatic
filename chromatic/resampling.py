@@ -330,6 +330,13 @@ def bintogrid(
         x_unit = 1
         x_without_unit = x
 
+    try:
+        y_unit = y.unit
+        y_without_unit = y.value
+    except AttributeError:
+        y_unit = 1
+        y_without_unit = y
+
     # make up a grid, if one wasn't specified
     if newx is None:
         dx_without_unit = u.Quantity(dx).to(x_unit).value
@@ -352,15 +359,24 @@ def bintogrid(
                 weights = np.ones_like(x_without_unit)
 
         # calculate weight integrals for the bin array
-        numerator = fluxconservingresample(x_without_unit, y * weights, newx)
-        denominator = fluxconservingresample(x_without_unit, weights, newx)
+        ok = np.isnan(y_without_unit) == False
+        if np.any(ok):
+            # TO-DO: check this nan handling on input arrays is OK?
+            numerator = fluxconservingresample(
+                x_without_unit[ok], (y_without_unit * weights)[ok], newx
+            )
+            denominator = fluxconservingresample(
+                x_without_unit[ok], (weights)[ok], newx
+            )
 
-        # the binned weighted means on the new grid
-        newy = numerator / denominator
+            # the binned weighted means on the new grid
+            newy = numerator / denominator
 
-        # the standard error on the means, for those bins
-        newunc = np.sqrt(1 / denominator)
-
+            # the standard error on the means, for those bins
+            newunc = np.sqrt(1 / denominator)
+        else:
+            newy = np.nan * newx
+            newunc = np.nan * newx
     # remove any empty bins
     if drop_nans:
         ok = np.isfinite(newy)
@@ -369,9 +385,10 @@ def bintogrid(
 
     # if no uncertainties were given, don't return uncertainties
     if unc is None:
-        return newx[ok] * x_unit, newy[ok]
+        return newx[ok] * x_unit, newy[ok] * y_unit
     else:
-        return newx[ok] * x_unit, newy[ok], newunc[ok]
+        return newx[ok] * x_unit, newy[ok] * y_unit, newunc[ok] * y_unit
+        # TODO: check units on uncertainties
 
 
 def bintoR(

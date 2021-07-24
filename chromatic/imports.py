@@ -1,10 +1,18 @@
 # basics
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
-import copy, pkg_resources, os, glob, warnings
+import copy, pkg_resources, os, glob, fnmatch, pickle
 from tqdm import tqdm
-import copy
+
+import warnings, textwrap
+
+
+def custom_formatwarning(message, *args, **kwargs):
+    # ignore everything except the message
+    return f"\n🌈 Warning: {textwrap.dedent(str(message))}"
+
+
+warnings.formatwarning = custom_formatwarning
 
 # astropy
 from astropy.io import ascii, fits
