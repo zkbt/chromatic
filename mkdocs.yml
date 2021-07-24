@@ -1,13 +1,18 @@
 site_name: chromatic
 site_url: https://zkbt.github.com/chromatic
 nav:
-    - Home: index.md
-    - Basics : basics.ipynb
-    - Binning : binning.ipynb
-    - Visualizing : visualizing.ipynb
-    - API: api.md
+    #- Home: index.md
+    - installation.md
+    - quickstart.ipynb
+    - basics.ipynb
+    - io.ipynb
+    - actions.ipynb
+    - visualizing.ipynb
+    - api.md
 theme:
   name: "material"
+  features:
+      - navigation.tracking
 repo_url: https://github.com/zkbt/chromatic/
 plugins:
   - search

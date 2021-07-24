@@ -5,6 +5,7 @@
 *.png
 *.pdf
 sandbox/
+docs/example-datasets/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

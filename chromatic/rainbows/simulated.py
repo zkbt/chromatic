@@ -261,8 +261,8 @@ class SimulatedRainbow(Rainbow):
         # Defaults for planet simulation.
         defaults = {
             "t0": 0,
-            "per": 1,
-            "a": 15,
+            "per": 3,
+            "a": 10,
             "inc": 90,
             "ecc": 0,
             "w": 0,
@@ -314,7 +314,7 @@ class SimulatedRainbow(Rainbow):
         for i in range(self.nwave):
             params.rp = rprs[i]
             params.u = u_arr[i]
-            print(params.u)
+            # print(params.u)
             try:
                 m
             except NameError:
