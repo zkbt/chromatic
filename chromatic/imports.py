@@ -1,6 +1,6 @@
 # basics
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, matplotlib
 import copy, pkg_resources, os, glob, fnmatch, pickle
 from tqdm import tqdm
 
