@@ -4,7 +4,10 @@
 *.gif
 *.png
 *.pdf
+*.dat
+*.npy
 sandbox/
+docs/example-datasets/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -135,3 +138,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+*.fits
+chromatic/tests/example-extracted-datasets/eureka-extraction/S3_wasp43b_Table_Save.txt
+chromatic/rainbows/readers/Untitled.ipynb
+chromatic/tests/test_reader.ipynb

@@ -1,10 +1,18 @@
 # basics
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
-import copy, pkg_resources, os, glob, warnings
+import matplotlib.pyplot as plt, matplotlib
+import copy, pkg_resources, os, glob, fnmatch, pickle
 from tqdm import tqdm
-import copy
+
+import warnings, textwrap
+
+
+def custom_formatwarning(message, *args, **kwargs):
+    # ignore everything except the message
+    return f"\n🌈 Warning: {textwrap.dedent(str(message))}"
+
+
+warnings.formatwarning = custom_formatwarning
 
 # astropy
 from astropy.io import ascii, fits
@@ -22,3 +30,14 @@ import batman
 
 # define a driectory where we can put any necessary data files
 data_directory = pkg_resources.resource_filename("chromatic", "data")
+
+
+def expand_filenames(filepath):
+    """
+    A wrapper to expand a string or list into a list of filenames.
+    """
+    if type(filepath) == list:
+        filenames = filepath
+    else:
+        filenames = np.sort(glob.glob(filepath))
+    return filenames

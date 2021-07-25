@@ -1,4 +1,4 @@
-# Documentation for `Rainbow`
+# API
 
 ::: chromatic.rainbows.Rainbow
     handler: python
@@ -6,7 +6,8 @@
       members:
         - __init__
         - bin
+        - normalize
         - imshow
-    rendering:
-      show_root_heading: false
-      show_source: false
+        - plot
+        - animate_lightcurves
+        - animate_spectra
