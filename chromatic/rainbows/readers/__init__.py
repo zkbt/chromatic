@@ -1,10 +1,11 @@
 from .stsci import *
 from .eureka import *
+from .rainbownpy import *
 
 
 def guess_reader(filepath, format=None):
     """
-    A wrapper to guess the appropriate from the filename
+    A wrapper to guess the appropriate reader from the filename
     (and possibily an explicitly-set file format string).
 
     Parameters
@@ -18,16 +19,24 @@ def guess_reader(filepath, format=None):
         The file format to use.
     """
     import fnmatch, glob
+    from ...imports import expand_filenames
 
     # get all the possible filenames (= expand wildcard)
     filenames = expand_filenames(filepath)
 
-    # test a few different things to find the best reader
+    # if format='abcdefgh', return the `from_abcdefgh` function
     if format is not None:
         return locals()[f"from_{format}"]
+    # does it look like a .rainbow.npy chromatic file?
+    elif fnmatch.fnmatch(filepath, "*.rainbow.npy"):
+        return from_rainbownpy
+    # does it look like a STScI x1dints.fits file?
     elif fnmatch.fnmatch(filenames[0], "*x1dints.fits"):
         return from_x1dints
-    elif fnmatch.fnmatch(filenames[0], "*S3_*_Save.dat") or fnmatch.fnmatch(
-        filenames[0], "*S3_*_Save.h5"
+    # does it look like an Eureka! save file?
+    elif (
+        fnmatch.fnmatch(filenames[0], "*S3_*_Save.dat")
+        or fnmatch.fnmatch(filenames[0], "*S3_*_Save.h5")
+        or fnmatch.fnmatch(filenames[0], "*S3_*_Save.txt")
     ):
         return from_eureka

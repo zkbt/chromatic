@@ -1,10 +1,13 @@
 # a few extra things to watch out for
 .DS_Store
 *.mp4
+*.gif
 *.png
 *.pdf
 *.dat
+*.npy
 sandbox/
+docs/example-datasets/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

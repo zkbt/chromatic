@@ -180,7 +180,7 @@ class SimulatedRainbow(Rainbow):
             w_unit = wlim[0].unit
             if dw is None:
                 self.metadata["R"] = R
-                self.metadata["wscale"] = "log"
+                # self.metadata["wscale"] = "log"
 
                 logw_min = np.log(wlim[0] / w_unit)
                 logw_max = np.log(wlim[1] / w_unit)
@@ -189,7 +189,7 @@ class SimulatedRainbow(Rainbow):
 
             elif dw is not None:
                 self.metadata["dw"] = dw
-                self.metadata["wscale"] = "linear"
+                # self.metadata["wscale"] = "linear"
                 wavelength = (
                     np.arange(wlim[0] / w_unit, wlim[1] / w_unit, self.dw / w_unit)
                     * w_unit
@@ -198,10 +198,10 @@ class SimulatedRainbow(Rainbow):
         # or just make sure the wavelength grid has units
         elif wavelength is not None:
             w_unit = wavelength.unit
-            self.metadata["wscale"] = "?"
 
         # make sure the wavelength array has units
         self.wavelike["wavelength"] = u.Quantity(wavelength)
+        self._guess_wscale()
 
         # this should break if the units aren't length
         w_unit.to("m")
@@ -211,15 +211,6 @@ class SimulatedRainbow(Rainbow):
         """
         Simulate a wavelength-dependent planetary transit using
         batman.
-
-        TODO:
-        Simpler way to implement radius input
-        Make it faster
-        Check and make sure things are correct in terms of units.
-        implement astropy units?
-        handle errors differently?
-        make this return a rainbow() object with the planet added instead
-        of modifying in place?
 
         Parameters
         ----------
@@ -233,8 +224,22 @@ class SimulatedRainbow(Rainbow):
                 "inc" = inclination (degrees) (default 90)
                 "ecc" = eccentricity (default 0)
                 "w" = longitude of periastron (degrees)(default 0)
-                "limb_dark" = limb-darkening model (default "nonlinear")
+                "limb_dark" = limb-darkening model (default "nonlinear"), possible
+                    values described in more detail in batman documentation
                 "u" = limb-darkening coefficients (default [0.5, 0.1, 0.1, -0.1])
+                    Can take 3 forms:
+                    -A single value (if limb-darkening law requires only one value)
+                    -A 1D list/array of coefficients corresponding to the limb-darkening
+                    law
+                    -A 2D array of the form (n_wavelengths, n_coefficients) where
+                    each row is the set of limb-darkening coefficients corresponding
+                    to a single wavelength
+
+                    Note that this currently does not calculate the appropriate
+                    coefficient vs wavelength variations itself- there exist codes
+                    (such as hpparvi/PyLDTk and nespinoza/limb-darkening) which
+                    can be used for this.
+
             example value: planet_params = {"a":12, "inc":87}
 
         planet_radius = Two options:
@@ -247,9 +252,7 @@ class SimulatedRainbow(Rainbow):
         """
 
         # First, make sure planet_radius has the right dimension.
-        if type(planet_radius) != float and len(planet_radius) != len(
-            self.wavelike["wavelength"]
-        ):
+        if type(planet_radius) != float and len(planet_radius) != self.nwave:
             print(
                 "Invalid planet radius array: must be float or have shape "
                 + str(np.shape(self.wavelike["wavelength"]))
@@ -258,8 +261,8 @@ class SimulatedRainbow(Rainbow):
         # Defaults for planet simulation.
         defaults = {
             "t0": 0,
-            "per": 1,
-            "a": 15,
+            "per": 3,
+            "a": 10,
             "inc": 90,
             "ecc": 0,
             "w": 0,
@@ -284,27 +287,42 @@ class SimulatedRainbow(Rainbow):
         params.ecc = defaults["ecc"]
         params.w = defaults["w"]
         params.limb_dark = defaults["limb_dark"]
-        params.u = defaults["u"]
+
+        # Deal with limb-darkening.
+        if len(np.shape(defaults["u"])) < 2:  # Coefficients constant with wavelength
+            u_arr = np.tile(defaults["u"], (self.nwave, 1))
+
+        elif (
+            len(np.shape(defaults["u"])) == 2
+        ):  # 2D array of coefficients, along wavelength axis
+            if np.shape(defaults["u"])[0] != self.nwave:
+                print("Shape of limb-darkening array does not match wavelengths.")
+                return
+            u_arr = defaults["u"]
+
+        else:
+            print("Invalid limb-darkening coefficient array.")
 
         # Read in planetary radius.
         if type(planet_radius) == float:
-            rprs = np.zeros(len(self.wavelike["wavelength"])) + planet_radius
+            rprs = np.zeros(self.nwave) + planet_radius
         else:
             rprs = planet_radius
 
-        planet_flux = np.zeros(
-            (len(self.wavelike["wavelength"]), len(self.timelike["time"]))
-        )
+        planet_flux = np.zeros((self.nwave, self.ntime))
 
-        for i in range(len(self.wavelike["wavelength"])):
+        for i in range(self.nwave):
             params.rp = rprs[i]
+            params.u = u_arr[i]
+            # print(params.u)
             try:
                 m
             except NameError:
                 m = batman.TransitModel(params, self.timelike["time"].to("day").value)
             planet_flux[i] = m.light_curve(params)
 
-        self.fluxlike["model"] = self.fluxlike["model"] * planet_flux
-        self.fluxlike["flux"] = np.random.normal(
-            self.fluxlike["model"], self.fluxlike["uncertainty"]
-        )
+        result = copy.deepcopy(self)
+        result.fluxlike["model"] *= planet_flux
+        result.fluxlike["flux"] *= planet_flux
+
+        return result

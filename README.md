@@ -61,6 +61,3 @@ plt.show()
 ## Contributors
 
 This package is being developed during James Webb Space Telescope Early Release Science [Pre-Launch Data Hackathon](https://ers-transit.github.io/pre-launch-hackathon.html). Contributors who agree to follow the [Code of Conduct](https://ers-transit.github.io/code-of-conduct.html#ers-transit) are welcome to join.
-
-- [Zach Berta-Thompson](https://github.com/zkbt)
-- ...
