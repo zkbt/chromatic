@@ -1,6 +1,9 @@
 from ...imports import *
 import h5py as h5
 from astropy.io import ascii
+import os
+
+os.chdir('/Users/willwaalkes/Desktop/PhD_Thesis/chromatic/chromatic/tests/example-extracted-datasets/eureka-extraction')
 
 
 def read_stsci(filename):
