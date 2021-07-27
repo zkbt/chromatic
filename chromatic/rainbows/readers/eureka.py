@@ -126,8 +126,8 @@ def eureadka_txt(filename):
     wavelike["wavelength"] = w * u.micron  # TODO: check wavelength units
 
     fluxlike = {}
-    fluxlike["flux"] = f.transpose()
-    fluxlike["uncertainty"] = e.transpose()
+    fluxlike["flux"] = f
+    fluxlike["uncertainty"] = e
 
     return wavelike, timelike, fluxlike
 
