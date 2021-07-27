@@ -58,7 +58,7 @@ def loadevent(filename, load=[], loadfilename=None):  # from Eureka source code
     return event
 
 
-def eureadka(filename):
+def eureadka_dat(filename):
     """
     Read eureka's Stage 3 outputs (time-series spectra).
     """
@@ -92,6 +92,44 @@ def eureadka(filename):
     return wavelike, timelike, fluxlike
     # TO-DO: add relevant metadata
     # TO-DO: add other useful time-series information
+
+def eureadka_txt(filename):
+    """
+    Read eureka's concatenated txt file with all of the results
+    """
+
+    # load the data
+    data = ascii.read(filename)
+
+    # pull out some variables
+    t = np.unique(data['bjdtdb'])
+    w = np.unique(data['wave_1d'])
+    
+    fluxes = np.ones(shape=(len(wave_1d),len(time)))
+    uncertainties = np.ones_like(fluxes)
+    
+    i_time = np.arange(len(time))
+
+    for i in range(len(wave_1d)):
+    
+        indices_for_this_wavelength = i_wavelength + i_time*len(wave_1d)
+        fluxes[i_wavelength,i_time] = data['optspec'][indices_for_this_wavelength]
+        uncertainties[i_wavelength,i_time] = data['opterr'][indices_for_this_wavelength]
+
+    f = fluxes
+    e = uncertainties
+    
+    timelike = {}
+    timelike["time"] = t * u.day  # This is in MJD
+    
+    wavelike = {}
+    wavelike["wavelength"] = w * u.micron  # TODO: check wavelength units
+
+    fluxlike = {}
+    fluxlike["flux"] = f.transpose()
+    fluxlike["error"] = e.transpose()
+
+    return wavelike, timelike, fluxlike
 
 
 def from_eureka(rainbow, filename, **kwargs):
