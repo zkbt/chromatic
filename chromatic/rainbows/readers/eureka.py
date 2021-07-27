@@ -110,7 +110,7 @@ def eureadka_txt(filename):
     
     i_time = np.arange(len(t))
 
-    for i_wavelength in range(len(w)):
+    for i_wavelength in tqdm(range(len(w))):
     
         indices_for_this_wavelength = i_wavelength + i_time*len(w)
         fluxes[i_wavelength,i_time] = data['optspec'][indices_for_this_wavelength]
