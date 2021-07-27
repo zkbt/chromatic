@@ -142,3 +142,5 @@ dmypy.json
 chromatic/tests/example-extracted-datasets/eureka-extraction/S3_wasp43b_Table_Save.txt
 chromatic/rainbows/readers/Untitled.ipynb
 chromatic/tests/test_reader.ipynb
+chromatic/tests/eureka_dat_test.ipynb
+chromatic/tests/eureka_txt_test.ipynb

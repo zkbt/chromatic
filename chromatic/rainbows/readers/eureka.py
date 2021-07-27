@@ -110,7 +110,7 @@ def eureadka_txt(filename):
     
     i_time = np.arange(len(time))
 
-    for i in range(len(wave_1d)):
+    for i_wavelength in range(len(wave_1d)):
     
         indices_for_this_wavelength = i_wavelength + i_time*len(wave_1d)
         fluxes[i_wavelength,i_time] = data['optspec'][indices_for_this_wavelength]
@@ -127,7 +127,7 @@ def eureadka_txt(filename):
 
     fluxlike = {}
     fluxlike["flux"] = f.transpose()
-    fluxlike["error"] = e.transpose()
+    fluxlike["uncertainty"] = e.transpose()
 
     return wavelike, timelike, fluxlike
 
@@ -149,7 +149,12 @@ def from_eureka(rainbow, filename, **kwargs):
     """
 
     # load the Eureka event
-    wavelike, timelike, fluxlike = eureadka(filename)
+    
+    if fnmatch.fnmatch(filename,'*.txt'):
+        wavelike, timelike, fluxlike = eureadka_txt(filename)
+    
+    else:
+        wavelike, timelike, fluxlike = eureadka_dat(filename)
 
     # populate the rainbow
     rainbow._initialize_from_dictionaries(
