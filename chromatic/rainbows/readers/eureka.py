@@ -108,9 +108,9 @@ def eureadka_txt(filename):
     fluxes = np.ones(shape=(len(w),len(t)))
     uncertainties = np.ones_like(fluxes)
     
-    i_time = np.arange(len(time))
+    i_time = np.arange(len(t))
 
-    for i_wavelength in range(len(wave_1d)):
+    for i_wavelength in range(len(w)):
     
         indices_for_this_wavelength = i_wavelength + i_time*len(w)
         fluxes[i_wavelength,i_time] = data['optspec'][indices_for_this_wavelength]
