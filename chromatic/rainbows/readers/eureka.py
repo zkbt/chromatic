@@ -105,14 +105,14 @@ def eureadka_txt(filename):
     t = np.unique(data['bjdtdb'])
     w = np.unique(data['wave_1d'])
     
-    fluxes = np.ones(shape=(len(wave_1d),len(time)))
+    fluxes = np.ones(shape=(len(w),len(t)))
     uncertainties = np.ones_like(fluxes)
     
     i_time = np.arange(len(time))
 
     for i_wavelength in range(len(wave_1d)):
     
-        indices_for_this_wavelength = i_wavelength + i_time*len(wave_1d)
+        indices_for_this_wavelength = i_wavelength + i_time*len(w)
         fluxes[i_wavelength,i_time] = data['optspec'][indices_for_this_wavelength]
         uncertainties[i_wavelength,i_time] = data['opterr'][indices_for_this_wavelength]
 
