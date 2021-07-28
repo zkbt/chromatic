@@ -60,7 +60,13 @@ def loadevent(filename, load=[], loadfilename=None):  # from Eureka source code
 
 def eureadka_dat(filename):
     """
-    Read eureka's Stage 3 outputs (time-series spectra).
+    Read eureka's .dat output and
+    parse it into a Rainbow-friendly format
+
+    Parameters
+    ----------
+    filename : str
+        The path to the file.
     """
 
     fileprefix = filename.strip(".dat")
@@ -95,7 +101,13 @@ def eureadka_dat(filename):
 
 def eureadka_txt(filename):
     """
-    Read eureka's concatenated txt file with all of the results
+    Read eureka's concatenated results table
+    and parse it into a Rainbow-friendly format
+
+    Parameters
+    ----------
+    filename : str
+        The path to the file.
     """
 
     # load the data
