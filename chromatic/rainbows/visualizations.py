@@ -72,12 +72,19 @@ def imshow(
 
 def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
     """
-    Plot
+    Plot flux as sequence of offset light curves.
 
-    Returns
-    -------
-    None.
-
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        The axes into which to make this plot.
+    spacing : None, float
+        The spacing between light curves.
+        (Might still change how this works.)
+    plowkw : dict
+        A dictionary of keywords passed to `plt.plot`
+    textkw : dict
+        A dictionary of keywords passed to `plt.text`
     """
     from chromatic import viz
 
@@ -87,8 +94,8 @@ def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
         self.wavelength,
         step_size=spacing,
         ax=ax,
-        plotkw={},
-        fontkw={},
+        plotkw=plowkw,
+        fontkw=fontkw,
     )
 
 
