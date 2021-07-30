@@ -20,7 +20,7 @@ or
 `python setup.py install`
 
 ...upload the entire package to the Python Package Index, so that other folks
-will be able to install your package via the simple `pip install exoplanet-chromatic`, by
+will be able to install your package via the simple `pip install chromatic-lightcurves`, by
 running the following command:
 
 `python setup.py release`
@@ -43,7 +43,7 @@ if "release" in sys.argv[-1]:
     # uncomment the next line to test out on test.pypi.com/project/tess-zap
     # os.system("twine upload --repository-url https://test.pypi.org/legacy/ dist/*")
     os.system("twine upload dist/*")
-    os.system("rm -rf dist/exoplanet-chromatic*")
+    os.system("rm -rf dist/chromatic-lightcurves*")
     sys.exit()
 
 # a little kludge to get the version number from __version__

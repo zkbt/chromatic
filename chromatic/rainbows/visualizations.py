@@ -94,7 +94,7 @@ def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
         self.wavelength,
         step_size=spacing,
         ax=ax,
-        plotkw=plowkw,
+        plotkw=plotkw,
         fontkw=fontkw,
     )
 
