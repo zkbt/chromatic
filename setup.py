@@ -52,13 +52,13 @@ exec(open("chromatic/version.py").read())
 # run the setup function
 setup(
     # the name folks can use to search for this with pip
-    name="chromatic",
+    name="chromatic-lightcurves",
     # what version of the code is this?
     version=__version__,
     # what's a short description of the package?
     description="Tools for working with spectroscopic light curves (of transiting exoplanets).",
     # what's a more detailed description?
-    long_description="Detailed usage descriptions coming soon!",
+    long_description="Read the complete documentation at https://zkbt.github.io/chromatic/",
     # who's the main author?
     author="Zach Berta-Thompson",
     # what's the main author's email?
@@ -89,7 +89,7 @@ setup(
     ],
     # what version of Python is required?
     python_requires=">=3.6",  # f-strings are introduced in 3.6!
-    # requirements in `key` will install with `pip install exoplanet-chromatic[key]`
+    # requirements in `key` will install with `pip install chromatic-lightcurves[key]`
     extras_require={
         "develop": [
             "pytest",
