@@ -58,9 +58,15 @@ def loadevent(filename, load=[], loadfilename=None):  # from Eureka source code
     return event
 
 
-def eureadka(filename):
+def eureadka_dat(filename):
     """
-    Read eureka's Stage 3 outputs (time-series spectra).
+    Read eureka's .dat output and
+    parse it into a Rainbow-friendly format
+
+    Parameters
+    ----------
+    filename : str
+        The path to the file.
     """
 
     fileprefix = filename.strip(".dat")
@@ -94,6 +100,53 @@ def eureadka(filename):
     # TO-DO: add other useful time-series information
 
 
+def eureadka_txt(filename):
+    """
+    Read eureka's concatenated results table
+    and parse it into a Rainbow-friendly format
+
+    Parameters
+    ----------
+    filename : str
+        The path to the file.
+    """
+
+    # load the data
+    data = ascii.read(filename)
+
+    # pull out some variables
+    t = np.unique(data["bjdtdb"])
+    w = np.unique(data["wave_1d"])
+
+    fluxes = np.ones(shape=(len(w), len(t)))
+    uncertainties = np.ones_like(fluxes)
+
+    i_time = np.arange(len(t))
+
+    for i_wavelength in tqdm(range(len(w))):
+
+        indices_for_this_wavelength = i_wavelength + i_time * len(w)
+        fluxes[i_wavelength, i_time] = data["optspec"][indices_for_this_wavelength]
+        uncertainties[i_wavelength, i_time] = data["opterr"][
+            indices_for_this_wavelength
+        ]
+
+    f = fluxes
+    e = uncertainties
+
+    timelike = {}
+    timelike["time"] = t * u.day  # This is in MJD
+
+    wavelike = {}
+    wavelike["wavelength"] = w * u.micron  # TODO: check wavelength units
+
+    fluxlike = {}
+    fluxlike["flux"] = f
+    fluxlike["uncertainty"] = e
+
+    return wavelike, timelike, fluxlike
+
+
 def from_eureka(rainbow, filename, **kwargs):
     """
     Populate a Rainbow from a eureka pipeline S3 output.
@@ -111,7 +164,12 @@ def from_eureka(rainbow, filename, **kwargs):
     """
 
     # load the Eureka event
-    wavelike, timelike, fluxlike = eureadka(filename)
+
+    if fnmatch.fnmatch(filename, "*.txt"):
+        wavelike, timelike, fluxlike = eureadka_txt(filename)
+
+    else:
+        wavelike, timelike, fluxlike = eureadka_dat(filename)
 
     # populate the rainbow
     rainbow._initialize_from_dictionaries(
