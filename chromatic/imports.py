@@ -38,6 +38,8 @@ def expand_filenames(filepath):
     """
     if type(filepath) == list:
         filenames = filepath
-    else:
+    elif "*" in filepath:
         filenames = np.sort(glob.glob(filepath))
+    else:
+        filenames = [filepath]
     return filenames

@@ -99,6 +99,7 @@ def eureadka_dat(filename):
     # TO-DO: add relevant metadata
     # TO-DO: add other useful time-series information
 
+
 def eureadka_txt(filename):
     """
     Read eureka's concatenated results table
@@ -114,26 +115,28 @@ def eureadka_txt(filename):
     data = ascii.read(filename)
 
     # pull out some variables
-    t = np.unique(data['bjdtdb'])
-    w = np.unique(data['wave_1d'])
-    
-    fluxes = np.ones(shape=(len(w),len(t)))
+    t = np.unique(data["bjdtdb"])
+    w = np.unique(data["wave_1d"])
+
+    fluxes = np.ones(shape=(len(w), len(t)))
     uncertainties = np.ones_like(fluxes)
-    
+
     i_time = np.arange(len(t))
 
     for i_wavelength in tqdm(range(len(w))):
-    
-        indices_for_this_wavelength = i_wavelength + i_time*len(w)
-        fluxes[i_wavelength,i_time] = data['optspec'][indices_for_this_wavelength]
-        uncertainties[i_wavelength,i_time] = data['opterr'][indices_for_this_wavelength]
+
+        indices_for_this_wavelength = i_wavelength + i_time * len(w)
+        fluxes[i_wavelength, i_time] = data["optspec"][indices_for_this_wavelength]
+        uncertainties[i_wavelength, i_time] = data["opterr"][
+            indices_for_this_wavelength
+        ]
 
     f = fluxes
     e = uncertainties
-    
+
     timelike = {}
     timelike["time"] = t * u.day  # This is in MJD
-    
+
     wavelike = {}
     wavelike["wavelength"] = w * u.micron  # TODO: check wavelength units
 
@@ -161,10 +164,10 @@ def from_eureka(rainbow, filename, **kwargs):
     """
 
     # load the Eureka event
-    
-    if fnmatch.fnmatch(filename,'*.txt'):
+
+    if fnmatch.fnmatch(filename, "*.txt"):
         wavelike, timelike, fluxlike = eureadka_txt(filename)
-    
+
     else:
         wavelike, timelike, fluxlike = eureadka_dat(filename)
 
