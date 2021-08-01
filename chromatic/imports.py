@@ -1,6 +1,10 @@
 # basics
 import numpy as np
-import matplotlib.pyplot as plt, matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.animation as ani
+import matplotlib.colors as col
+import matplotlib.gridspec as gs
+
 import copy, pkg_resources, os, glob, fnmatch, pickle
 from tqdm import tqdm
 
