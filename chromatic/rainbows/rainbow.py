@@ -364,7 +364,8 @@ class Rainbow(Talker):
                     return self.__dict__[dictionary_name][key]
                 except KeyError:
                     pass
-        raise AttributeError()
+        message = f"🌈.{key} does not exist for this Rainbow"
+        raise AttributeError(message)
 
     # TODO - what should we do with __setattr__?
     #   actually allow to reset things in metadata?
@@ -471,4 +472,7 @@ class Rainbow(Talker):
         animate_lightcurves,
         animate_spectra,
         _setup_animated_plot,
+        _setup_wavelength_colors,
+        _make_sure_cmap_is_defined,
+        get_wavelength_color,
     )

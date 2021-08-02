@@ -1,40 +1,81 @@
 from ..imports import *
 
 
-def name2color(name):
+def _setup_wavelength_colors(self, cmap=None, vmin=None, vmax=None):
     """
-    Return the 3-element RGB array of a given color name.
+    Set up a color map and normalization function for
+    colors datapoints by their wavelengths.
 
     Parameters
     ----------
-    name : str
-        The name of a color
+    cmap : str, matplotlib.colors.Colormap
+        The color map to use.
+    vmin : astropy.units.Quantity
+        The wavelength at the bottom of the cmap.
+    vmax : astropy.units.Quantity
+        The wavelength at the top of the cmap.
+    """
+
+    # populate the cmap object
+    self.cmap = cm.get_cmap(cmap)
+
+    vmin = vmin or np.nanmin(self.wavelength)
+    vmax = vmax or np.nanmax(self.wavelength)
+
+    if self.wscale in ["?", "linear"]:
+        self.norm = col.Normalize(
+            vmin=vmin.to("micron").value, vmax=vmax.to("micron").value
+        )
+    elif self.wscale in ["log"]:
+        self.norm = col.LogNorm(
+            vmin=vmin.to("micron").value, vmax=vmax.to("micron").value
+        )
+
+
+def _make_sure_cmap_is_defined(self, cmap=None, vmin=None, vmax=None):
+    """
+    A helper function that can be called at the start of
+    any plot that that's using wavelength-colors to make
+    sure that the wavelength-based colormap has been
+    defined.
+    """
+
+    if hasattr(self, "cmap"):
+        if (cmap is not None) or (vmin is not None) or (vmax is not None):
+            warnings.warn(
+                """
+            It looks like you're trying to set up a new custom
+            cmap and/or wavelength normalization scheme. You
+            should be aware that a cmap has already been defined
+            for this object; if you're visualizing the same
+            rainbow in different ways, we strongly suggest
+            that you not change the cmap or normalization
+            between them, for visual consistency.
+            """
+            )
+        else:
+            return
+    self._setup_wavelength_colors(cmap=cmap, vmin=vmin, vmax=vmax)
+
+
+def get_wavelength_color(self, wavelength):
+    """
+    Determine the color corresponding to one or more wavelengths.
+
+    Parameters
+    ----------
+    wavelength : astropy.units.Quantity
+        The wavelength value(s), either an individual
+        wavelength or an array of N wavelengths.
 
     Returns
     -------
-    rgb : tuple
-        3-element RGB color
+    colors : np.array
+        An array of RGBA colors [or an (N,4) array].
     """
-    try:
-        color_hex = col.cnames[name]
-        return col.hex2color(color_hex)
-    except KeyError:
-        warnings.warn(f"The color {name} can't be found. (Returning black.)")
-        return (0.0, 0.0, 0.0)
-
-
-def one2another(bottom="white", top="red", alphabottom=1.0, alphatop=1.0, N=256):
-    """
-    Create a cmap that goes smoothly (linearly in RGBA) from "bottom" to "top".
-    """
-    rgb_bottom, rgb_top = name2color(bottom), name2color(top)
-    r = np.linspace(rgb_bottom[0], rgb_top[0], N)
-    g = np.linspace(rgb_bottom[1], rgb_top[1], N)
-    b = np.linspace(rgb_bottom[2], rgb_top[2], N)
-    a = np.linspace(alphabottom, alphatop, N)
-    colors = np.transpose(np.vstack([r, g, b, a]))
-    cmap = co.ListedColormap(colors, name="{bottom}2{top}".format(**locals()))
-    return cmap
+    w_unitless = wavelength.to("micron").value
+    normalized_w = self.norm(w_unitless)
+    return self.cmap(normalized_w)
 
 
 def imshow(
@@ -106,7 +147,9 @@ def imshow(
     return ax
 
 
-def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
+def plot(
+    self, ax=None, spacing=None, cmap=None, vmin=None, vmax=None, plotkw={}, fontkw={}
+):
     """
     Plot flux as sequence of offset light curves.
 
@@ -124,9 +167,10 @@ def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
         A dictionary of keywords passed to `plt.text`
     """
 
+    # make sure that the wavelength-based colormap is defined
+    self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
     time = self.time.value
     time_unit = self.time.unit.to_string("latex_inline")
-    wavelength = self.wavelength.value
     waveunit = self.wavelength.unit.to_string("latex_inline")
 
     fcadences = 0.05
@@ -142,14 +186,11 @@ def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
     if spacing is None:
         spacing = 3 * np.nanstd(self.flux)
 
-    nsteps = len(wavelength)
-
     if ax is None:
         ax = plt.subplot()
     plt.sca(ax)
-    # plt.figure(figsize = (8,12) )
 
-    for i, w in enumerate(wavelength):
+    for i, w in enumerate(self.wavelength):
 
         lc = self.flux[i, :]
 
@@ -158,12 +199,12 @@ def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
             cont_level = np.nanmedian(lc[cont_time == 1])
             plot_flux = -i * spacing + lc  # / cont_level
 
-            color = (0, 0.3 - 0.3 * (i / nsteps), i / nsteps)
+            color = self.get_wavelength_color(w)
             assert (np.isfinite(plot_flux) == True).all()
 
             plt.plot(time, plot_flux, ".--", color=color, **plotkw)
             plt.annotate(
-                f"{wavelength[i]:4.2f} {waveunit}",
+                f"{w.value:4.2f} {waveunit}",
                 (min_time, 1 - i * spacing - 0.5 * spacing),
                 color=color,
                 **fontkw,

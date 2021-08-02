@@ -42,3 +42,15 @@ def test_animate():
         filename=os.path.join(test_directory, "animate-spectra-demonstration.gif"),
         plotkw=plotkw,
     )
+
+
+def test_wavelength_cmap():
+
+    r = SimulatedRainbow(R=10)
+
+    # can we set up the wavelength-based color map
+    r._setup_wavelength_colors(cmap=one2another("black", "red"))
+
+    # test a few examples
+    assert r.get_wavelength_color(r.wavelength[0]) == (0.0, 0.0, 0.0, 1.0)
+    assert r.get_wavelength_color(r.wavelength[-1]) == (1.0, 0.0, 0.0, 1.0)
