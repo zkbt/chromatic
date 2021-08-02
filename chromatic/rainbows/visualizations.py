@@ -148,7 +148,7 @@ def imshow(
 
 
 def plot(
-    self, ax=None, spacing=None, cmap=None, vmin=None, vmax=None, plotkw={}, fontkw={}
+    self, ax=None, spacing=None, cmap=None, vmin=None, vmax=None, plotkw={}, textkw={}
 ):
     """
     Plot flux as sequence of offset light curves.
@@ -169,49 +169,65 @@ def plot(
 
     # make sure that the wavelength-based colormap is defined
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
-    time = self.time.value
+
     time_unit = self.time.unit.to_string("latex_inline")
-    waveunit = self.wavelength.unit.to_string("latex_inline")
+    wave_unit = self.wavelength.unit.to_string("latex_inline")
 
-    fcadences = 0.05
-    start_pcad = int(np.ceil(len(time) * fcadences))
-    end_pcad = int(np.floor(len(time) * fcadences))
+    min_time = np.min(self.time)
 
-    cont_time = np.zeros(len(time))
-    cont_time[0:start_pcad] = 1
-    cont_time[end_pcad:-1] = 1
-
-    min_time = np.min(time)
-
-    if spacing is None:
-        spacing = 3 * np.nanstd(self.flux)
-
+    # make sure ax is set up
     if ax is None:
         ax = plt.subplot()
     plt.sca(ax)
 
-    for i, w in enumerate(self.wavelength):
+    # figure out the spacing to use
+    if spacing is None:
+        try:
+            spacing = ax._most_recent_chromatic_plot_spacing
+        except AttributeError:
+            spacing = 3 * np.nanstd(self.flux)
+    ax._most_recent_chromatic_plot_spacing = spacing
 
-        lc = self.flux[i, :]
+    # TO-DO: check if this Rainbow has been normalized
+    warnings.warn(
+        """
+    It's not clear if/how this object has been normalized.
+    Be aware that the baseline flux levels may therefore
+    be a little bit funny in .plot()."""
+    )
+    with quantity_support():
 
-        if np.any(np.isfinite(lc)):
-            # normalize this light curve to one.
-            cont_level = np.nanmedian(lc[cont_time == 1])
-            plot_flux = -i * spacing + lc  # / cont_level
+        #  loop through wavelengths
+        for i, w in enumerate(self.wavelength):
 
-            color = self.get_wavelength_color(w)
-            assert (np.isfinite(plot_flux) == True).all()
+            # grab the light curve for this particular wavelength
+            lc = self.flux[i, :]
 
-            plt.plot(time, plot_flux, ".--", color=color, **plotkw)
-            plt.annotate(
-                f"{w.value:4.2f} {waveunit}",
-                (min_time, 1 - i * spacing - 0.5 * spacing),
-                color=color,
-                **fontkw,
-            )
+            if np.any(np.isfinite(lc)):
 
-    plt.xlabel(f"Time ({time_unit})")
-    plt.ylabel("Relative Flux (+ offsets)")
+                # add an offset to this light curve
+                plot_flux = -i * spacing + lc
+
+                # get the color for this light curve
+                color = self.get_wavelength_color(w)
+
+                # plot the data points (with offsets)
+                this_plotkw = dict(marker="o", linestyle="-", color=color)
+                this_plotkw.update(**plotkw)
+                plt.plot(self.time, plot_flux, **this_plotkw)
+
+                # add text labels next to each light curve
+                this_textkw = dict(va="center", color=color)
+                this_textkw.update(**textkw)
+                plt.annotate(
+                    f"{w.value:4.2f} {wave_unit}",
+                    (min_time, 1 - (i + 0.5) * spacing),
+                    **this_textkw,
+                )
+
+        # add text labels to the plot
+        plt.xlabel(f"Time ({time_unit})")
+        plt.ylabel("Relative Flux (+ offsets)")
 
 
 def _setup_animated_plot(self, ax=None, figsize=None, plotkw={}, textkw={}):
