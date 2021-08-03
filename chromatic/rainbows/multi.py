@@ -147,7 +147,7 @@ class MultiRainbow:
 
     def animate_lightcurves(
         self,
-        filename="multipanel-animated-lightcurves.gif",
+        filename="multi-animated-lightcurves.gif",
         fps=None,
         dpi=None,
         **kwargs,
@@ -223,7 +223,7 @@ class MultiRainbow:
         plt.close()
 
     def animate_spectra(
-        self, filename="multipanel-animated-spectra.gif", fps=None, dpi=None, **kwargs
+        self, filename="multi-animated-spectra.gif", fps=None, dpi=None, **kwargs
     ):
         """
         Create an animation to show how the spectrum changes
