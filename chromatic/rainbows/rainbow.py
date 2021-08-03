@@ -194,6 +194,18 @@ class Rainbow(Talker):
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
 
+    def _get_core_dictionaries(self):
+        """
+        Get the core dictionaries of this Rainbow.
+
+        Returns
+        -------
+        core : dict
+            Dictionary containing the keys
+            ['wavelike', 'timelike', 'fluxlike', 'metadata']
+        """
+        return {k: vars(self)[k] for k in self._core_dictionaries}
+
     def _initialize_from_arrays(
         self, wavelength=None, time=None, flux=None, uncertainty=None, **kw
     ):
@@ -250,6 +262,16 @@ class Rainbow(Talker):
 
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
+
+    def _create_copy(self):
+        """
+        Create a copy of self, with the core dictionaries copied.
+        """
+        new = type(self)()
+        new._initialize_from_dictionaries(
+            **copy.deepcopy(self._get_core_dictionaries())
+        )
+        return new
 
     def _guess_wscale(self, relative_tolerance=0.01):
         """
@@ -471,7 +493,7 @@ class Rainbow(Talker):
         plot,
         animate_lightcurves,
         animate_spectra,
-        _setup_animated_plot,
+        _setup_animated_scatter,
         _setup_wavelength_colors,
         _make_sure_cmap_is_defined,
         get_wavelength_color,

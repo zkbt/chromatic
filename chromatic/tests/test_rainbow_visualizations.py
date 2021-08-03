@@ -33,14 +33,14 @@ def test_animate():
     theta = np.linspace(0, 2 * np.pi, d.nwave)
     planet_radius = np.sin(theta) * 0.05 + 0.15
     e = d.inject_transit(planet_radius=planet_radius)
-    plotkw = dict(color="black", marker="o", linewidth=0)
+    scatterkw = dict()
     e.animate_lightcurves(
         filename=os.path.join(test_directory, "animate-lightcurves-demonstration.gif"),
-        plotkw=plotkw,
+        scatterkw=scatterkw,
     )
     e.animate_spectra(
         filename=os.path.join(test_directory, "animate-spectra-demonstration.gif"),
-        plotkw=plotkw,
+        scatterkw=scatterkw,
     )
 
 

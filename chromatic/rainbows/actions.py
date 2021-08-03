@@ -87,7 +87,7 @@ def bin_in_time(self, dt=None, time=None):
         # self.speak(f'binning to dt={dt}')
 
     # create a new, empty Rainbow
-    new = copy.deepcopy(self)
+    new = self._create_copy()
 
     # populate the wavelength information
     new.wavelike = {**self.wavelike}
@@ -112,7 +112,7 @@ def bin_in_time(self, dt=None, time=None):
         if k == "uncertainty":
             warnings.warn(
                 """
-            Uncertainties aren't being handled well yet...
+            Uncertainties might not be handled well yet...
             """
             )
             continue
@@ -190,7 +190,7 @@ def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
         # self.speak(f'binning to R={R}')
 
     # create a new, empty Rainbow
-    new = copy.deepcopy(self)
+    new = self._create_copy()
 
     # populate the time information
     new.timelike = {**self.timelike}
@@ -215,7 +215,7 @@ def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
         if k == "uncertainty":
             warnings.warn(
                 """
-            Uncertainties aren't being handled well yet...
+            Uncertainties might not be handled well yet...
             """
             )
             continue
