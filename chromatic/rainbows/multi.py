@@ -2,23 +2,84 @@ from ..imports import *
 
 
 class MultiRainbow:
-    def __init__(self, list_of_rainbows):
+    """
+    MultiRainbow objects collect multiple Rainbow objects together,
+    providing a quick interface to apply the same action or visualization
+    to all of them at once. It's meant to be a tool to facilitate
+    quick comparisons between different pipeline analyses of the
+    same dataset.
+    """
+
+    def __init__(self, list_of_rainbows, names=None):
+        """
+        Initialize from a list of Rainbows.
+
+        Parameters
+        ----------
+        list_of_rainbows : list
+            A list containing 1 or more Rainbow objects.
+        names : list
+            A list of names with which to label the Rainbows.
+        """
+
+        # store the Rainbow objects
         self.rainbows = list_of_rainbows
 
+        # the list of names associated with those objects
+        self.names = names
+
+        # make sure the names and rainbows match up
+        if self.names is not None:
+            assert len(self.names) == len(self.rainbows)
+
     def __repr__(self):
-        return f"<{self.rainbows}>"
+        """
+        How should this object be represented?
+        """
+        return f"<MultiRainbow({self.rainbows})>"
 
     @property
     def nrainbows(self):
+        """
+        What's the number of rainbows in here?
+        """
         return len(self.rainbows)
 
-    def _setup_panels(self, figsize=None):
+    def _setup_panels(self, rows=1, figsize=None):
+        """
+        Set up a grid of panels to plot into.
+
+        Parameters
+        ----------
+        rows : int
+            The number of rows into which to arrange the
+            plot panels. (This will probably only be needed
+            for working with more than about 3 Rainbows.)
+        figsize : tuple
+            The size (width, height) for the figure to create.
+            If left blank, this will be estimated from the
+            default matplotlib figsize and the number of
+            figures being produced.
+        """
+
+        # estimate a figure size from current matplotlib defaults
         if figsize == None:
             default_figsize = plt.matplotlib.rcParams["figure.figsize"]
             figsize = [self.nrainbows * default_figsize[0], default_figsize[1]]
+
+        # create the figure and grid of axes as subplots
         self.figure, self.axes = plt.subplots(
-            1, self.nrainbows, sharex=True, sharey=True, figsize=figsize
+            rows,
+            int(np.ceil(self.nrainbows / rows)),
+            sharex=True,
+            sharey=True,
+            figsize=figsize,
         )
+
+        # give titles to the plot panels
+        if self.names is not None:
+            for name, ax in zip(self.names, self.axes):
+                ax.set_title(name)
 
     def normalize(self, **kwargs):
         """
@@ -76,7 +137,7 @@ class MultiRainbow:
             The binned MultiRainbow.
         """
         new_rainbows = [r.bin(**kwargs) for r in self.rainbows]
-        return MultiRainbow(new_rainbows)
+        return MultiRainbow(new_rainbows, names=self.names)
 
     def plot(self, **kwargs):
         """
