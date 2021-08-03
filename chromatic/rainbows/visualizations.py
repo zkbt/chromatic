@@ -93,8 +93,8 @@ def imshow(
     quantity="flux",
     w_unit="micron",
     t_unit="hour",
-    aspect="auto",
     colorbar=True,
+    aspect="auto",
     **kw,
 ):
     """
@@ -104,11 +104,17 @@ def imshow(
     ----------
     ax : matplotlib.axes.Axes
         The axes into which to make this plot.
+    quantity : str
+        The fluxlike quantity to imshow.
+        (Must be a key of `rainbow.fluxlike`).
     w_unit : str, astropy.unit.Unit
         The unit for plotting wavelengths.
     t_unit : str, astropy.unit.Unit
         The unit for plotting times.
-
+    colorbar : bool
+        Should we include a colorbar?
+    aspect : str
+        What aspect ratio should be used for the imshow?
     """
 
     # self.speak(f'imshowing')
@@ -141,6 +147,7 @@ def imshow(
             extent=extent,
             aspect=aspect,
             origin="upper",
+            interpolation="nearest",
             **kw,
         )
         if self.wscale == "linear":
@@ -256,7 +263,7 @@ def plot(
         plt.ylabel("Relative Flux (+ offsets)")
 
 
-def _setup_animated_scatter(self, ax=None, figsize=None, scatterkw={}, textkw={}):
+def _setup_animated_scatter(self, ax=None, scatterkw={}, textkw={}):
     """
     Wrapper to set up the basics of animate-able plot.
 
@@ -269,9 +276,6 @@ def _setup_animated_scatter(self, ax=None, figsize=None, scatterkw={}, textkw={}
     ax : matplotlib.axes.Axes
         The axes into which the plot should be drawn.
         If None, a new one will be created.
-    figsize : tuple
-        (width, height) of the figure, if one needs
-        to be created (= if ax isn't specified)
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
     textkw : dict
@@ -280,9 +284,11 @@ def _setup_animated_scatter(self, ax=None, figsize=None, scatterkw={}, textkw={}
 
     # make sure the ax and figure are defined
     if ax is None:
-        fig, ax = plt.subplots(figsize=figsize)
+        fig, ax = plt.subplots()
     else:
         fig = ax.get_figure()
+
+    plt.sca(ax)
 
     this_scatterkw = dict(c=[], cmap=self.cmap, norm=self.norm)
     this_scatterkw.update(**scatterkw)
@@ -298,10 +304,9 @@ def _setup_animated_scatter(self, ax=None, figsize=None, scatterkw={}, textkw={}
     return dict(fig=fig, ax=ax, scatter=scatter, text=text)
 
 
-def animate_lightcurves(
+def _setup_animate_lightcurves(
     self,
-    filename="animated-lightcurves.gif",
-    figsize=None,
+    ax=None,
     xlim=[None, None],
     ylim=[None, None],
     cmap=None,
@@ -309,11 +314,9 @@ def animate_lightcurves(
     vmax=None,
     scatterkw={},
     textkw={},
-    fps=None,
-    dpi=None,
 ):
     """
-    Create an animation that shows how the lightcurve changes
+    Setup an animation to how the lightcurve changes
     as we flip through every wavelength.
 
     Parameters
@@ -323,8 +326,8 @@ def animate_lightcurves(
         Currently supports only .gif files.
     fps : float
         frames/second of animation
-    figsize : tuple
-        (width, height) of the figure
+    ax : matplotlib.axes.Axes
+        The axes into which this animated plot should go.
     xlim : tuple
         Custom xlimits for the plot
     ylim : tuple
@@ -347,7 +350,7 @@ def animate_lightcurves(
 
         # keep track of the things needed for the animation
         self._animate_lightcurves_components = self._setup_animated_scatter(
-            figsize=figsize, scatterkw=scatterkw, textkw=textkw
+            ax=ax, scatterkw=scatterkw, textkw=textkw
         )
 
         ax = self._animate_lightcurves_components["ax"]
@@ -397,35 +400,12 @@ def animate_lightcurves(
         # hold onto this update function in case we need it elsewhere
         self._animate_lightcurves_components["update"] = update
 
-        # make and save the animation
-        animator = ani.FuncAnimation(
-            self._animate_lightcurves_components["fig"],
-            update,
-            frames=np.arange(0, self.nwave),
-            blit=True,
-        )
-        animator.save(
-            filename, fps=fps, dpi=dpi, savefig_kwargs=dict(facecolor="white")
-        )
-    plt.close()
 
-
-def animate_spectra(
-    self,
-    filename="animated-spectra.gif",
-    figsize=None,
-    xlim=[None, None],
-    ylim=[None, None],
-    cmap=None,
-    vmin=None,
-    vmax=None,
-    scatterkw={},
-    textkw={},
-    fps=None,
-    dpi=None,
+def animate_lightcurves(
+    self, filename="animated-lightcurves.gif", fps=None, dpi=None, **kwargs
 ):
     """
-    Create an animation that shows how the lightcurve changes
+    Create an animation to show how the lightcurve changes
     as we flip through every wavelength.
 
     Parameters
@@ -433,6 +413,60 @@ def animate_spectra(
     filename : str
         Name of file you'd like to save results in.
         Currently supports only .gif files.
+    fps : float
+        frames/second of animation
+    ax : matplotlib.axes.Axes
+        The axes into which this animated plot should go.
+    xlim : tuple
+        Custom xlimits for the plot
+    ylim : tuple
+        Custom ylimits for the plot
+    cmap : str, matplotlib.colors.Colormap
+        The color map to use for expressing wavelength
+    vmin : astropy.units.Quantity
+        The minimum value to use for the wavelength colormap
+    vmax : astropy.units.Quantity
+        The maximum value to use for the wavelength colormap
+    scatterkw : dict
+        A dictionary of keywords to be passed to `plt.scatter`
+    textkw : dict
+        A dictionary of keywords to be passed to `plt.text`
+    """
+    self._setup_animate_lightcurves(**kwargs)
+
+    # make and save the animation
+    animator = ani.FuncAnimation(
+        self._animate_lightcurves_components["fig"],
+        self._animate_lightcurves_components["update"],
+        frames=np.arange(0, self.nwave),
+        blit=True,
+    )
+    animator.save(filename, fps=fps, dpi=dpi, savefig_kwargs=dict(facecolor="white"))
+    plt.close()
+
+
+def _setup_animate_spectra(
+    self,
+    ax=None,
+    xlim=[None, None],
+    ylim=[None, None],
+    cmap=None,
+    vmin=None,
+    vmax=None,
+    scatterkw={},
+    textkw={},
+):
+    """
+    Setup an animation to show how the spectrum changes
+    as we flip through every timepoint.
+
+    Parameters
+    ----------
+    filename : str
+        Name of file you'd like to save results in.
+        Currently supports only .gif files.
+    ax : matplotlib.axes.Axes
+        The axes into which this animated plot should go.
     fps : float
         frames/second of animation
     figsize : tuple
@@ -463,7 +497,7 @@ def animate_spectra(
 
         # keep track of the things needed for the animation
         self._animate_spectra_components = self._setup_animated_scatter(
-            figsize=figsize, scatterkw=scatterkw, textkw=textkw
+            ax=ax, scatterkw=scatterkw, textkw=textkw
         )
 
         ax = self._animate_spectra_components["ax"]
@@ -521,14 +555,50 @@ def animate_spectra(
         # hold onto this update function in case we need it elsewhere
         self._animate_spectra_components["update"] = update
 
-        # make and save the animation
-        animator = ani.FuncAnimation(
-            self._animate_spectra_components["fig"],
-            update,
-            frames=np.arange(0, self.ntime),
-            blit=True,
-        )
-        animator.save(
-            filename, fps=fps, dpi=dpi, savefig_kwargs=dict(facecolor="white")
-        )
+
+def animate_spectra(
+    self, filename="animated-spectra.gif", fps=None, dpi=None, **kwargs
+):
+    """
+    Create an animation to show how the spectrum changes
+    as we flip through every timepoint.
+
+    Parameters
+    ----------
+    filename : str
+        Name of file you'd like to save results in.
+        Currently supports only .gif files.
+    ax : matplotlib.axes.Axes
+        The axes into which this animated plot should go.
+    fps : float
+        frames/second of animation
+    xlim : tuple
+        Custom xlimits for the plot
+    ylim : tuple
+        Custom ylimits for the plot
+    cmap : str, matplotlib.colors.Colormap
+        The color map to use for expressing wavelength
+    vmin : astropy.units.Quantity
+        The minimum value to use for the wavelength colormap
+    vmax : astropy.units.Quantity
+        The maximum value to use for the wavelength colormap
+    scatterkw : dict
+        A dictionary of keywords to be passed to `plt.scatter`
+    textkw : dict
+        A dictionary of keywords to be passed to `plt.text`
+    fps : int
+        Frames per second for the animation.
+    dpi : float, default: :rc:`savefig.dpi`
+        Dots per inch for the movie.
+    """
+    self._setup_animate_spectra(**kwargs)
+
+    # make and save the animation
+    animator = ani.FuncAnimation(
+        self._animate_spectra_components["fig"],
+        self._animate_spectra_components["update"],
+        frames=np.arange(0, self.ntime),
+        blit=True,
+    )
+    animator.save(filename, fps=fps, dpi=dpi, savefig_kwargs=dict(facecolor="white"))
     plt.close()
