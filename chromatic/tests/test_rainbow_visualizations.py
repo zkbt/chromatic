@@ -33,12 +33,24 @@ def test_animate():
     theta = np.linspace(0, 2 * np.pi, d.nwave)
     planet_radius = np.sin(theta) * 0.05 + 0.15
     e = d.inject_transit(planet_radius=planet_radius)
-    plotkw = dict(color="black", marker="o", linewidth=0)
+    scatterkw = dict()
     e.animate_lightcurves(
         filename=os.path.join(test_directory, "animate-lightcurves-demonstration.gif"),
-        plotkw=plotkw,
+        scatterkw=scatterkw,
     )
     e.animate_spectra(
         filename=os.path.join(test_directory, "animate-spectra-demonstration.gif"),
-        plotkw=plotkw,
+        scatterkw=scatterkw,
     )
+
+
+def test_wavelength_cmap():
+
+    r = SimulatedRainbow(R=10)
+
+    # can we set up the wavelength-based color map
+    r._setup_wavelength_colors(cmap=one2another("black", "red"))
+
+    # test a few examples
+    assert r.get_wavelength_color(r.wavelength[0]) == (0.0, 0.0, 0.0, 1.0)
+    assert r.get_wavelength_color(r.wavelength[-1]) == (1.0, 0.0, 0.0, 1.0)

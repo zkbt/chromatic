@@ -27,7 +27,7 @@ def to_rainbownpy(rainbow, filepath):
     assert ".rainbow.npy" in filepath
 
     # populate a dictionary containing the four core dictionaries
-    dictionary_to_save = {k: vars(rainbow)[k] for k in rainbow._core_dictionaries}
+    dictionary_to_save = rainbow._get_core_dictionaries()
 
     # save that to a file
     np.save(filepath, [dictionary_to_save, version()], allow_pickle=True)

@@ -1,6 +1,92 @@
 from ..imports import *
 
 
+def _setup_wavelength_colors(self, cmap=None, vmin=None, vmax=None):
+    """
+    Set up a color map and normalization function for
+    colors datapoints by their wavelengths.
+
+    Parameters
+    ----------
+    cmap : str, matplotlib.colors.Colormap
+        The color map to use.
+    vmin : astropy.units.Quantity
+        The wavelength at the bottom of the cmap.
+    vmax : astropy.units.Quantity
+        The wavelength at the top of the cmap.
+    """
+
+    # populate the cmap object
+    self.cmap = cm.get_cmap(cmap)
+
+    vmin = vmin or np.nanmin(self.wavelength)
+    vmax = vmax or np.nanmax(self.wavelength)
+
+    if self.wscale in ["?", "linear"]:
+        self.norm = col.Normalize(
+            vmin=vmin.to("micron").value, vmax=vmax.to("micron").value
+        )
+    elif self.wscale in ["log"]:
+        self.norm = col.LogNorm(
+            vmin=vmin.to("micron").value, vmax=vmax.to("micron").value
+        )
+
+
+def _make_sure_cmap_is_defined(self, cmap=None, vmin=None, vmax=None):
+    """
+    A helper function that can be called at the start of
+    any plot that that's using wavelength-colors to make
+    sure that the wavelength-based colormap has been
+    defined.
+
+    Parameters
+    ----------
+    cmap : str, matplotlib.colors.Colormap
+        The color map to use for expressing wavelength.
+    vmin : astropy.units.Quantity
+        The minimum value to use for the wavelength colormap.
+    vmax : astropy.units.Quantity
+        The maximum value to use for the wavelength colormap.
+    """
+
+    if hasattr(self, "cmap"):
+        if (cmap is not None) or (vmin is not None) or (vmax is not None):
+            warnings.warn(
+                """
+            It looks like you're trying to set up a new custom
+            cmap and/or wavelength normalization scheme. You
+            should be aware that a cmap has already been defined
+            for this object; if you're visualizing the same
+            rainbow in different ways, we strongly suggest
+            that you not change the cmap or normalization
+            between them, for visual consistency.
+            """
+            )
+        else:
+            return
+    self._setup_wavelength_colors(cmap=cmap, vmin=vmin, vmax=vmax)
+
+
+def get_wavelength_color(self, wavelength):
+    """
+    Determine the color corresponding to one or more wavelengths.
+
+    Parameters
+    ----------
+    wavelength : astropy.units.Quantity
+        The wavelength value(s), either an individual
+        wavelength or an array of N wavelengths.
+
+    Returns
+    -------
+    colors : np.array
+        An array of RGBA colors [or an (N,4) array].
+    """
+    w_unitless = wavelength.to("micron").value
+    normalized_w = self.norm(w_unitless)
+    return self.cmap(normalized_w)
+
+
 def imshow(
     self,
     ax=None,
@@ -9,7 +95,6 @@ def imshow(
     t_unit="hour",
     aspect="auto",
     colorbar=True,
-    origin="upper",
     **kw,
 ):
     """
@@ -55,7 +140,7 @@ def imshow(
             self.fluxlike[quantity],
             extent=extent,
             aspect=aspect,
-            origin=origin,
+            origin="upper",
             **kw,
         )
         if self.wscale == "linear":
@@ -70,7 +155,18 @@ def imshow(
     return ax
 
 
-def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
+def plot(
+    self,
+    ax=None,
+    spacing=None,
+    w_unit="micron",
+    t_unit="hour",
+    cmap=None,
+    vmin=None,
+    vmax=None,
+    plotkw={},
+    textkw={},
+):
     """
     Plot flux as sequence of offset light curves.
 
@@ -81,25 +177,86 @@ def plot(self, ax=None, spacing=None, plotkw={}, fontkw={}):
     spacing : None, float
         The spacing between light curves.
         (Might still change how this works.)
+        None uses half the standard dev of entire flux data.
+    w_unit : str, astropy.unit.Unit
+        The unit for plotting wavelengths.
+    t_unit : str, astropy.unit.Unit
+        The unit for plotting times.
+    cmap : str, matplotlib.colors.Colormap
+        The color map to use for expressing wavelength.
+    vmin : astropy.units.Quantity
+        The minimum value to use for the wavelength colormap.
+    vmax : astropy.units.Quantity
+        The maximum value to use for the wavelength colormap.
     plowkw : dict
         A dictionary of keywords passed to `plt.plot`
     textkw : dict
         A dictionary of keywords passed to `plt.text`
     """
-    from chromatic import viz
 
-    viz.wavelength_plot(
-        self.flux,
-        self.time,
-        self.wavelength,
-        step_size=spacing,
-        ax=ax,
-        plotkw=plotkw,
-        fontkw=fontkw,
-    )
+    # make sure that the wavelength-based colormap is defined
+    self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
+
+    w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
+
+    min_time = np.min(self.time)
+
+    # make sure ax is set up
+    if ax is None:
+        ax = plt.subplot()
+    plt.sca(ax)
+
+    # figure out the spacing to use
+    if spacing is None:
+        try:
+            spacing = ax._most_recent_chromatic_plot_spacing
+        except AttributeError:
+            spacing = 3 * np.nanstd(self.flux)
+    ax._most_recent_chromatic_plot_spacing = spacing
+
+    # TO-DO: check if this Rainbow has been normalized
+    '''warnings.warn(
+        """
+    It's not clear if/how this object has been normalized.
+    Be aware that the baseline flux levels may therefore
+    be a little bit funny in .plot()."""
+    )'''
+    with quantity_support():
+
+        #  loop through wavelengths
+        for i, w in enumerate(self.wavelength):
+
+            # grab the light curve for this particular wavelength
+            lc = self.flux[i, :]
+
+            if np.any(np.isfinite(lc)):
+
+                # add an offset to this light curve
+                plot_flux = -i * spacing + lc
+
+                # get the color for this light curve
+                color = self.get_wavelength_color(w)
+
+                # plot the data points (with offsets)
+                this_plotkw = dict(marker="o", linestyle="-", color=color)
+                this_plotkw.update(**plotkw)
+                plt.plot(self.time.to(t_unit), plot_flux, **this_plotkw)
+
+                # add text labels next to each light curve
+                this_textkw = dict(va="center", color=color)
+                this_textkw.update(**textkw)
+                plt.annotate(
+                    f"{w.to(w_unit).value:.2f} {w_unit.to_string('latex_inline')}",
+                    (min_time, 1 - (i + 0.5) * spacing),
+                    **this_textkw,
+                )
+
+        # add text labels to the plot
+        plt.xlabel(f"Time ({t_unit.to_string('latex_inline')})")
+        plt.ylabel("Relative Flux (+ offsets)")
 
 
-def _setup_animated_plot(self, ax=None, figsize=None, plotkw={}, textkw={}):
+def _setup_animated_scatter(self, ax=None, figsize=None, scatterkw={}, textkw={}):
     """
     Wrapper to set up the basics of animate-able plot.
 
@@ -115,8 +272,8 @@ def _setup_animated_plot(self, ax=None, figsize=None, plotkw={}, textkw={}):
     figsize : tuple
         (width, height) of the figure, if one needs
         to be created (= if ax isn't specified)
-    plotkw : dict
-        A dictionary of keywords to be passed to `plt.plot`
+    scatterkw : dict
+        A dictionary of keywords to be passed to `plt.scatter`
     textkw : dict
         A dictionary of keywords to be passed to `plt.text`
     """
@@ -127,27 +284,33 @@ def _setup_animated_plot(self, ax=None, figsize=None, plotkw={}, textkw={}):
     else:
         fig = ax.get_figure()
 
-    default_plotkw = dict()
-    plot = plt.plot([], [], **default_plotkw, **plotkw)[0]
+    this_scatterkw = dict(c=[], cmap=self.cmap, norm=self.norm)
+    this_scatterkw.update(**scatterkw)
+    scatter = plt.scatter([], [], **this_scatterkw)
 
-    default_textkw = dict(
+    this_textkw = dict(
         x=0.98, y=0.96, s="", ha="right", va="top", transform=ax.transAxes
     )
-    text = plt.text(**default_textkw, **textkw)
+    this_textkw.update(**textkw)
+    text = plt.text(**this_textkw)
 
     # return a dictionary with things that will be useful to hang onto
-    return dict(fig=fig, ax=ax, plot=plot, text=text)
+    return dict(fig=fig, ax=ax, scatter=scatter, text=text)
 
 
 def animate_lightcurves(
     self,
     filename="animated-lightcurves.gif",
-    fps=5,
     figsize=None,
     xlim=[None, None],
     ylim=[None, None],
-    plotkw={},
+    cmap=None,
+    vmin=None,
+    vmax=None,
+    scatterkw={},
     textkw={},
+    fps=None,
+    dpi=None,
 ):
     """
     Create an animation that shows how the lightcurve changes
@@ -166,17 +329,25 @@ def animate_lightcurves(
         Custom xlimits for the plot
     ylim : tuple
         Custom ylimits for the plot
-    plotkw : dict
-        A dictionary of keywords to be passed to `plt.plot`
+    cmap : str, matplotlib.colors.Colormap
+        The color map to use for expressing wavelength
+    vmin : astropy.units.Quantity
+        The minimum value to use for the wavelength colormap
+    vmax : astropy.units.Quantity
+        The maximum value to use for the wavelength colormap
+    scatterkw : dict
+        A dictionary of keywords to be passed to `plt.scatter`
     textkw : dict
         A dictionary of keywords to be passed to `plt.text`
     """
 
+    self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
+
     with quantity_support():
 
         # keep track of the things needed for the animation
-        self._animate_lightcurves_components = self._setup_animated_plot(
-            figsize=figsize, plotkw=plotkw, textkw=textkw
+        self._animate_lightcurves_components = self._setup_animated_scatter(
+            figsize=figsize, scatterkw=scatterkw, textkw=textkw
         )
 
         ax = self._animate_lightcurves_components["ax"]
@@ -205,6 +376,7 @@ def animate_lightcurves(
             # pull out the x and y values to plot
             x = self.time
             y = self.flux[frame]
+            c = self.wavelength[frame].to("micron").value * np.ones(self.ntime)
 
             # update the label in the corner
             self._animate_lightcurves_components["text"].set_text(
@@ -212,35 +384,45 @@ def animate_lightcurves(
             )
 
             # update the plot data
-            self._animate_lightcurves_components["plot"].set_data(x, y)
+            self._animate_lightcurves_components["scatter"].set_offsets(
+                np.transpose([x, y])
+            )
+            self._animate_lightcurves_components["scatter"].set_array(c)
 
             return (
                 self._animate_lightcurves_components["text"],
-                self._animate_lightcurves_components["plot"],
+                self._animate_lightcurves_components["scatter"],
             )
 
         # hold onto this update function in case we need it elsewhere
         self._animate_lightcurves_components["update"] = update
 
         # make and save the animation
-        ani = matplotlib.animation.FuncAnimation(
+        animator = ani.FuncAnimation(
             self._animate_lightcurves_components["fig"],
             update,
             frames=np.arange(0, self.nwave),
             blit=True,
         )
-        ani.save(filename, fps=fps)
+        animator.save(
+            filename, fps=fps, dpi=dpi, savefig_kwargs=dict(facecolor="white")
+        )
+    plt.close()
 
 
 def animate_spectra(
     self,
     filename="animated-spectra.gif",
-    fps=5,
     figsize=None,
     xlim=[None, None],
     ylim=[None, None],
-    plotkw={},
+    cmap=None,
+    vmin=None,
+    vmax=None,
+    scatterkw={},
     textkw={},
+    fps=None,
+    dpi=None,
 ):
     """
     Create an animation that shows how the lightcurve changes
@@ -259,20 +441,38 @@ def animate_spectra(
         Custom xlimits for the plot
     ylim : tuple
         Custom ylimits for the plot
-    plotkw : dict
-        A dictionary of keywords to be passed to `plt.plot`
+    cmap : str, matplotlib.colors.Colormap
+        The color map to use for expressing wavelength
+    vmin : astropy.units.Quantity
+        The minimum value to use for the wavelength colormap
+    vmax : astropy.units.Quantity
+        The maximum value to use for the wavelength colormap
+    scatterkw : dict
+        A dictionary of keywords to be passed to `plt.scatter`
     textkw : dict
         A dictionary of keywords to be passed to `plt.text`
+    fps : int
+        Frames per second for the animation.
+    dpi : float, default: :rc:`savefig.dpi`
+        Dots per inch for the movie.
     """
+
+    self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
 
     with quantity_support():
 
         # keep track of the things needed for the animation
-        self._animate_spectra_components = self._setup_animated_plot(
-            figsize=figsize, plotkw=plotkw, textkw=textkw
+        self._animate_spectra_components = self._setup_animated_scatter(
+            figsize=figsize, scatterkw=scatterkw, textkw=textkw
         )
 
         ax = self._animate_spectra_components["ax"]
+
+        """if self.wscale == "log":
+            plt.xscale("log")
+            formatter = plt.matplotlib.ticker.StrMethodFormatter("{x:.1g}")
+            ax.xaxis.set_major_formatter(formatter)
+            ax.xaxis.set_minor_formatter(formatter)"""
 
         # set the plot limits
         ax.set_xlim(
@@ -300,6 +500,7 @@ def animate_spectra(
             # pull out the x and y values to plot
             x = self.wavelength
             y = self.flux[:, frame]
+            c = self.wavelength.to("micron").value
 
             # update the label in the corner
             self._animate_spectra_components["text"].set_text(
@@ -307,21 +508,27 @@ def animate_spectra(
             )
 
             # update the plot data
-            self._animate_spectra_components["plot"].set_data(x, y)
+            self._animate_spectra_components["scatter"].set_offsets(
+                np.transpose([x, y])
+            )
+            self._animate_spectra_components["scatter"].set_array(c)
 
             return (
                 self._animate_spectra_components["text"],
-                self._animate_spectra_components["plot"],
+                self._animate_spectra_components["scatter"],
             )
 
         # hold onto this update function in case we need it elsewhere
         self._animate_spectra_components["update"] = update
 
         # make and save the animation
-        ani = matplotlib.animation.FuncAnimation(
+        animator = ani.FuncAnimation(
             self._animate_spectra_components["fig"],
             update,
             frames=np.arange(0, self.ntime),
             blit=True,
         )
-        ani.save(filename, fps=fps)
+        animator.save(
+            filename, fps=fps, dpi=dpi, savefig_kwargs=dict(facecolor="white")
+        )
+    plt.close()
