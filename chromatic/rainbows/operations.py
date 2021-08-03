@@ -24,7 +24,7 @@ def __add__(self, object):
     """
 
     # Create new Rainbow() to store results in.
-    result = copy.deepcopy(self)
+    result = self._create_copy()
 
     try:  # Object is rainbow
         if np.array_equal(
@@ -85,7 +85,7 @@ def __sub__(self, object):
     """
 
     # Create new Rainbow() to store results in.
-    result = copy.deepcopy(self)
+    result = self._create_copy()
 
     try:  # Object is rainbow.
         if np.array_equal(
@@ -145,7 +145,7 @@ def __mul__(self, object):
     """
 
     # Create new Rainbow() to store results in.
-    result = copy.deepcopy(self)
+    result = self._create_copy()
 
     try:  # Object is rainbow
         if np.array_equal(
@@ -205,7 +205,7 @@ def __truediv__(self, object):
     """
 
     # Create new Rainbow() to store results in.
-    result = copy.deepcopy(self)
+    result = self._create_copy()
 
     try:  # Object is another rainbow.
         if np.array_equal(

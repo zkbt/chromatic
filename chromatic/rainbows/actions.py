@@ -2,13 +2,33 @@ from ..imports import *
 from ..resampling import *
 
 
-def normalize(self):
+def normalize(self, wavelength=True, time=False):
     """
-    Normalize by dividing through by the median spectrum.
+    Normalize by dividing through by the median spectrum and/or lightcurve.
+
+    Parameters
+    ----------
+    wavelength : bool
+        Should we divide by the median spectrum?
+
+    time : bool
+        Should we divide by the median light curve?
+
+    Returns
+    -------
+    normalized : MultiRainbow
+        The normalized MultiRainbow.
     """
 
     # TODO, think about more careful treatment of uncertainties + good/bad data
-    return self / np.nanmedian(self.flux, axis=self.timeaxis)
+    new = self
+    if time:
+        new = new / np.nanmedian(self.flux, axis=self.waveaxis)
+
+    if wavelength:
+        new = new / np.nanmedian(self.flux, axis=self.timeaxis)
+
+    return new
 
 
 def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
@@ -40,6 +60,11 @@ def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
     wavelength : array of astropy.units.Quantity
         An array of wavelengths, if you just want to give
         it an entirely custom array.
+
+    Returns
+    -------
+    binned : Rainbow
+        The binned Rainbow.
     """
 
     # self.speak(f'binning')
@@ -70,6 +95,11 @@ def bin_in_time(self, dt=None, time=None):
     The time-setting order of precendence is:
         1) time
         2) dt
+
+    Returns
+    -------
+    binned : Rainbow
+        The binned Rainbow.
     """
 
     # if no bin information is provided, don't bin
@@ -165,6 +195,11 @@ def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
         1) wavelength
         2) dw
         3) R
+
+    Returns
+    -------
+    binned : Rainbow
+        The binned Rainbow.
     """
 
     # if no bin information is provided, don't bin

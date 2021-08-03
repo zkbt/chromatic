@@ -321,7 +321,7 @@ class SimulatedRainbow(Rainbow):
                 m = batman.TransitModel(params, self.timelike["time"].to("day").value)
             planet_flux[i] = m.light_curve(params)
 
-        result = copy.deepcopy(self)
+        result = self._create_copy()
         result.fluxlike["model"] *= planet_flux
         result.fluxlike["flux"] *= planet_flux
 

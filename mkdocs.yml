@@ -8,6 +8,7 @@ nav:
     - io.ipynb
     - actions.ipynb
     - visualizing.ipynb
+    - multi.ipynb
     - api.md
 theme:
   name: "material"

@@ -491,7 +491,9 @@ class Rainbow(Talker):
     from .visualizations import (
         imshow,
         plot,
+        _setup_animate_lightcurves,
         animate_lightcurves,
+        _setup_animate_spectra,
         animate_spectra,
         _setup_animated_scatter,
         _setup_wavelength_colors,
