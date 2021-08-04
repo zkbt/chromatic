@@ -206,7 +206,7 @@ def plot(
 
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
-    min_time = np.min(self.time)
+    min_time = np.nanmin(self.time)
 
     # make sure ax is set up
     if ax is None:
@@ -356,10 +356,10 @@ def _setup_animate_lightcurves(
         ax = self._animate_lightcurves_components["ax"]
 
         # set the plot limits
-        ax.set_xlim(xlim[0] or np.min(self.time), xlim[1] or np.max(self.time))
+        ax.set_xlim(xlim[0] or np.nanmin(self.time), xlim[1] or np.nanmax(self.time))
         ax.set_ylim(
-            ylim[0] or 0.995 * np.min(self.flux),
-            ylim[1] or 1.005 * np.max(self.flux),
+            ylim[0] or 0.995 * np.nanmin(self.flux),
+            ylim[1] or 1.005 * np.nanmax(self.flux),
         )
         # set the axis labels
         ax.set_xlabel(f"Time ({self.time.unit.to_string('latex_inline')})")
@@ -510,11 +510,11 @@ def _setup_animate_spectra(
 
         # set the plot limits
         ax.set_xlim(
-            xlim[0] or np.min(self.wavelength), xlim[1] or np.max(self.wavelength)
+            xlim[0] or np.nanmin(self.wavelength), xlim[1] or np.nanmax(self.wavelength)
         )
         ax.set_ylim(
-            ylim[0] or 0.995 * np.min(self.flux),
-            ylim[1] or 1.005 * np.max(self.flux),
+            ylim[0] or 0.995 * np.nanmin(self.flux),
+            ylim[1] or 1.005 * np.nanmax(self.flux),
         )
         # set the axis labels
         ax.set_xlabel(f"Wavelength ({self.wavelength.unit.to_string('latex_inline')})")

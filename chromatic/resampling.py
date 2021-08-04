@@ -341,8 +341,8 @@ def bintogrid(
     if newx is None:
         dx_without_unit = u.Quantity(dx).to(x_unit).value
         newx = np.arange(
-            np.min(x_without_unit),
-            np.max(x_without_unit) + dx_without_unit,
+            np.nanmin(x_without_unit),
+            np.nanmax(x_without_unit) + dx_without_unit,
             dx_without_unit,
         )
 
@@ -461,7 +461,7 @@ def bintoR(
     # set the limits of the new xgrid (in log space)
     if xlim is None:
         # use the input grid to set the limits
-        lnxbottom, lnxtop = np.min(lnx), np.max(lnx)
+        lnxbottom, lnxtop = np.nanmin(lnx), np.nanmax(lnx)
     else:
         # use the custom xlim to set the limits
         lnxbottom, lnxtop = xlim

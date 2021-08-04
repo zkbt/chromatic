@@ -21,7 +21,7 @@ def normalize(self, wavelength=True, time=False):
     """
 
     # TODO, think about more careful treatment of uncertainties + good/bad data
-    new = self
+    new = self._create_copy()
     if time:
         new = new / np.nanmedian(self.flux, axis=self.waveaxis)
 

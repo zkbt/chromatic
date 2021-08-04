@@ -99,7 +99,7 @@ class MultiRainbow:
             The normalized MultiRainbow.
         """
         new_rainbows = [r.normalize(**kwargs) for r in self.rainbows]
-        return MultiRainbow(new_rainbows)
+        return MultiRainbow(new_rainbows, names=self.names)
 
     def bin(self, **kwargs):
         """
@@ -199,8 +199,8 @@ class MultiRainbow:
         self._setup_panels()
 
         # figure out a good shared color limits
-        vmin = vmin or np.min([np.nanmin(r.flux) for r in self.rainbows])
-        vmax = vmax or np.max([np.nanmax(r.flux) for r in self.rainbows])
+        vmin = vmin or np.nanmin([np.nanmin(r.flux) for r in self.rainbows])
+        vmax = vmax or np.nanmax([np.nanmax(r.flux) for r in self.rainbows])
 
         # make all the individual imshows
         for r, a in zip(self.rainbows, self.axes):
