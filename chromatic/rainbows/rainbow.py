@@ -474,6 +474,55 @@ class Rainbow(Talker):
                 {message}"""
                 )
 
+    def __getitem__(self, key):
+        """
+        Trim a rainbow by indexing, slicing, or masking.
+        Two indices must be provided (`[:,:]`).
+
+        Examples
+        --------
+        ```
+        r[:,:]
+        r[10:20, :]
+        r[np.arange(10,20), :]
+        r[r.wavelength > 1*u.micron, :]
+        r[:, np.abs(r.time) < 1*u.hour]
+        r[r.wavelength > 1*u.micron, np.abs(r.time) < 1*u.hour]
+        ```
+
+        Parameters
+        ----------
+        key : tuple
+            The (wavelength, time) slices, indices, or masks.
+        """
+
+        i_wavelength, i_time = key
+
+        # create a copy
+        new = self._create_copy()
+
+        # do indexing of wavelike
+        for w in self.wavelike:
+            new.wavelike[w] = self.wavelike[w][i_wavelength]
+
+        # do indexing of timelike
+        for t in self.timelike:
+            new.timelike[t] = self.timelike[t][i_time]
+
+        # do indexing of fluxlike
+        for f in self.fluxlike:
+            # (indexing step by step seems more stable)
+            if self.fluxlike[f] is None:
+                continue
+            temporary = self.fluxlike[f][i_wavelength, :]
+            new.fluxlike[f] = temporary[:, i_time]
+
+        # finalize the new rainbow
+        new._validate_core_dictionaries()
+        new._guess_wscale()
+
+        return new
+
     def __repr__(self):
         """
         How should this object be represented as a string?

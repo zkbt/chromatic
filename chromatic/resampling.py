@@ -340,11 +340,13 @@ def bintogrid(
     # make up a grid, if one wasn't specified
     if newx is None:
         dx_without_unit = u.Quantity(dx).to(x_unit).value
-        newx = np.arange(
+        newx_without_unit = np.arange(
             np.nanmin(x_without_unit),
             np.nanmax(x_without_unit) + dx_without_unit,
             dx_without_unit,
         )
+    else:
+        newx_without_unit = u.Quantity(newx).to(x_unit).value
 
     # don't complain about zero-divisions in here (to allow infinite uncertainties)
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -363,10 +365,10 @@ def bintogrid(
         if np.any(ok):
             # TO-DO: check this nan handling on input arrays is OK?
             numerator = fluxconservingresample(
-                x_without_unit[ok], (y_without_unit * weights)[ok], newx
+                x_without_unit[ok], (y_without_unit * weights)[ok], newx_without_unit
             )
             denominator = fluxconservingresample(
-                x_without_unit[ok], (weights)[ok], newx
+                x_without_unit[ok], (weights)[ok], newx_without_unit
             )
 
             # the binned weighted means on the new grid
@@ -375,19 +377,19 @@ def bintogrid(
             # the standard error on the means, for those bins
             newunc = np.sqrt(1 / denominator)
         else:
-            newy = np.nan * newx
-            newunc = np.nan * newx
+            newy = np.nan * newx_without_unit
+            newunc = np.nan * newx_without_unit
     # remove any empty bins
     if drop_nans:
         ok = np.isfinite(newy)
     else:
-        ok = np.ones_like(newx).astype(bool)
+        ok = np.ones_like(newx_without_unit).astype(bool)
 
     # if no uncertainties were given, don't return uncertainties
     if unc is None:
-        return newx[ok] * x_unit, newy[ok] * y_unit
+        return newx_without_unit[ok] * x_unit, newy[ok] * y_unit
     else:
-        return newx[ok] * x_unit, newy[ok] * y_unit, newunc[ok] * y_unit
+        return newx_without_unit[ok] * x_unit, newy[ok] * y_unit, newunc[ok] * y_unit
         # TODO: check units on uncertainties
 
 
