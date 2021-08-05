@@ -92,7 +92,7 @@ def imshow(
     ax=None,
     quantity="flux",
     w_unit="micron",
-    t_unit="hour",
+    t_unit="day",
     colorbar=True,
     aspect="auto",
     **kw,
@@ -206,7 +206,7 @@ def plot(
 
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
-    min_time = np.min(self.time)
+    min_time = np.nanmin(self.time)
 
     # make sure ax is set up
     if ax is None:
@@ -250,7 +250,7 @@ def plot(
                 plt.plot(self.time.to(t_unit), plot_flux, **this_plotkw)
 
                 # add text labels next to each light curve
-                this_textkw = dict(va="center", color=color)
+                this_textkw = dict(va="bottom", color=color)
                 this_textkw.update(**textkw)
                 plt.annotate(
                     f"{w.to(w_unit).value:.2f} {w_unit.to_string('latex_inline')}",
@@ -356,14 +356,20 @@ def _setup_animate_lightcurves(
         ax = self._animate_lightcurves_components["ax"]
 
         # set the plot limits
-        ax.set_xlim(xlim[0] or np.min(self.time), xlim[1] or np.max(self.time))
+        ax.set_xlim(xlim[0] or np.nanmin(self.time), xlim[1] or np.nanmax(self.time))
         ax.set_ylim(
-            ylim[0] or 0.995 * np.min(self.flux),
-            ylim[1] or 1.005 * np.max(self.flux),
+            ylim[0] or 0.995 * np.nanmin(self.flux),
+            ylim[1] or 1.005 * np.nanmax(self.flux),
         )
         # set the axis labels
         ax.set_xlabel(f"Time ({self.time.unit.to_string('latex_inline')})")
         ax.set_ylabel(f"Relative Flux")
+
+        # guess a good number of digits to round
+        ndigits = np.minimum(
+            int(np.floor(np.log10(np.min(np.diff(self.wavelength)).value))), 0
+        )
+        format_code = f"{{:.{-ndigits}f}}"
 
         def update(frame):
             """
@@ -383,7 +389,7 @@ def _setup_animate_lightcurves(
 
             # update the label in the corner
             self._animate_lightcurves_components["text"].set_text(
-                f"w = {self.wavelength[frame].value:0.2f} {self.wavelength.unit.to_string('latex')}"
+                f"w = {format_code.format(self.wavelength[frame].value)} {self.wavelength.unit.to_string('latex')}"
             )
 
             # update the plot data
@@ -510,15 +516,21 @@ def _setup_animate_spectra(
 
         # set the plot limits
         ax.set_xlim(
-            xlim[0] or np.min(self.wavelength), xlim[1] or np.max(self.wavelength)
+            xlim[0] or np.nanmin(self.wavelength), xlim[1] or np.nanmax(self.wavelength)
         )
         ax.set_ylim(
-            ylim[0] or 0.995 * np.min(self.flux),
-            ylim[1] or 1.005 * np.max(self.flux),
+            ylim[0] or 0.995 * np.nanmin(self.flux),
+            ylim[1] or 1.005 * np.nanmax(self.flux),
         )
         # set the axis labels
         ax.set_xlabel(f"Wavelength ({self.wavelength.unit.to_string('latex_inline')})")
         ax.set_ylabel(f"Relative Flux")
+
+        # guess a good number of digits to round
+        ndigits = np.minimum(
+            int(np.floor(np.log10(np.min(np.diff(self.time)).value))), 0
+        )
+        format_code = f"{{:.{-ndigits}f}}"
 
         def update(frame):
             """
@@ -538,7 +550,7 @@ def _setup_animate_spectra(
 
             # update the label in the corner
             self._animate_spectra_components["text"].set_text(
-                f"t = {self.time[frame].value:0.2f} {self.time.unit.to_string('latex')}"
+                f"t = {format_code.format(self.time[frame].value)} {self.time.unit.to_string('latex')}"
             )
 
             # update the plot data

@@ -81,6 +81,233 @@ class MultiRainbow:
             for name, ax in zip(self.names, self.axes):
                 ax.set_title(name)
 
+    def _guess_good_uniform_wavelength_grid(
+        self, fraction_to_supersample=0.5, wscale=None, plot=False
+    ):
+        """
+        Guess a good shared wavelength grid that would work
+        reasonably well for all the Rainbows in this set.
+
+        Parameters
+        ----------
+        fraction_to_supersample : float
+            When setting the new wavelength bins, what fraction of bins
+            in the original Rainbows will be super-sampled? 0.0 will create
+            new bins that are just larger than the largest original bin,
+            1.0 will create new bins that are just smaller than the smallest
+            original bin, and 0.5 is the default.
+
+        plot : bool
+            Should we make a plot of the d[wavelength]/d[bin], for diagnostics?
+        """
+
+        # pick a unit to make sure everything's consistent
+        w_unit = u.micron
+
+        # create a list of interpolating functions for the datasets' dw
+        dw_interpolators = [
+            interp1d(
+                r.wavelength.to(w_unit).value,
+                np.gradient(r.wavelength.to(w_unit).value),
+                fill_value=np.inf,
+                bounds_error=False,
+            )
+            for r in self.rainbows
+        ]
+
+        def smallest_dw(w):
+            """
+            Helper function to determine the smallest dw
+            in the datasets at any particular wavelength.
+
+            Parameters
+            ----------
+            w : np.array
+                Wavelength (with no units).
+            """
+
+            dw = np.inf * np.ones_like(w)
+            for interpolator in dw_interpolators:
+                dw = np.minimum(dw, interpolator(w))
+            return dw
+
+        # compile w and dw, weighted by how many appear in each dataset
+        w_represented = np.sort(
+            np.hstack([r.wavelength.to(w_unit).value for r in self.rainbows])
+        )
+        dw_represented = smallest_dw(w_represented)
+
+        # fit a line to log(dw) as a function of log(w)
+        slope, intercept = np.polyfit(np.log(w_represented), np.log(dw_represented), 1)
+        dw_model = np.exp(np.polyval([slope, intercept], np.log(w_represented)))
+
+        # decide if it should be linear or logarithmic
+        if wscale is None:
+            if slope < 0.5:
+                wscale = "linear"
+            else:
+                wscale = "log"
+
+        if wscale == "linear":
+            dw = np.percentile(dw_represented, 100 * (1 - fraction_to_supersample))
+            new_wavelengths = np.arange(
+                np.nanmin(w_represented), np.nanmax(w_represented), dw
+            )
+        elif wscale == "log":
+            R = np.percentile(
+                w_represented / dw_represented, 100 * fraction_to_supersample
+            )
+            new_wavelengths = np.exp(
+                np.arange(
+                    np.log(np.nanmin(w_represented)),
+                    np.log(np.nanmax(w_represented)),
+                    1 / R,
+                )
+            )
+        else:
+            raise RuntimeError('🌈 Currently only "log" or "linear" are supported.')
+
+        if plot:
+
+            # plot the individual datasets
+            for r in self.rainbows:
+                plt.plot(
+                    r.wavelength, np.gradient(r.wavelength), marker="o", alpha=0.25
+                )
+
+            # plot the minimum dw at each wavelength
+            plt.plot(
+                w_represented, dw_represented, marker="o", color="black", alpha=0.25
+            )
+
+            # convert to log scale, so R=constant is a slope=1 line
+            plt.yscale("log")
+            plt.xscale("log")
+            plt.axis("scaled")
+
+            # plot the line fit result
+            plt.plot(
+                w_represented,
+                dw_model,
+                linestyle="--",
+                color="black",
+                linewidth=2,
+                alpha=0.25,
+            )
+
+            # plot the new logarithmic or linear wavelength grid
+            plt.plot(
+                new_wavelengths,
+                np.gradient(new_wavelengths),
+                color="black",
+                linewidth=20,
+                alpha=0.25,
+            )
+            plt.title(f"{slope:.3} -> {wscale}!")
+            plt.ylabel("d[wavelength]/d[bin]")
+
+        return new_wavelengths * w_unit
+
+    def _check_if_wavelengths_are_aligned(self):
+        """
+        Check whether the wavelength grid is already aligned.
+
+        Returns
+        -------
+        aligned : bool
+            Are the wavelengths the same across all?
+        """
+        # check if they're already aligned
+        wavelengths_are_same_size = np.all(
+            [np.all(r.nwave == self.rainbows[0].nwave) for r in self.rainbows]
+        )
+
+        if wavelengths_are_same_size:
+            wavelengths_are_already_aligned = np.all(
+                [
+                    np.all(r.wavelength == self.rainbows[0].wavelength)
+                    for r in self.rainbows
+                ]
+            )
+        else:
+            wavelengths_are_already_aligned = False
+
+        return wavelengths_are_already_aligned
+
+    def _check_if_times_are_aligned(self):
+        """
+        Check whether the time grid is already aligned.
+
+        Returns
+        -------
+        aligned : bool
+            Are the times the same across all?
+        """
+        # check if they're already aligned
+        times_are_same_size = np.all(
+            [np.all(r.ntime == self.rainbows[0].ntime) for r in self.rainbows]
+        )
+
+        if times_are_same_size:
+            times_are_already_aligned = np.all(
+                [np.all(r.time == self.rainbows[0].wavelength) for r in self.rainbows]
+            )
+        else:
+            times_are_already_aligned = False
+
+        return times_are_already_aligned
+
+    @property
+    def wavelength(self):
+        if self._check_if_wavelengths_are_aligned():
+            return self.rainbows[0].wavelength
+        else:
+            raise RuntimeError(f"🌈 {self} has more than one wavelength array.")
+
+    @property
+    def time(self):
+        if self._check_if_times_are_aligned():
+            return self.rainbows[0].time
+        else:
+            raise RuntimeError(f"🌈 {self} has more than one time array.")
+
+    def align_wavelengths(self, **kw):
+        """
+        Make a new MultiRainbow where wavelengths have
+        been aligned across all the Rainbows, making
+        a guesst for whether
+        """
+
+        if self._check_if_wavelengths_are_aligned():
+            return self
+        else:
+            w = self._guess_good_uniform_wavelength_grid(**kw)
+            return self.bin(wavelength=w)
+
+    def __getitem__(self, key):
+        """
+        Trim a rainbow by indexing, slicing, or masking.
+        Two indices must be provided (`[:,:]`).
+
+        Examples
+        --------
+        ```
+        r[:,:]
+        r[10:20, :]
+        r[np.arange(10,20), :]
+        r[r.wavelength > 1*u.micron, :]
+        r[:, np.abs(r.time) < 1*u.hour]
+        r[r.wavelength > 1*u.micron, np.abs(r.time) < 1*u.hour]
+        ```
+
+        Parameters
+        ----------
+        key : tuple
+            The (wavelength, time) slices, indices, or masks.
+        """
+        new_rainbows = [r.__getitem__(key) for r in self.rainbows]
+        return MultiRainbow(new_rainbows, names=self.names)
+
     def normalize(self, **kwargs):
         """
         Normalize by dividing through by the median spectrum and/or lightcurve.
@@ -99,7 +326,7 @@ class MultiRainbow:
             The normalized MultiRainbow.
         """
         new_rainbows = [r.normalize(**kwargs) for r in self.rainbows]
-        return MultiRainbow(new_rainbows)
+        return MultiRainbow(new_rainbows, names=self.names)
 
     def bin(self, **kwargs):
         """
@@ -199,8 +426,8 @@ class MultiRainbow:
         self._setup_panels()
 
         # figure out a good shared color limits
-        vmin = vmin or np.min([np.nanmin(r.flux) for r in self.rainbows])
-        vmax = vmax or np.max([np.nanmax(r.flux) for r in self.rainbows])
+        vmin = vmin or np.nanmin([np.nanmin(r.flux) for r in self.rainbows])
+        vmax = vmax or np.nanmax([np.nanmax(r.flux) for r in self.rainbows])
 
         # make all the individual imshows
         for r, a in zip(self.rainbows, self.axes):

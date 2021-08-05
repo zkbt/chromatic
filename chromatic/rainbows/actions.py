@@ -21,12 +21,17 @@ def normalize(self, wavelength=True, time=False):
     """
 
     # TODO, think about more careful treatment of uncertainties + good/bad data
-    new = self
-    if time:
-        new = new / np.nanmedian(self.flux, axis=self.waveaxis)
+    new = self._create_copy()
 
-    if wavelength:
-        new = new / np.nanmedian(self.flux, axis=self.timeaxis)
+    # (ignore nan warnings)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        if time:
+            new = new / np.nanmedian(self.flux, axis=self.waveaxis)
+
+        if wavelength:
+            new = new / np.nanmedian(self.flux, axis=self.timeaxis)
 
     return new
 
@@ -171,7 +176,13 @@ def bin_in_time(self, dt=None, time=None):
             else:
                 new.fluxlike[k][w, :] = bv
         # self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
+
+    # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
+
+    # figure out the scale, after binning
+    new._guess_wscale()
+
     return new
 
 
@@ -211,17 +222,14 @@ def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
     if wavelength is not None:
         binning_function = bintogrid
         binkw["newx"] = wavelength
-        wscale = "?"
         # self.speak(f'binning to wavelength={wavelength}')
     elif dw is not None:
         binning_function = bintogrid
         binkw["dx"] = dw
-        wscale = "linear"
         # self.speak(f'binning to dw={dw}')
     elif R is not None:
         binning_function = bintoR
         binkw["R"] = R
-        wscale = "log"
         # self.speak(f'binning to R={R}')
 
     # create a new, empty Rainbow
@@ -279,5 +287,11 @@ def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
             else:
                 new.fluxlike[k][:, t] = bv
         # self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
-    new.metadata["wscale"] = wscale
+
+    # make sure dictionaries are on the up and up
+    new._validate_core_dictionaries()
+
+    # figure out the scale, after binning
+    new._guess_wscale()
+    # new.metadata["wscale"] = wscale
     return new

@@ -21,3 +21,7 @@ def test_multi():
     m.animate_spectra(
         filename=os.path.join(test_directory, "multi-animate-spectra-demonstration.gif")
     )
+
+    m.normalize()
+    m.align_wavelengths().wavelength
+    m[:, :]
