@@ -1,21 +1,32 @@
 # chromatic
-Tools for visualizing spectroscopic light curves, with flux as a function of wavelength and time.
+Tools for visualizing spectroscopic light curves, with flux as a function of wavelength and time. It's being developed in support of Webb Transitng Exoplanet Community Early Release Science Program ([ers-transit](https://ers-transit.github.io/)) and easier multiwavelength observations of transiting exoplanets, in general, from telescopes in space or on the ground. 
 
-This is *super* in development right now!
+You can read the documentation [here](https://zkbt.github.io/chromatic/). This package is still activately being developed. Please submit Issues for bugs you notice, features that aren't clearly explained in the documentation, or functionality you'd like to see us implement!
 
 ## Installation
+### Basic Installation
+
 If you want to install this code just to use it, you can simply run
+
 ```
-pip install git+https://github.com/zkbt/chromatic.git
+pip install chromatic-lightcurves
 ```
 
-If you want to install this code while being able to edit and develop it, you can fork and/or clone this repository onto your own computer and then install it directly as an editable package by running
+and it should install everything, along with all the dependencies needed to run the code. If you previously installed this package and need to grab a newer version, you can run
+
+```z
+pip install --upgrade chromatic-lightcurves
 ```
+
+### Developer Installation
+
+If you want to install this code while being able to edit and develop it, you can fork and/or clone its github repository onto your own computer and then install it directly as an editable package its local directory by running
+
 git clone https://github.com/zkbt/chromatic.git
 cd chromatic
 pip install -e '.[develop]'
-```
-This will point your environment's `chromatic` package to point to this local folder, meaning that any changes you make in the repository will be reflected what Python sees when it tries to `import chromatic`. Including the `[develop]` will install both the dependencies for the package itself and the extra dependencies required for development (= testing and documentation).
+
+This will point your environment's chromatic package to your local folder, meaning that any changes you make in the repository will be reflected what Python sees when it tries to import chromatic. Including the [develop] after the . will install both the dependencies for the package itself and the extra dependencies required for development (= testing and documentation).
 
 ## Contributing
 
@@ -27,37 +38,8 @@ To be careful we don't mess with each other's stuff, let's *please* avoid doing 
 
 ## Usage
 
-The following snippet of code shows the basic structure and functionality of this code (so far):
-```python
-from chromatic import *
-
-# create a simulated spectroscopic light curve
-s = SimulatedRainbow(R=50,
-                     dt=10*u.minute,
-                     signal_to_noise=100)
-
-# access some basic attributes
-print('The wavelengths are...')
-print(s.wavelength)
-print('The times are...')
-print(s.time)
-print('The flux (as a function wavelength and time) is...')
-print(s.flux)
-
-# bin in both time and wavelength
-b = s.bin(dt=0.5*u.hour, dw=0.5*u.micron)
-
-# make a plot showing unbinned + binned flux
-fi, ax = plt.subplots(2, 1, sharex=True)
-imshowkw = dict( vmin=0.98, vmax=1.02)
-s.imshow(ax=ax[0], **imshowkw)
-plt.title('Unbinned')
-b.imshow(ax=ax[1], **imshowkw)
-plt.title('Binned')
-plt.tight_layout()
-plt.show()
-```
+Visit 
 
 ## Contributors
 
-This package is being developed during James Webb Space Telescope Early Release Science [Pre-Launch Data Hackathon](https://ers-transit.github.io/pre-launch-hackathon.html). Contributors who agree to follow the [Code of Conduct](https://ers-transit.github.io/code-of-conduct.html#ers-transit) are welcome to join.
+This package started being developed during James Webb Space Telescope Early Release Science [Pre-Launch Data Hackathon](https://ers-transit.github.io/pre-launch-hackathon.html). Contributors who agree to follow the [Code of Conduct](https://ers-transit.github.io/code-of-conduct.html#ers-transit) are welcome to join. If you're on the ers-transit slack, please join the #hack-chromatic channel there and say hello; otherwise, please contact Zach directly or just dive right in!
