@@ -251,6 +251,16 @@ class SimulatedRainbow(Rainbow):
 
         """
 
+        warnings.warn(
+            """
+        You're using the `.inject_transit` method to create a
+        rainbow with a transit injected into it. As part of an
+        effort to make `chromatic` better-suited for models
+        and inference, please plan to switch soon to the
+        `StarryModelInjector` object for simulating transits
+        (and eclipses and phase curves).
+        """
+        )
         # First, make sure planet_radius has the right dimension.
         if type(planet_radius) != float and len(planet_radius) != self.nwave:
             print(
