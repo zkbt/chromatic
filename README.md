@@ -14,7 +14,7 @@ pip install chromatic-lightcurves
 
 and it should install everything, along with all the dependencies needed to run the code. If you previously installed this package and need to grab a newer version, you can run
 
-```z
+```
 pip install --upgrade chromatic-lightcurves
 ```
 
@@ -22,9 +22,11 @@ pip install --upgrade chromatic-lightcurves
 
 If you want to install this code while being able to edit and develop it, you can fork and/or clone its github repository onto your own computer and then install it directly as an editable package its local directory by running
 
+```
 git clone https://github.com/zkbt/chromatic.git
 cd chromatic
 pip install -e '.[develop]'
+```
 
 This will point your environment's chromatic package to your local folder, meaning that any changes you make in the repository will be reflected what Python sees when it tries to import chromatic. Including the [develop] after the . will install both the dependencies for the package itself and the extra dependencies required for development (= testing and documentation).
 
