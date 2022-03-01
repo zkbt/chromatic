@@ -5,8 +5,9 @@ from ...imports import *
 
 __all__ = ["from_x1dints"]
 
+
 def setup_integration_times(filenames):
-    '''
+    """
     Figure out the times of each integration,
     either by reading them from the headers
     or by totally just making them up from scratch.
@@ -15,7 +16,7 @@ def setup_integration_times(filenames):
     ----------
     filenames : list
         A sorted list of filenames, corresponding to one or more segments.
-    '''
+    """
 
     # create an empty timelike dictionary
     timelike = {}
@@ -24,7 +25,7 @@ def setup_integration_times(filenames):
     first_hdu = fits.open(filenames[0])
 
     # does the first segment define some times?
-    if len(first_hdu['int_times'].data) > 0:
+    if len(first_hdu["int_times"].data) > 0:
 
         # grab the integration time information
         for c in first_hdu["int_times"].data.columns.names:
@@ -35,18 +36,22 @@ def setup_integration_times(filenames):
     # if times are not in header, make up some imaginary ones!
     else:
         # alert the user to what we're doing
-        warnings.warn('No times found! Making up imaginary ones!')
+        warnings.warn("No times found! Making up imaginary ones!")
         last_hdu = fits.open(filenames[-1])
 
         # figure out the total number of integrations (DOES THIS NEED THE -1?)
-        N_integrations = last_hdu['PRIMARY'].header['INTEND']-1
+        try:
+            N_integrations = last_hdu["PRIMARY"].header["INTEND"] - 1
+        except KeyError:
+            # (this kludge necessary for CV-simulated NIRSpec)
+            N_integrations = last_hdu["PRIMARY"].header["NINTS"]
 
         # get the time per integration (DOES THIS INCLUDE OVERHEADS?)
-        time_per_integration = last_hdu['PRIMARY'].header['EFFINTTM']*u.s
-        print(f'The imaginary times assume {time_per_integration}/integration.')
+        time_per_integration = last_hdu["PRIMARY"].header["EFFINTTM"] * u.s
+        print(f"The imaginary times assume {time_per_integration}/integration.")
 
         # create a fake array of times
-        fake_times = np.arange(N_integrations)*time_per_integration
+        fake_times = np.arange(N_integrations) * time_per_integration
         timelike["time"] = fake_times.to(u.day)
 
     # return a timelike dictionary
@@ -93,10 +98,15 @@ def from_x1dints(rainbow, filepath):
             rainbow.metadata["header"] = hdu["PRIMARY"].header
             # TO-DO: (watch out for the things that aren't constant across segments!)
 
-
         # set the index to the start of this segment
-        integration_counter = hdu["PRIMARY"].header["INTSTART"]
-        n_integrations_in_segment = len(hdu) - 3#hdu["PRIMARY"].header["INTEND"] -  hdu["PRIMARY"].header["INTSTART"]
+        try:
+            integration_counter = hdu["PRIMARY"].header["INTSTART"]
+        except KeyError:
+            # (this kludge necessary for CV-simulated NIRSpec)
+            integration_counter = 0
+        n_integrations_in_segment = (
+            len(hdu) - 3
+        )  # hdu["PRIMARY"].header["INTEND"] -  hdu["PRIMARY"].header["INTSTART"]
 
         print(integration_counter, n_integrations_in_segment, len(hdu))
 
@@ -135,7 +145,9 @@ def from_x1dints(rainbow, filepath):
 
                 # get a lower case name for the unit
                 c = column.name.lower()
-                rainbow.fluxlike[c][:, integration_counter - 1] = hdu[e].data[c] * column_units[c]
+                rainbow.fluxlike[c][:, integration_counter - 1] = (
+                    hdu[e].data[c] * column_units[c]
+                )
 
             # increment the running integration total
             integration_counter += 1
