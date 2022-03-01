@@ -1,7 +1,10 @@
 from .stsci import *
 from .eureka import *
 from .rainbownpy import *
+from .nestor_niriss_numpy import  *
 
+# construct a dictionary of available readers
+available_readers = {k:globals()[k] for k in globals() if k[0:5] == 'from_'}
 
 def guess_reader(filepath, format=None):
     """
@@ -26,12 +29,16 @@ def guess_reader(filepath, format=None):
 
     # if format='abcdefgh', return the `from_abcdefgh` function
     if format is not None:
-        return locals()[f"from_{format}"]
+        return available_readers[f"from_{format}"]
     # does it look like a .rainbow.npy chromatic file?
-    elif fnmatch.fnmatch(filepath, "*.rainbow.npy"):
+    elif fnmatch.fnmatch(filenames[0], "*.rainbow.npy"):
         return from_rainbownpy
+    # does it look like a .rainbow.npy chromatic file?
+    elif fnmatch.fnmatch(filenames[0], "*order*.npy"):
+        return from_nestor_niriss_numpy
     # does it look like a STScI x1dints.fits file?
-    elif fnmatch.fnmatch(filenames[0], "*x1dints.fits"):
+    elif (fnmatch.fnmatch(filenames[0], "*x1dints.fits")
+            or  fnmatch.fnmatch(filenames[0], "*extract_1d.fits")):
         return from_x1dints
     # does it look like an Eureka! save file?
     elif (
@@ -40,3 +47,5 @@ def guess_reader(filepath, format=None):
         or fnmatch.fnmatch(filenames[0], "*S3_*_Save.txt")
     ):
         return from_eureka
+    else:
+        raise RuntimeError(f'🌈 Failed to guess a good reader for {filenames}.')

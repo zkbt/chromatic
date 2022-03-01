@@ -95,6 +95,7 @@ setup(
             "pytest",
             "black",
             "jupyter",
+            "ipython",
             "mkdocs",
             "mkdocs-material",
             "mkdocstrings",

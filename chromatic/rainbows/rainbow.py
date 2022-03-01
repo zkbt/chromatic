@@ -333,7 +333,7 @@ class Rainbow(Talker):
         if np.allclose(dt, np.median(dt), rtol=relative_tolerance):
             self.metadata["tscale"] = "uniform"
         else:
-            self.metadata["wscale"] = "?"
+            self.metadata["tscale"] = "?"
 
     @property
     def wavelength(self):

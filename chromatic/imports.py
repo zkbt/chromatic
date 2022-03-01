@@ -47,7 +47,7 @@ def expand_filenames(filepath):
         filenames = np.sort(glob.glob(filepath))
     else:
         filenames = [filepath]
-    return filenames
+    return sorted(filenames)
 
 
 def name2color(name):
