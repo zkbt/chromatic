@@ -108,7 +108,7 @@ def from_x1dints(rainbow, filepath):
             len(hdu) - 3
         )  # hdu["PRIMARY"].header["INTEND"] -  hdu["PRIMARY"].header["INTSTART"]
 
-        print(integration_counter, n_integrations_in_segment, len(hdu))
+        # print(integration_counter, n_integrations_in_segment, len(hdu))
 
         # loop through the spectra
         for e in range(2, 2 + n_integrations_in_segment):

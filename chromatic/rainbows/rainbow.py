@@ -137,7 +137,7 @@ class Rainbow(Talker):
         # finally, tidy up by guessing the wavelength scale
         self._guess_wscale()
 
-    def save(self, filepath="test.rainbow.npy", format=None):
+    def save(self, filepath="test.rainbow.npy", format=None, **kw):
         """
         Save this Rainbow out to a file.
 
@@ -155,7 +155,7 @@ class Rainbow(Talker):
         writer = guess_writer(filepath, format=format)
 
         # use that writer to save the file
-        writer(self, filepath)
+        writer(self, filepath, **kw)
 
     def _initialize_from_dictionaries(
         self, wavelike={}, timelike={}, fluxlike={}, metadata={}
@@ -534,7 +534,15 @@ class Rainbow(Talker):
     from .operations import __add__, __sub__, __mul__, __truediv__, __eq__
 
     # import other axtions that return other Rainbows
-    from .actions import normalize, bin, bin_in_time, bin_in_wavelength
+    from .actions import (
+        normalize,
+        bin,
+        bin_in_time,
+        bin_in_wavelength,
+        get_spectrum,
+        get_spectral_resolution,
+        plot_spectral_resolution,
+    )
 
     # import visualizations that can act on Rainbows
     from .visualizations import (

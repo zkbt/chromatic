@@ -10,7 +10,7 @@ from ...version import version
 __all__ = ["to_rainbownpy"]
 
 
-def to_rainbownpy(rainbow, filepath):
+def to_rainbownpy(rainbow, filepath, **kw):
     """
     Write a Rainbow to a file in the .rainbow.npy format.
 

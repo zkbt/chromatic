@@ -1,10 +1,12 @@
 from .stsci import *
 from .eureka import *
 from .rainbownpy import *
-from .nestor_niriss_numpy import  *
+from .nestor_niriss_numpy import *
+from .text import *
 
 # construct a dictionary of available readers
-available_readers = {k:globals()[k] for k in globals() if k[0:5] == 'from_'}
+available_readers = {k: globals()[k] for k in globals() if k[0:5] == "from_"}
+
 
 def guess_reader(filepath, format=None):
     """
@@ -37,8 +39,9 @@ def guess_reader(filepath, format=None):
     elif fnmatch.fnmatch(filenames[0], "*order*.npy"):
         return from_nestor_niriss_numpy
     # does it look like a STScI x1dints.fits file?
-    elif (fnmatch.fnmatch(filenames[0], "*x1dints.fits")
-            or  fnmatch.fnmatch(filenames[0], "*extract_1d.fits")):
+    elif fnmatch.fnmatch(filenames[0], "*x1dints.fits") or fnmatch.fnmatch(
+        filenames[0], "*extract_1d.fits"
+    ):
         return from_x1dints
     # does it look like an Eureka! save file?
     elif (
@@ -47,5 +50,9 @@ def guess_reader(filepath, format=None):
         or fnmatch.fnmatch(filenames[0], "*S3_*_Save.txt")
     ):
         return from_eureka
+    elif fnmatch.fnmatch(filenames[0], "*.txt") or fnmatch.fnmatch(
+        filenames[0], "*.csv"
+    ):
+        return from_text
     else:
-        raise RuntimeError(f'🌈 Failed to guess a good reader for {filenames}.')
+        raise RuntimeError(f"🌈 Failed to guess a good reader for {filenames}.")

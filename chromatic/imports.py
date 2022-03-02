@@ -21,6 +21,7 @@ warnings.formatwarning = custom_formatwarning
 
 # astropy
 from astropy.io import ascii, fits
+from astropy.table import Table
 import astropy.units as u
 import astropy.constants as con
 from astropy.visualization import quantity_support, simple_norm
