@@ -11,7 +11,7 @@ __all__ = ["from_rainbownpy"]
 
 def from_rainbownpy(rainbow, filepath):
     """
-    Populate a Rainbow from a file in the rainbownpy format.
+    Populate a Rainbow from a file in the .rainbow.npy format.
 
     Parameters
     ----------
@@ -20,7 +20,8 @@ def from_rainbownpy(rainbow, filepath):
         The object to be populated.
 
     filepath : str
-        The path to the file to load.
+        The path to the file to load, which should probably
+        have an extension of `.rainbow.npy`
     """
 
     # read in your file, however you like

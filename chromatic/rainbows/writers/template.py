@@ -60,7 +60,7 @@ def to_abcdefgh(rainbow, filepath):
     # a 2D (row = wavelength, col = array of fluxes
     the_2D_array_of_fluxes = rainbow.fluxlike["flux"]
 
-    # read in your file, however you like
+    # write out your file, however you like
     write_to_abcdefgh(
         filepath,
         the_1D_array_of_wavelengths,

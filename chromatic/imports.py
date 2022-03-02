@@ -21,6 +21,7 @@ warnings.formatwarning = custom_formatwarning
 
 # astropy
 from astropy.io import ascii, fits
+from astropy.table import Table
 import astropy.units as u
 import astropy.constants as con
 from astropy.visualization import quantity_support, simple_norm
@@ -47,7 +48,7 @@ def expand_filenames(filepath):
         filenames = np.sort(glob.glob(filepath))
     else:
         filenames = [filepath]
-    return filenames
+    return sorted(filenames)
 
 
 def name2color(name):

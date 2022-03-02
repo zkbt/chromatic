@@ -6,6 +6,58 @@ from ...imports import *
 __all__ = ["from_x1dints"]
 
 
+def setup_integration_times(filenames):
+    """
+    Figure out the times of each integration,
+    either by reading them from the headers
+    or by totally just making them up from scratch.
+
+    Parameters
+    ----------
+    filenames : list
+        A sorted list of filenames, corresponding to one or more segments.
+    """
+
+    # create an empty timelike dictionary
+    timelike = {}
+
+    # check the first segment
+    first_hdu = fits.open(filenames[0])
+
+    # does the first segment define some times?
+    if len(first_hdu["int_times"].data) > 0:
+
+        # grab the integration time information
+        for c in first_hdu["int_times"].data.columns.names:
+            timelike[c] = first_hdu["int_times"].data[c]
+
+        # be sure to set our standard time axis
+        timelike["time"] = timelike["int_mid_BJD_TDB"] * u.day
+    # if times are not in header, make up some imaginary ones!
+    else:
+        # alert the user to what we're doing
+        warnings.warn("No times found! Making up imaginary ones!")
+        last_hdu = fits.open(filenames[-1])
+
+        # figure out the total number of integrations (DOES THIS NEED THE -1?)
+        try:
+            N_integrations = last_hdu["PRIMARY"].header["INTEND"] - 1
+        except KeyError:
+            # (this kludge necessary for CV-simulated NIRSpec)
+            N_integrations = last_hdu["PRIMARY"].header["NINTS"]
+
+        # get the time per integration (DOES THIS INCLUDE OVERHEADS?)
+        time_per_integration = last_hdu["PRIMARY"].header["EFFINTTM"] * u.s
+        print(f"The imaginary times assume {time_per_integration}/integration.")
+
+        # create a fake array of times
+        fake_times = np.arange(N_integrations) * time_per_integration
+        timelike["time"] = fake_times.to(u.day)
+
+    # return a timelike dictionary
+    return timelike
+
+
 def from_x1dints(rainbow, filepath):
     """
     Populate a Rainbow from an STScI pipeline x1dints file,
@@ -29,6 +81,10 @@ def from_x1dints(rainbow, filepath):
     # create a list of filenames (which might be just 1)
     filenames = expand_filenames(filepath)
 
+    # figure out the times (necessary to set up arrays)
+    timelike = setup_integration_times(filenames)
+    rainbow.timelike.update(**timelike)
+
     # loop over file (each one a segment)
     for i_file, f in enumerate(tqdm(filenames)):
 
@@ -42,18 +98,20 @@ def from_x1dints(rainbow, filepath):
             rainbow.metadata["header"] = hdu["PRIMARY"].header
             # TO-DO: (watch out for the things that aren't constant across segments!)
 
-            # grab the integration time information
-            for c in hdu["int_times"].data.columns.names:
-                rainbow.timelike[c] = hdu["int_times"].data[c]
-
-            # be sure to set our standard time axis
-            rainbow.timelike["time"] = rainbow.timelike["int_mid_BJD_TDB"] * u.day
-
         # set the index to the start of this segment
-        i_integration = hdu["PRIMARY"].header["INTSTART"] - 1
+        try:
+            integration_counter = hdu["PRIMARY"].header["INTSTART"]
+        except KeyError:
+            # (this kludge necessary for CV-simulated NIRSpec)
+            integration_counter = 0
+        n_integrations_in_segment = (
+            len(hdu) - 3
+        )  # hdu["PRIMARY"].header["INTEND"] -  hdu["PRIMARY"].header["INTSTART"]
+
+        # print(integration_counter, n_integrations_in_segment, len(hdu))
 
         # loop through the spectra
-        for e in range(2, len(hdu) - 1):
+        for e in range(2, 2 + n_integrations_in_segment):
 
             # do this stuff only on the very first time through
             if i_file == 0 and e == 2:
@@ -87,14 +145,16 @@ def from_x1dints(rainbow, filepath):
 
                 # get a lower case name for the unit
                 c = column.name.lower()
-                rainbow.fluxlike[c][:, i_integration] = hdu[e].data[c] * column_units[c]
+                rainbow.fluxlike[c][:, integration_counter - 1] = (
+                    hdu[e].data[c] * column_units[c]
+                )
 
             # increment the running integration total
-            i_integration += 1
+            integration_counter += 1
 
         # when done with this file, make sure indices line up
-        assert i_integration == hdu["PRIMARY"].header["INTEND"]
-
+        # assert integration_counter == hdu["PRIMARY"].header["INTEND"]
+        #  FIXME - it looks like different instruments may have different INTENDs?
     n_filled_times = np.sum(np.any(np.isfinite(rainbow.flux), rainbow.waveaxis))
     if n_filled_times != rainbow.ntime:
         warnings.warn(
@@ -109,4 +169,4 @@ def from_x1dints(rainbow, filepath):
     # rainbow.metadata['wscale'] = 'linear' # TODO: fix this kludge
 
     # remove units
-    rainbow.fluxlike["flux"] /= u.Jy  # TODO: fix and/or test this kludge
+    # rainbow.fluxlike["flux"] /= u.Jy  # TODO: fix and/or test this kludge

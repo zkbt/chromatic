@@ -1,4 +1,8 @@
 from .rainbownpy import *
+from .text import *
+
+# construct a dictionary of available writers
+available_writers = {k: globals()[k] for k in globals() if k[0:5] == "to_"}
 
 
 def guess_writer(filepath, format=None):
@@ -17,7 +21,9 @@ def guess_writer(filepath, format=None):
 
     # if format='abcdefgh', return the `to_abcdefgh` function
     if format is not None:
-        return locals()[f"to_{format}"]
+        return available_writers[f"to_{format}"]
     # does it look like a .rainbow.npy chromatic file?
     elif fnmatch.fnmatch(filepath, "*.rainbow.npy"):
         return to_rainbownpy
+    elif fnmatch.fnmatch(filepath, "*.txt") or fnmatch.fnmatch(filepath, "*.csv"):
+        return to_text
