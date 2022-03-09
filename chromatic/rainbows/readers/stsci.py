@@ -164,6 +164,9 @@ def from_x1dints(rainbow, filepath):
         perhaps missing some segment files?
         """
         )
+
+    rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["flux_error"]
+
     # try to guess wscale (and then kludge and call it linear)
     # rainbow._guess_wscale()
     # rainbow.metadata['wscale'] = 'linear' # TODO: fix this kludge
