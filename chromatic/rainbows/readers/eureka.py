@@ -115,7 +115,12 @@ def eureadka_txt(filename):
     data = ascii.read(filename)
 
     # pull out some variables
-    t = np.unique(data["bjdtdb"])
+    for time_keys in ["time", "bjdtdb"]:
+        try:
+            t = np.unique(data["bjdtdb"])
+            break
+        except KeyError:
+            pass
     w = np.unique(data["wave_1d"])
 
     fluxes = np.ones(shape=(len(w), len(t)))

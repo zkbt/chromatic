@@ -6,6 +6,7 @@
 *.pdf
 *.dat
 *.npy
+*.txt
 sandbox/
 docs/example-datasets/
 site/
