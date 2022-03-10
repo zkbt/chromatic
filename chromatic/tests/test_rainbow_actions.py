@@ -51,6 +51,32 @@ def test_bin():
     plt.savefig(os.path.join(test_directory, "imshow-bin-demonstration.pdf"))
 
 
+def test_bin_uncertainty_basic(original_resolution=100, binned_resolution=42):
+
+    a = SimulatedRainbow(R=original_resolution, signal_to_noise=100)
+    b = a.bin(R=binned_resolution)
+    original_uncertainty = np.median(a.uncertainty)
+    predicted_uncertainty = np.median(a.uncertainty) / np.sqrt(
+        original_resolution / binned_resolution
+    )
+    actual_uncertainty = np.median(b.uncertainty)
+
+    did_it_work = np.isclose(predicted_uncertainty, actual_uncertainty, rtol=0.001)
+
+    print(
+        f"""
+    At the original resolution of R={original_resolution},
+    the median uncertainty was {original_uncertainty}.
+    When binned to R={binned_resolution}, the predicted
+    resolution should be {predicted_uncertainty}.
+    It is actually {actual_uncertainty},
+    so it is {did_it_work} that the binning worked!
+    """
+    )
+
+    assert did_it_work
+
+
 def test_normalize():
     s = SimulatedRainbow()
     s.normalize()

@@ -542,6 +542,7 @@ class Rainbow(Talker):
         get_spectrum,
         get_spectral_resolution,
         plot_spectral_resolution,
+        get_typical_uncertainty,
     )
 
     # import visualizations that can act on Rainbows

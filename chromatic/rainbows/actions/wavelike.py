@@ -1,6 +1,11 @@
 from ...imports import *
 
-__all__ = ["get_spectrum", "get_spectral_resolution", "plot_spectral_resolution"]
+__all__ = [
+    "get_spectrum",
+    "get_typical_uncertainty",
+    "get_spectral_resolution",
+    "plot_spectral_resolution",
+]
 
 
 def get_spectral_resolution(self, pixels_per_resolution_element=1):
@@ -78,6 +83,27 @@ def plot_spectral_resolution(
         return ax
 
         ax.set_xlabel(f"Time ({self.time.unit.to_string('latex_inline')})")
+
+
+def get_typical_uncertainty(self, function=np.nanmedian):
+    """
+    Get the typical per-wavelength uncertainty.
+
+    Parameters
+    ----------
+    function : function
+        What function should be used to choose the "typical"
+        value for each wavelength? Good options are probably
+        things like `np.nanmedian`, `np.median`, `np.nanmean`
+        `np.mean`
+
+    Returns
+    -------
+    uncertainty_per_wavelength : np.array (wavelike)
+        The uncertainty associated with each wavelength.
+    """
+    uncertainty_per_wavelength = function(self.uncertainty, axis=self.timeaxis)
+    return uncertainty_per_wavelength
 
 
 def get_spectrum(self):

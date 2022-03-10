@@ -165,8 +165,27 @@ def from_x1dints(rainbow, filepath):
         """
         )
 
-    rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["flux_error"]
+    # try to pull in the errors
+    try:
+        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["flux_error"]
+    except KeyError:
+        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["error"]
 
+    if rainbow.uncertainty is None:
+        message = f"""
+        Hmmm...it's not clear which column corresponds to the
+        flux uncertainties for this Rainbow object. The
+        available `fluxlike` columns are:
+            {rainbow.fluxlike.keys()}
+        A long-term solution might be to fix the `from_x1dints`
+        reader, but a short-term solution would be to pick one
+        of the columns listed above and say something like
+
+        x.fluxlike['uncertainty'] = x.fluxlike['some-other-relevant-error-column']
+
+        where `x` is the Rainbow you just created.
+        """
+        warnings.warn(message)
     # try to guess wscale (and then kludge and call it linear)
     # rainbow._guess_wscale()
     # rainbow.metadata['wscale'] = 'linear' # TODO: fix this kludge

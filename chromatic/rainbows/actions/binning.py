@@ -4,7 +4,17 @@ from ...resampling import *
 __all__ = ["bin", "bin_in_time", "bin_in_wavelength"]
 
 
-def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
+def bin(
+    self,
+    dt=None,
+    time=None,
+    ntimes=None,
+    R=None,
+    dw=None,
+    wavelength=None,
+    wavelength_edges=None,
+    nwavelengths=None,
+):
     """
     Bin the rainbow in wavelength and/or time.
 
@@ -24,6 +34,8 @@ def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
     time : array of astropy.units.Quantity
         An array of times, if you just want to give
         it an entirely custom array.
+    ntimes : int
+        A fixed number of times to bin together.
     R : float
         The spectral resolution for creating a grid
         that is uniform in logarithmic space.
@@ -31,28 +43,40 @@ def bin(self, dt=None, time=None, R=None, dw=None, wavelength=None):
         The d(wavelength) bin size for creating a grid
         that is uniform in linear space.
     wavelength : array of astropy.units.Quantity
-        An array of wavelengths, if you just want to give
-        it an entirely custom array.
+        An array of wavelengths for the centers of bins,
+        if you just want to give an entirely custom array.
+    wavelength_edges : array of astropy.units.Quantity
+        An array of wavelengths for the edges of bins,
+        if you just want to give an entirely custom array.
+        The bins will span `wavelength_edges[:-1]` to
+        `wavelength_edges[1:]`, so the resulting binned
+        Rainbow will have `len(wavelength_edges) - 1`
+        wavelength bins associated with it.
+    nwavelengths : int
+        A fixed number of wavelengths to bin together.
 
     Returns
     -------
     binned : Rainbow
         The binned Rainbow.
     """
-
-    # self.speak(f'binning')
-
     # bin first in time
-    binned_in_time = self.bin_in_time(dt=dt, time=time)
+    binned_in_time = self.bin_in_time(dt=dt, time=time, ntimes=ntimes)
 
     # then bin in wavelength
-    binned = binned_in_time.bin_in_wavelength(R=R, dw=dw, wavelength=wavelength)
+    binned = binned_in_time.bin_in_wavelength(
+        R=R,
+        dw=dw,
+        wavelength=wavelength,
+        wavelength_edges=wavelength_edges,
+        nwavelengths=nwavelengths,
+    )
 
     # return the binned object
     return binned
 
 
-def bin_in_time(self, dt=None, time=None):
+def bin_in_time(self, dt=None, time=None, ntimes=None):
     """
     Bin the rainbow in time.
 
@@ -64,6 +88,8 @@ def bin_in_time(self, dt=None, time=None):
     time : array of astropy.units.Quantity
         An array of times, if you just want to give
         it an entirely custom array.
+    ntimes : int
+        A fixed number of times to bin together.
 
     The time-setting order of precendence is:
         1) time
@@ -74,6 +100,9 @@ def bin_in_time(self, dt=None, time=None):
     binned : Rainbow
         The binned Rainbow.
     """
+
+    if ntimes is not None:
+        raise RuntimeWarning("🌈 Your binning option isn't implemented yet. Sorry! 😔")
 
     # if no bin information is provided, don't bin
     if (time is None) and (dt is None):
@@ -97,7 +126,11 @@ def bin_in_time(self, dt=None, time=None):
     new.metadata["wscale"] = self.wscale
 
     # bin the time-like variables
-    # TODO (add more careful treatment of uncertainty + DQ)
+    # Technically, we should include uncertainties here too,
+    # so that times/wavelengths are weighted more toward
+    # inputs with higher flux weights (e.g. smaller variance),
+    # but that will make non-uniform grids that will be
+    # really hard to deal with.
     new.timelike = {}
     for k in self.timelike:
         bt, bv = bintogrid(x=self.time, y=self.timelike[k], unc=None, **binkw)
@@ -106,20 +139,19 @@ def bin_in_time(self, dt=None, time=None):
 
     # bin the flux-like variables
     # TODO (add more careful treatment of uncertainty + DQ)
-    # TODO (think about cleverer bintogrid for 2D arrays)
+    # TODO (think about cleverer bintogrid for 2D arrays?)
     new.fluxlike = {}
     for k in self.fluxlike:
-        # self.speak(f" binning '{k}' in time")
-        # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
 
         if k == "uncertainty":
             warnings.warn(
                 """
-            Uncertainties might not be handled well yet...
+            Uncertainties and/or data quality flags might
+            not be handled absolutely perfectly yet...
             """
             )
-            continue
 
+        # loop through wavelengths
         for w in range(new.nwave):
             if self.uncertainty is None:
                 bt, bv = bintogrid(
@@ -143,7 +175,6 @@ def bin_in_time(self, dt=None, time=None):
                 new.fluxlike[k][w, :] = bu
             else:
                 new.fluxlike[k][w, :] = bv
-        # self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
 
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
@@ -154,7 +185,9 @@ def bin_in_time(self, dt=None, time=None):
     return new
 
 
-def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
+def bin_in_wavelength(
+    self, R=None, dw=None, wavelength=None, wavelength_edges=None, nwavelengths=None
+):
     """
     Bin the rainbow in wavelength.
 
@@ -169,6 +202,15 @@ def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
     wavelength : array of astropy.units.Quantity
         An array of wavelengths, if you just want to give
         it an entirely custom array.
+    wavelength_edges : array of astropy.units.Quantity
+        An array of wavelengths for the edges of bins,
+        if you just want to give an entirely custom array.
+        The bins will span `wavelength_edges[:-1]` to
+        `wavelength_edges[1:]`, so the resulting binned
+        Rainbow will have `len(wavelength_edges) - 1`
+        wavelength bins associated with it.
+    nwavelengths : int
+        A fixed number of wavelengths to bin together.
 
     The wavelength-setting order of precendence is:
         1) wavelength
@@ -180,6 +222,9 @@ def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
     binned : Rainbow
         The binned Rainbow.
     """
+
+    if (nwavelengths is not None) or (wavelength_edges is not None):
+        raise RuntimeWarning("🌈 Your binning option isn't implemented yet. Sorry! 😔")
 
     # if no bin information is provided, don't bin
     if (wavelength is None) and (dw is None) and (R is None):
@@ -226,10 +271,10 @@ def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
         if k == "uncertainty":
             warnings.warn(
                 """
-            Uncertainties might not be handled well yet...
+            Uncertainties and/or data quality flags might
+            not be handled absolutely perfectly yet...
             """
             )
-            continue
 
         for t in range(new.ntime):
             if self.uncertainty is None:
@@ -254,7 +299,6 @@ def bin_in_wavelength(self, R=None, dw=None, wavelength=None):
                 new.fluxlike[k][:, t] = bu
             else:
                 new.fluxlike[k][:, t] = bv
-        # self.speak(f"  new shape is {np.shape(new.fluxlike[k])}")
 
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
