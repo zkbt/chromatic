@@ -141,6 +141,7 @@ def bin_in_time(self, dt=None, time=None, ntimes=None):
     # TODO (add more careful treatment of uncertainty + DQ)
     # TODO (think about cleverer bintogrid for 2D arrays?)
     new.fluxlike = {}
+    ok = self.is_ok()
     for k in self.fluxlike:
 
         if k == "uncertainty":
@@ -153,14 +154,19 @@ def bin_in_time(self, dt=None, time=None, ntimes=None):
 
         # loop through wavelengths
         for w in range(new.nwave):
+            ok_times = ok[w, :]
+
             if self.uncertainty is None:
                 bt, bv = bintogrid(
-                    x=self.time, y=self.fluxlike[k][w, :], unc=None, **binkw
+                    x=self.time[:],
+                    y=self.fluxlike[k][w, :],
+                    unc=None,
+                    **binkw,
                 )
                 bu = None
             else:
                 bt, bv, bu = bintogrid(
-                    x=self.time,
+                    x=self.time[:],
                     y=self.fluxlike[k][w, :],
                     unc=self.uncertainty[w, :],
                     **binkw,
@@ -265,6 +271,9 @@ def bin_in_wavelength(
     # TODO (add more careful treatment of uncertainty + DQ)
     # TODO (think about cleverer bintogrid for 2D arrays)
     new.fluxlike = {}
+
+    # get a fluxlike array of what's OK to include in the bins
+    ok = self.is_ok()
     for k in self.fluxlike:
         # self.speak(f" binning '{k}' in wavelength")
         # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
@@ -277,14 +286,18 @@ def bin_in_wavelength(
             )
 
         for t in range(new.ntime):
+            ok_wavelengths = ok[:, t]
             if self.uncertainty is None:
                 bt, bv = binning_function(
-                    x=self.wavelength, y=self.fluxlike[k][:, t], unc=None, **binkw
+                    x=self.wavelength[:],
+                    y=self.fluxlike[k][:, t],
+                    unc=None,
+                    **binkw,
                 )
                 bu = None
             else:
                 bt, bv, bu = binning_function(
-                    x=self.wavelength,
+                    x=self.wavelength[:],
                     y=self.fluxlike[k][:, t],
                     unc=self.uncertainty[:, t],
                     **binkw,

@@ -436,6 +436,26 @@ class Rainbow(Talker):
         """
         return np.prod(self.shape)
 
+    def is_ok(self):
+        """
+        Create a flux-like array indicating which data are OK,
+        meaning they are both finite and not marked somewhere
+        ask being bad.
+
+        Returns
+        -------
+        ok : boolean array
+            Fluxlike array of Trues and Falses indicating
+            which data entries are OK.
+        """
+
+        ok = np.isfinite(self.flux)
+        try:
+            ok *= self.fluxlike["ok"]
+        except KeyError:
+            pass
+        return ok
+
     def _validate_core_dictionaries(self):
         """
         Do some simple checks to make sure this Rainbow

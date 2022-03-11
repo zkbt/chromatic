@@ -77,6 +77,29 @@ def test_bin_uncertainty_basic(original_resolution=100, binned_resolution=42):
     assert did_it_work
 
 
+def test_bin_bad_data(visualize=False):
+    s = SimulatedRainbow(signal_to_noise=100, R=20, dt=5 * u.minute)
+    N = 100
+    i, j = np.random.randint(0, s.nwave, N), np.random.randint(0, s.ntime, N)
+    s.fluxlike["flux"][i, j] = np.nan
+
+    i, j = np.random.randint(0, s.nwave, N), np.random.randint(0, s.ntime, N)
+    s.fluxlike["uncertainty"][i, j] = 0
+
+    b = s.bin(R=7, dt=15 * u.minute)
+
+    if visualize:
+        fi, ax = plt.subplots(2, 2, figsize=(8, 6), dpi=300, sharex=True, sharey=True)
+        s.imshow(ax=ax[0, 0], quantity="uncertainty", vmax=0.01)
+        s.imshow(ax=ax[0, 1], vmin=0.97, vmax=1.03)
+
+        b.imshow(ax=ax[1, 0], quantity="uncertainty", vmax=0.01)
+        b.imshow(ax=ax[1, 1], vmin=0.97, vmax=1.03)
+
+    assert np.any(np.isfinite(b.flux))
+    return s
+
+
 def test_normalize():
     s = SimulatedRainbow()
     s.normalize()

@@ -10,6 +10,7 @@
 sandbox/
 docs/example-datasets/
 site/
+examples/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
