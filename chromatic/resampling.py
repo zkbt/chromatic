@@ -351,6 +351,9 @@ def bintogrid(
     # don't complain about zero-divisions in here (to allow infinite uncertainties)
     with np.errstate(divide="ignore", invalid="ignore"):
 
+        # calculate weight integrals for the bin array
+        ok = np.isnan(y_without_unit) == False
+
         # resample the sums onto that new grid
         if unc is None:
             weights = np.ones_like(x_without_unit)
@@ -360,8 +363,9 @@ def bintogrid(
             else:
                 weights = np.ones_like(x_without_unit)
 
-        # calculate weight integrals for the bin array
-        ok = np.isnan(y_without_unit) == False
+            # ignore infinite weights (= 0 uncertainties)
+            ok *= np.isfinite(weights)
+
         if np.any(ok):
             # TO-DO: check this nan handling on input arrays is OK?
             numerator = fluxconservingresample(
@@ -379,6 +383,7 @@ def bintogrid(
         else:
             newy = np.nan * newx_without_unit
             newunc = np.nan * newx_without_unit
+
     # remove any empty bins
     if drop_nans:
         ok = np.isfinite(newy)
