@@ -35,7 +35,10 @@ def bin(
         An array of times, if you just want to give
         it an entirely custom array.
     ntimes : int
-        A fixed number of times to bin together.
+        A fixed number of time to bin together.
+        Binning will start from the 0th element of the
+        starting times; if you want to start from
+        a different index, trim before binning.
     R : float
         The spectral resolution for creating a grid
         that is uniform in logarithmic space.
@@ -54,6 +57,9 @@ def bin(
         wavelength bins associated with it.
     nwavelengths : int
         A fixed number of wavelengths to bin together.
+        Binning will start from the 0th element of the
+        starting wavelengths; if you want to start from
+        a different index, trim before binning.
 
     Returns
     -------
@@ -89,11 +95,15 @@ def bin_in_time(self, dt=None, time=None, ntimes=None):
         An array of times, if you just want to give
         it an entirely custom array.
     ntimes : int
-        A fixed number of times to bin together.
+        A fixed number of time to bin together.
+        Binning will start from the 0th element of the
+        starting times; if you want to start from
+        a different index, trim before binning.
 
     The time-setting order of precendence is:
         1) time
         2) dt
+        3) ntimes
 
     Returns
     -------
@@ -217,11 +227,17 @@ def bin_in_wavelength(
         wavelength bins associated with it.
     nwavelengths : int
         A fixed number of wavelengths to bin together.
+        Binning will start from the 0th element of the
+        starting wavelengths; if you want to start from
+        a different index, trim before binning.
 
     The wavelength-setting order of precendence is:
         1) wavelength
-        2) dw
-        3) R
+        2) wavelength_edges
+        3) nwavelengths
+        4) dw
+        5) R
+
 
     Returns
     -------
@@ -230,10 +246,15 @@ def bin_in_wavelength(
     """
 
     if (nwavelengths is not None) or (wavelength_edges is not None):
-        raise RuntimeWarning("🌈 Your binning option isn't implemented yet. Sorry! 😔")
+        warnings.warn("🌈 Your binning option isn't implemented yet. Sorry! 😔")
 
     # if no bin information is provided, don't bin
-    if (wavelength is None) and (dw is None) and (R is None):
+    if (
+        (wavelength is None)(wavelength_edges is None)
+        and (nwavelengths is None)
+        and (dw is None)
+        and (R is None)
+    ):
         return self
 
     # set up binning parameters
