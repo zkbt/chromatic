@@ -158,7 +158,7 @@ def imshow(
             )
         plt.xlabel(f"Time ({t_unit.to_string('latex_inline')})")
         if colorbar:
-            plt.colorbar(ax=ax)
+            plt.colorbar(ax=ax, label=quantity)
     return ax
 
 
