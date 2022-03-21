@@ -25,7 +25,8 @@ def setup_integration_times(filenames):
     first_hdu = fits.open(filenames[0])
 
     # does the first segment define some times?
-    if len(first_hdu["int_times"].data) > 0:
+    try:
+        assert len(first_hdu["int_times"].data) > 0
 
         # grab the integration time information
         for c in first_hdu["int_times"].data.columns.names:
@@ -34,7 +35,7 @@ def setup_integration_times(filenames):
         # be sure to set our standard time axis
         timelike["time"] = timelike["int_mid_BJD_TDB"] * u.day
     # if times are not in header, make up some imaginary ones!
-    else:
+    except:
         # alert the user to what we're doing
         warnings.warn("No times found! Making up imaginary ones!")
         last_hdu = fits.open(filenames[-1])
@@ -186,9 +187,11 @@ def from_x1dints(rainbow, filepath):
         where `x` is the Rainbow you just created.
         """
         warnings.warn(message)
+    else:
+        # kludge to replace zero uncertainties
+        if np.all(rainbow.uncertainty == 0):
+            rainbow.uncertainty = 1
+
     # try to guess wscale (and then kludge and call it linear)
     # rainbow._guess_wscale()
     # rainbow.metadata['wscale'] = 'linear' # TODO: fix this kludge
-
-    # remove units
-    # rainbow.fluxlike["flux"] /= u.Jy  # TODO: fix and/or test this kludge

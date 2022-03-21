@@ -2,6 +2,8 @@ from .stsci import *
 from .eureka import *
 from .rainbownpy import *
 from .nestor_niriss_numpy import *
+from .leodossantos import *
+from .adinafeinstein import *
 from .text import *
 
 # construct a dictionary of available readers
