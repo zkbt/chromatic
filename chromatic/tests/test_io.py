@@ -13,7 +13,7 @@ def test_rainbow_npy():
 def test_rainbow_FITS():
     filename = os.path.join(test_directory, "test.rainbow.fits")
     a = SimulatedRainbow()
-    a.save(filename)
+    a.save(filename, overwrite=True)
     b = Rainbow(filename)
     assert a == b
 
