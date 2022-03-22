@@ -1,5 +1,7 @@
-from .rainbownpy import *
+from .rainbow_npy import *
+from .rainbow_FITS import *
 from .text import *
+
 
 # construct a dictionary of available writers
 available_writers = {k: globals()[k] for k in globals() if k[0:5] == "to_"}
@@ -24,6 +26,10 @@ def guess_writer(filepath, format=None):
         return available_writers[f"to_{format}"]
     # does it look like a .rainbow.npy chromatic file?
     elif fnmatch.fnmatch(filepath, "*.rainbow.npy"):
-        return to_rainbownpy
+        return to_rainbow_npy
+    elif fnmatch.fnmatch(filepath.lower(), "*.rainbow.fits") or fnmatch.fnmatch(
+        filepath.lower(), "*.rainbow.fit"
+    ):
+        return to_rainbow_FITS
     elif fnmatch.fnmatch(filepath, "*.txt") or fnmatch.fnmatch(filepath, "*.csv"):
         return to_text

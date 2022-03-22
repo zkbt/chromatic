@@ -190,7 +190,7 @@ def from_x1dints(rainbow, filepath):
     else:
         # kludge to replace zero uncertainties
         if np.all(rainbow.uncertainty == 0):
-            rainbow.uncertainty = 1
+            rainbow.fluxlike["uncertainty"] = 1
 
     # try to guess wscale (and then kludge and call it linear)
     # rainbow._guess_wscale()

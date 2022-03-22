@@ -1,9 +1,10 @@
 from .stsci import *
 from .eureka import *
-from .rainbownpy import *
+from .rainbow_npy import *
 from .nestor_niriss_numpy import *
 from .leodossantos import *
 from .adinafeinstein import *
+from .rainbow_FITS import *
 from .text import *
 
 # construct a dictionary of available readers
@@ -36,7 +37,11 @@ def guess_reader(filepath, format=None):
         return available_readers[f"from_{format}"]
     # does it look like a .rainbow.npy chromatic file?
     elif fnmatch.fnmatch(filenames[0], "*.rainbow.npy"):
-        return from_rainbownpy
+        return from_rainbow_npy
+    elif fnmatch.fnmatch(filepath.lower(), "*.rainbow.fits") or fnmatch.fnmatch(
+        filepath.lower(), "*.rainbow.fit"
+    ):
+        return from_rainbow_FITS
     # does it look like a .rainbow.npy chromatic file?
     elif fnmatch.fnmatch(filenames[0], "*order*.npy"):
         return from_nestor_niriss_numpy

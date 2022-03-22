@@ -1,12 +1,5 @@
 from ...imports import *
 
-__all__ = [
-    "get_spectrum",
-    "get_typical_uncertainty",
-    "get_spectral_resolution",
-    "plot_spectral_resolution",
-]
-
 
 def get_spectral_resolution(self, pixels_per_resolution_element=1):
     """

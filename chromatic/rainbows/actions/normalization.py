@@ -1,7 +1,5 @@
 from ...imports import *
 
-__all__ = ["normalize"]
-
 
 def normalize(self, wavelength=True, time=False):
     """

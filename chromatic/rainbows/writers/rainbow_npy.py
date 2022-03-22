@@ -7,10 +7,10 @@ from ...imports import *
 from ...version import version
 
 # define list of the only things that will show up in imports
-__all__ = ["to_rainbownpy"]
+__all__ = ["to_rainbow_npy"]
 
 
-def to_rainbownpy(rainbow, filepath, **kw):
+def to_rainbow_npy(rainbow, filepath, **kw):
     """
     Write a Rainbow to a file in the .rainbow.npy format.
 
