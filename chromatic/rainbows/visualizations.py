@@ -143,7 +143,7 @@ def imshow(
 
     else:
         message = f"""
-        The wavelength scale for this rainbow is {self.wscale}.
+        The wavelength scale for this rainbow is '{self.wscale}'.
         It's hard to imshow something with a wavelength axis
         that isn't uniform in linear or logarithmic space, so
         we're giving up and just using the wavelength index
@@ -163,6 +163,9 @@ def imshow(
         ]
         ylabel = "Wavelength Index"
 
+    # define some default keywords
+    imshow_kw = dict(vmin=0.975, vmax=1.025, interpolation="nearest")
+    imshow_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
         plt.imshow(
@@ -170,8 +173,7 @@ def imshow(
             extent=extent,
             aspect=aspect,
             origin="upper",
-            interpolation="nearest",
-            **kw,
+            **imshow_kw,
         )
         plt.ylabel(ylabel)
         plt.xlabel(f"Time ({t_unit.to_string('latex_inline')})")
