@@ -49,7 +49,7 @@ def setup_integration_times(filenames):
 
         # get the time per integration (DOES THIS INCLUDE OVERHEADS?)
         time_per_integration = last_hdu["PRIMARY"].header["EFFINTTM"] * u.s
-        print(f"The imaginary times assume {time_per_integration}/integration.")
+        warnings.warn(f"The imaginary times assume {time_per_integration}/integration.")
 
         # create a fake array of times
         fake_times = np.arange(N_integrations) * time_per_integration
@@ -105,9 +105,16 @@ def from_x1dints(rainbow, filepath):
         except KeyError:
             # (this kludge necessary for CV-simulated NIRSpec)
             integration_counter = 0
-        n_integrations_in_segment = (
-            len(hdu) - 3
-        )  # hdu["PRIMARY"].header["INTEND"] -  hdu["PRIMARY"].header["INTSTART"]
+
+        try:
+            n_integrations_predicted_by_header = (
+                hdu["PRIMARY"].header["INTEND"] - hdu["PRIMARY"].header["INTSTART"]
+            )
+        except KeyError:
+            n_integrations_predicted_by_header = 0
+        n_integrations_in_segment = np.maximum(
+            len(hdu) - 3, n_integrations_predicted_by_header
+        )
 
         # print(integration_counter, n_integrations_in_segment, len(hdu))
 
