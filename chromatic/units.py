@@ -13,6 +13,9 @@ for kludge_DN_unit in [data_number_per_second, data_number_per_second_sq]:
     except ValueError:
         pass
 
+electrons_per_group = u.def_unit("Electrons/group")
+u.add_enabled_units([electrons_per_group])
+
 # FIXME: some of these feel super kuldgy; how do we make this
 # interact more smoothly with units already defined in astropy
 # (for example, DN should work, but is always flaky for me...)
