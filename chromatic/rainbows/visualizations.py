@@ -181,6 +181,46 @@ def imshow(
             plt.colorbar(ax=ax, label=quantity)
     return ax
 
+def imshow_fluxlike_quantities(self, quantities=None, maxcol=3, **kw):
+    """
+    imshow fluxlikes as a function of time (x = time, y = wavelength, color = flux).
+    
+    Parameters
+    ----------
+    quantities : list like
+        The fluxlike quantity to imshow.
+    maxcol : int
+        The maximum number of columns to show (Optional).
+    
+    """
+    if quantities is None:
+        allkeys = self.fluxlike.keys()
+    else:
+        allkeys = quantities[:]
+    
+    if len(allkeys) > maxcol:
+        rows = int(np.ceil(len(allkeys)/maxcol))
+        cols = maxcol
+    else:
+        rows = 1
+        cols = np.min([len(allkeys), maxcol])
+
+    fig, axes = plt.subplots(rows, cols, figsize=(cols*5, 4*rows), 
+                             sharex=True, sharey=True, constrained_layout=True)
+    if len(allkeys) > 1:
+        ax = axes.flatten()
+    else:
+        ax = [axes]
+
+    for k,key in enumerate(allkeys):
+        if key in self.fluxlike.keys():
+            self.imshow(quantity=key, ax=ax[k], **kw)
+        else:
+            ax[k].text(0.5,0.5, f'No {key}', transform=ax[k].transAxes, ha='center', va='center')
+    
+    if k+1 <= len(ax):
+        for axi in ax[k+1:]:
+            axi.axis('Off')
 
 def plot(
     self,
