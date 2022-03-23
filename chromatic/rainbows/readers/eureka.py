@@ -61,21 +61,13 @@ def from_eureka(rainbow, filename, **kwargs):
     ----------
 
     rainbow : Rainbow
-        The object to be populated. (This is intended
-        to be used as a class method of Rainbow or
-        of a class derived from Rainbow, as a way of
-        initializing an object from files.)
+        The object to be populated.
     filename : str
         The path to the file.
     """
 
     # load the Eureka event
-
-    if fnmatch.fnmatch(filename, "*.txt"):
-        wavelike, timelike, fluxlike = eureadka_txt(filename)
-
-    else:
-        wavelike, timelike, fluxlike = eureadka_dat(filename)
+    wavelike, timelike, fluxlike = eureadka_txt(filename)
 
     # populate the rainbow
     rainbow._initialize_from_dictionaries(

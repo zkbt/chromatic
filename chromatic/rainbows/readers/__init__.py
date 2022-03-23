@@ -1,11 +1,13 @@
 from .x1dints import *
 from .eureka import *
 from .rainbow_npy import *
+from .rainbow_FITS import *
+from .text import *
+
 from .nestor_niriss_numpy import *
 from .leodossantos import *
 from .adinafeinstein import *
-from .rainbow_FITS import *
-from .text import *
+from .everettschlawin import *
 
 # construct a dictionary of available readers
 available_readers = {k: globals()[k] for k in globals() if k[0:5] == "from_"}
