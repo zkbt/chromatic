@@ -1,4 +1,4 @@
-from .stsci import *
+from .x1dints import *
 from .eureka import *
 from .rainbow_npy import *
 from .nestor_niriss_numpy import *
