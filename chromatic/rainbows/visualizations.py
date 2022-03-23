@@ -164,7 +164,7 @@ def imshow(
         ylabel = "Wavelength Index"
 
     # define some default keywords
-    imshow_kw = dict(vmin=0.975, vmax=1.025, interpolation="nearest")
+    imshow_kw = dict(interpolation="nearest")
     imshow_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
