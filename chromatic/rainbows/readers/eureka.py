@@ -115,9 +115,9 @@ def eureadka_txt(filename):
     data = ascii.read(filename)
 
     # pull out some variables
-    for time_keys in ["time", "bjdtdb"]:
+    for time_key in ["time", "bjdtdb"]:
         try:
-            t = np.unique(data["bjdtdb"])
+            t = np.unique(data[time_key])
             break
         except KeyError:
             pass
