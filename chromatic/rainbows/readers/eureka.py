@@ -114,40 +114,36 @@ def eureadka_txt(filename):
     # load the data
     data = ascii.read(filename)
 
-    # pull out some variables
-    for time_keys in ["time", "bjdtdb"]:
+    # figure out a time array
+    for time_key in ["time", "bjdtdb"]:
         try:
-            t = np.unique(data["bjdtdb"])
+            t = np.unique(data[time_key])
             break
         except KeyError:
             pass
-    w = np.unique(data["wave_1d"])
-
-    fluxes = np.ones(shape=(len(w), len(t)))
-    uncertainties = np.ones_like(fluxes)
-
-    i_time = np.arange(len(t))
-
-    for i_wavelength in tqdm(range(len(w))):
-
-        indices_for_this_wavelength = i_wavelength + i_time * len(w)
-        fluxes[i_wavelength, i_time] = data["optspec"][indices_for_this_wavelength]
-        uncertainties[i_wavelength, i_time] = data["opterr"][
-            indices_for_this_wavelength
-        ]
-
-    f = fluxes
-    e = uncertainties
-
     timelike = {}
-    timelike["time"] = t * u.day  # This is in MJD
+    timelike["time"] = t * u.day
 
+    # figure out a wavelength array
+    w = np.unique(data["wave_1d"])
     wavelike = {}
-    wavelike["wavelength"] = w * u.micron  # TODO: check wavelength units
+    wavelike["wavelength"] = w * u.micron
 
+    # populate the fluxlike quantities
     fluxlike = {}
-    fluxlike["flux"] = f
-    fluxlike["uncertainty"] = e
+    i_time = np.arange(len(t))
+    for k in data.colnames[2:]:
+        # if an array for this key doesn't exist, create it
+        if k not in fluxlike:
+            fluxlike[k] = np.zeros((len(w), len(t)))
+        # loop through wavelengths, populating all times for each
+        for i_wavelength in tqdm(range(len(w))):
+            # figure out all indices for this wavelengh
+            indices_for_this_wavelength = i_wavelength + i_time * len(w)
+            fluxlike[k][i_wavelength, i_time] = data[k][indices_for_this_wavelength]
+
+    fluxlike["flux"] = fluxlike["optspec"]
+    fluxlike["uncertainty"] = fluxlike["opterr"]
 
     return wavelike, timelike, fluxlike
 

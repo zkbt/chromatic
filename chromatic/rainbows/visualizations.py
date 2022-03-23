@@ -130,6 +130,8 @@ def imshow(
             (max(self.wavelength) / w_unit).decompose(),
             (min(self.wavelength) / w_unit).decompose(),
         ]
+        ylabel = f"Wavelength ({w_unit.to_string('latex_inline')})"
+
     elif self.wscale == "log":
         extent = [
             (min(self.time) / t_unit).decompose(),
@@ -137,8 +139,29 @@ def imshow(
             np.log10(max(self.wavelength) / w_unit),
             np.log10(min(self.wavelength) / w_unit),
         ]
+        ylabel = r"log$_{10}$" + f"[Wavelength/({w_unit.to_string('latex_inline')})]"
+
     else:
-        raise RuntimeError("Can't imshow without knowing wscale.")
+        message = f"""
+        The wavelength scale for this rainbow is {self.wscale}.
+        It's hard to imshow something with a wavelength axis
+        that isn't uniform in linear or logarithmic space, so
+        we're giving up and just using the wavelength index
+        as the wavelength axis.
+
+        If you want a real wavelength axis, one solution would
+        be to bin your wavelengths to a more uniform grid with
+        `rainbow.bin(R=...)` (for logarithmic wavelengths) or
+        `rainbow.bin(dw=...)` (for linear wavelengths)
+        """
+        warnings.warn(message)
+        extent = [
+            (min(self.time) / t_unit).decompose(),
+            (max(self.time) / t_unit).decompose(),
+            self.nwave,
+            0,
+        ]
+        ylabel = "Wavelength Index"
 
     with quantity_support():
         plt.sca(ax)
@@ -150,12 +173,7 @@ def imshow(
             interpolation="nearest",
             **kw,
         )
-        if self.wscale == "linear":
-            plt.ylabel(f"Wavelength ({w_unit.to_string('latex_inline')})")
-        elif self.wscale == "log":
-            plt.ylabel(
-                r"log$_{10}$" + f"[Wavelength/({w_unit.to_string('latex_inline')})]"
-            )
+        plt.ylabel(ylabel)
         plt.xlabel(f"Time ({t_unit.to_string('latex_inline')})")
         if colorbar:
             plt.colorbar(ax=ax, label=quantity)
