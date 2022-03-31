@@ -9,7 +9,7 @@ from ...imports import *
 __all__ = ["to_rainbow_FITS"]
 
 
-def to_rainbow_FITS(rainbow, filepath, overwrite=None):
+def to_rainbow_FITS(rainbow, filepath, overwrite=True):
     """
     Write a Rainbow to a FITS file.
 
