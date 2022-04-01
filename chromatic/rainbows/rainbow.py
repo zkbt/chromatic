@@ -146,7 +146,6 @@ class Rainbow:
 
         # finally, tidy up by guessing the wavelength scale
         self._guess_wscale()
-        self._validate_uncertainties()
 
     def _validate_uncertainties(self):
         """
@@ -314,6 +313,7 @@ class Rainbow:
 
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
+        self._validate_uncertainties()
 
     def _create_copy(self):
         """

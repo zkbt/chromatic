@@ -178,7 +178,12 @@ def imshow(
         plt.ylabel(ylabel)
         plt.xlabel(f"Time ({t_unit.to_string('latex_inline')})")
         if colorbar:
-            plt.colorbar(ax=ax, label=quantity)
+            plt.colorbar(
+                ax=ax,
+                label=u.Quantity(self.fluxlike[quantity]).unit.to_string(
+                    "latex_inline"
+                ),
+            )
     return ax
 
 
