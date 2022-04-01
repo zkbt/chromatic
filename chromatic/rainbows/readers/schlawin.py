@@ -2,10 +2,10 @@
 from ...imports import *
 
 # define list of the only things that will show up in imports
-__all__ = ["from_everett"]
+__all__ = ["from_schlawin"]
 
 
-def from_everett(rainbow, filepath):
+def from_schlawin(rainbow, filepath):
     """
     Populate a Rainbow from a file in Everett Schlawin's tshirt format.
 
