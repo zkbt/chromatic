@@ -6,13 +6,13 @@ would be to do something like the following
 
     1. Copy this `template.py` file into a new file in the
     `readers/` directory, ideally with a name that's easy
-    to recognize, such as `readers/leo.py` (assuming
-    `leo` is the name of your format)
+    to recognize, such as `readers/feinstein.py` (assuming
+    `feinstein` is the name of your format)
 
-    2. Start by finding and replacing `leo` in this
+    2. Start by finding and replacing `feinstein` in this
     template with the name of your format.
 
-    3. Edit the `from_leo` function so that it will
+    3. Edit the `from_feinstein` function so that it will
     load a chromatic light curve file in your format and,
     for some Rainbow object `rainbow`, populate at least:
 
@@ -32,14 +32,14 @@ would be to do something like the following
     like `my-neato-formatted-files-*.npy` or some such.)
 
     4. Edit the `readers/__init__.py` file to import your
-    `from_leo` function to be accessible when people
+    `from_feinstein` function to be accessible when people
     are trying to create new Rainbows. Add an `elif` statement
     to the `guess_reader` function that will help guess which
     reader to use from some aspect(s) of the filename.
 
     (This `guess_reader` function also accepts a `format=`
     keyword that allows the user to explicitly specify that
-    the leo reader should be used.)
+    the feinstein reader should be used.)
 
     5. Submit a pull request to the github repository for
     this package, so that other folks can use your handy
@@ -50,12 +50,12 @@ would be to do something like the following
 from ...imports import *
 
 # define list of the only things that will show up in imports
-__all__ = ["from_leo"]
+__all__ = ["from_feinstein"]
 
 
-def from_leo(rainbow, filepath):
+def from_feinstein(rainbow, filepath):
     """
-    Populate a Rainbow from a file in the leo format.
+    Populate a Rainbow from a file in the feinstein format.
 
     Parameters
     ----------
@@ -80,17 +80,12 @@ def from_leo(rainbow, filepath):
         The path to the file to load.
     """
 
-    import pickle
+    wavelength, spectra, err = np.load(filepath, allow_pickle=True)
 
-    with open(filepath, "rb") as pkl:
-        spectra = pickle.load(pkl)
-
-    # populate a 1D array of wavelengths (with astropy units of length)
-    wavelength = spectra[0]["wavelength"] * u.micron
-    rainbow.wavelike["wavelength"] = wavelength
+    rainbow.wavelike["wavelength"] = wavelength * u.micron
 
     # populate a 1D array of times (with astropy units of time)
-    times = np.arange(len(spectra)) * u.minute
+    times = np.arange(spectra.shape[0]) * u.minute
     warnings.warn("The times are totally made up!")
     rainbow.timelike["time"] = times
 
@@ -98,9 +93,5 @@ def from_leo(rainbow, filepath):
     flux = np.zeros((len(wavelength), len(times)))
     uncertainty = np.zeros_like(flux)
 
-    for k in spectra:
-        flux[:, k] = spectra[k]["flux"]
-        uncertainty[:, k] = spectra[k]["flux_error"]
-
-    rainbow.fluxlike["flux"] = flux
-    rainbow.fluxlike["uncertainty"] = uncertainty
+    rainbow.fluxlike["flux"] = spectra.T
+    rainbow.fluxlike["uncertainty"] = err.T

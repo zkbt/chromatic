@@ -426,8 +426,12 @@ class MultiRainbow:
         self._setup_panels()
 
         # figure out a good shared color limits
-        vmin = vmin or np.nanmin([np.nanmin(r.flux) for r in self.rainbows])
-        vmax = vmax or np.nanmax([np.nanmax(r.flux) for r in self.rainbows])
+        vmin = vmin or np.nanmin(
+            [np.nanmin(u.Quantity(r.flux).value) for r in self.rainbows]
+        )
+        vmax = vmax or np.nanmax(
+            [np.nanmax(u.Quantity(r.flux).value) for r in self.rainbows]
+        )
 
         # make all the individual imshows
         for r, a in zip(self.rainbows, self.axes):

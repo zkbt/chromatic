@@ -102,6 +102,7 @@ setup(
             "pytkdocs[numpy-style]",
             "mkdocs-jupyter",
             "mkdocs-exclude",
+            "twine",
         ],
         "cartoons": ["rainbow-connection>=0.0.7"],
     },
