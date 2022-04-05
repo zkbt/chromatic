@@ -9,7 +9,7 @@ from ...imports import *
 __all__ = ["to_rainbow_FITS"]
 
 
-def to_rainbow_FITS(rainbow, filepath, overwrite=None):
+def to_rainbow_FITS(rainbow, filepath, overwrite=True):
     """
     Write a Rainbow to a FITS file.
 
@@ -26,7 +26,10 @@ def to_rainbow_FITS(rainbow, filepath, overwrite=None):
     # create a header for the metadata
     header = fits.Header()
     for k in rainbow.metadata:
-        header[k] = rainbow.metadata[k]
+        try:
+            header[k] = rainbow.metadata[k]
+        except ValueError:
+            warnings.warn(f"metadata item '{k}' cannot be saved to FITS header")
     primary_hdu = fits.PrimaryHDU(header=header)
 
     # create extensions for the three other core dictionaries
