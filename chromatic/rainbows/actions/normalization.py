@@ -34,7 +34,7 @@ def normalize(self, axis="wavelength", percentile=50):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
-        if axis.lower() == "w":
+        if axis.lower()[0] == "w":
             normalization = np.nanpercentile(new.flux, percentile, axis=self.timeaxis)
             new.fluxlike["flux"] = new.flux / normalization[:, np.newaxis]
             try:
@@ -43,7 +43,7 @@ def normalize(self, axis="wavelength", percentile=50):
                 )
             except ValueError:
                 pass
-        elif axis.lower() == "t":
+        elif axis.lower()[0] == "t":
             normalization = np.nanpercentile(self.flux, percentile, axis=self.waveaxis)
             new.fluxlike["flux"] = new.flux / normalization[np.newaxis, :]
             try:
