@@ -1,7 +1,7 @@
 from ...imports import *
 
 
-def normalize(self, wavelength=True, time=False):
+def normalize(self, wavelength=True, time=False, percentile=50):
     """
     Normalize by dividing through by the median spectrum and/or lightcurve.
 
@@ -12,6 +12,15 @@ def normalize(self, wavelength=True, time=False):
 
     time : bool
         Should we divide by the median light curve?
+
+    percentile : float
+        A number between 0 and 100, specifying the percentile
+        of the data along an axis to use as the reference.
+        The default of `percentile=50` corresponds to the median.
+        If you want to normalize to out-of-transit, maybe you
+        want a higher percentile. If you want to normalize to
+        the baseline below a flare, maybe you want a lower
+        percentage.
 
     Returns
     -------
@@ -27,9 +36,9 @@ def normalize(self, wavelength=True, time=False):
         warnings.simplefilter("ignore")
 
         if time:
-            new = new / np.nanmedian(self.flux, axis=self.waveaxis)
+            new = new / np.nanpercentile(self.flux, axis=self.waveaxis)
 
         if wavelength:
-            new = new / np.nanmedian(self.flux, axis=self.timeaxis)
+            new = new / np.nanpercentile(self.flux, axis=self.timeaxis)
 
     return new
