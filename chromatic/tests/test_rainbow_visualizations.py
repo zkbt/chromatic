@@ -34,6 +34,10 @@ def test_plot():
     SimulatedRainbow(R=10).plot()
     plt.savefig(os.path.join(test_directory, "plot-demonstration.pdf"))
 
+def test_plot_quantities():
+    SimulatedRainbow(R=10).plot_quantities()
+    plt.savefig(os.path.join(test_directory, "plot_quantities-demonstration.pdf"))
+
 
 def test_animate():
     # test a transit, since along both dimensions
