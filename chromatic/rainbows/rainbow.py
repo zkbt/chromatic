@@ -1,10 +1,9 @@
 from ..imports import *
-from ..talker import Talker
 from .readers import *
 from .writers import *
 
 
-class Rainbow(Talker):
+class Rainbow:
     """
     Rainbow objects represent the flux of some astrophysical
     object as a function of both wavelength and time.
@@ -79,6 +78,15 @@ class Rainbow(Talker):
             A dictionary containing all other metadata
             associated with the dataset, generally lots of
             individual parameters or comments.
+        kw : dict
+            Additional keywords will be passed along to
+            the function that initializes the rainbow.
+            If initializing from arrays (`time=`, `wavelength=`,
+            ...), these keywords will be interpreted as
+            additional arrays that should be sorted by their
+            shape into the appropriate dictionary. If
+            initializing from files, the keywords will
+            be passed on to the reader.
 
         Examples
         --------
@@ -130,12 +138,40 @@ class Rainbow(Talker):
                 uncertainty=uncertainty,
                 **kw,
             )
+            if metadata is not None:
+                self.metadata.update(**metadata)
         # then try to initialize from a file
         elif (type(filepath) == str) or (type(filepath) == list):
-            self._initialize_from_file(filepath=filepath, format=format)
+            self._initialize_from_file(filepath=filepath, format=format, **kw)
 
         # finally, tidy up by guessing the wavelength scale
         self._guess_wscale()
+
+    def _validate_uncertainties(self):
+        """
+        Do some checks on the uncertainty values.
+        """
+        if self.uncertainty is None and len(self.fluxlike) > 0:
+            message = f"""
+            Hmmm...it's not clear which column corresponds to the
+            flux uncertainties for this Rainbow object. The
+            available `fluxlike` columns are:
+                {self.fluxlike.keys()}
+            A long-term solution might be to fix the `from_x1dints`
+            reader, but a short-term solution would be to pick one
+            of the columns listed above and say something like
+
+            x.fluxlike['uncertainty'] = x.fluxlike['some-other-relevant-error-column']
+
+            where `x` is the Rainbow you just created.
+            """
+            warnings.warn(message)
+            return
+
+        # kludge to replace zero uncertainties
+        if np.all(self.uncertainty == 0):
+            warnings.warn("\nUncertainties were all 0, replacing them with 1!")
+            self.fluxlike["uncertainty"] = np.ones_like(self.flux)
 
     def save(self, filepath="test.rainbow.npy", format=None, **kw):
         """
@@ -222,6 +258,10 @@ class Rainbow(Talker):
             A 2D array of flux values.
         uncertainty : np.array
             A 2D array of uncertainties, associated with the flux.
+        kw : dict
+            Additional keywords will be interpreted as arrays
+            that should be sorted into the appropriate location
+            based on their size.
         """
 
         # store the wavelength
@@ -234,10 +274,19 @@ class Rainbow(Talker):
         self.fluxlike["flux"] = flux
         self.fluxlike["uncertainty"] = uncertainty
 
+        # sort other arrays by shape
+        for k in kw:
+            if np.shape(kw[k]) == self.shape:
+                self.fluxlike[k] = kw[k]
+            elif np.shape(kw[k]) == (self.nwave,):
+                self.wavelike[k] = kw[k]
+            elif np.shape(kw[k]) == (self.ntime,):
+                self.timelike[k] = kw[k]
+
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
 
-    def _initialize_from_file(self, filepath=None, format=None):
+    def _initialize_from_file(self, filepath=None, format=None, **kw):
         """
         Populate from a filename or group of files.
 
@@ -251,6 +300,8 @@ class Rainbow(Talker):
             The file format of the file to be read. If None,
             the format will be guessed automatically from the
             filepath.
+        kw : dict
+            Additional keywords will be passed on to the reader.
         """
 
         # make sure we're dealing with a real filename
@@ -258,10 +309,11 @@ class Rainbow(Talker):
 
         # pick the appropriate reader
         reader = guess_reader(filepath=filepath, format=format)
-        reader(self, filepath)
+        reader(self, filepath, **kw)
 
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
+        self._validate_uncertainties()
 
     def _create_copy(self):
         """
@@ -273,7 +325,7 @@ class Rainbow(Talker):
         )
         return new
 
-    def _guess_wscale(self, relative_tolerance=0.01):
+    def _guess_wscale(self, relative_tolerance=0.05):
         """
         Try to guess the wscale from the wavelengths.
 
@@ -576,5 +628,6 @@ class Rainbow(Talker):
         _setup_animated_scatter,
         _setup_wavelength_colors,
         _make_sure_cmap_is_defined,
-        get_wavelength_color,
+        get_wavelength_color, 
+        imshow_fluxlike_quantities
     )

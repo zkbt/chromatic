@@ -6,10 +6,10 @@ Define a reader for chromatic .rainbow.npy files.
 from ...imports import *
 
 # define list of the only things that will show up in imports
-__all__ = ["from_rainbownpy"]
+__all__ = ["from_rainbow_npy"]
 
 
-def from_rainbownpy(rainbow, filepath):
+def from_rainbow_npy(rainbow, filepath):
     """
     Populate a Rainbow from a file in the .rainbow.npy format.
 

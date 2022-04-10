@@ -1,8 +1,17 @@
-from .stsci import *
+from .x1dints import *
 from .eureka import *
-from .rainbownpy import *
-from .nestor_niriss_numpy import *
+from .rainbow_npy import *
+from .rainbow_FITS import *
 from .text import *
+
+# some individual-ish folks
+from .espinoza import *
+from .dossantos import *
+from .feinstein import *
+from .schlawin import *
+from .radica import *
+from .coloumbe import *
+
 
 # construct a dictionary of available readers
 available_readers = {k: globals()[k] for k in globals() if k[0:5] == "from_"}
@@ -34,10 +43,14 @@ def guess_reader(filepath, format=None):
         return available_readers[f"from_{format}"]
     # does it look like a .rainbow.npy chromatic file?
     elif fnmatch.fnmatch(filenames[0], "*.rainbow.npy"):
-        return from_rainbownpy
+        return from_rainbow_npy
+    elif fnmatch.fnmatch(filepath.lower(), "*.rainbow.fits") or fnmatch.fnmatch(
+        filepath.lower(), "*.rainbow.fit"
+    ):
+        return from_rainbow_FITS
     # does it look like a .rainbow.npy chromatic file?
     elif fnmatch.fnmatch(filenames[0], "*order*.npy"):
-        return from_nestor_niriss_numpy
+        return from_espinoza
     # does it look like a STScI x1dints.fits file?
     elif fnmatch.fnmatch(filenames[0], "*x1dints.fits") or fnmatch.fnmatch(
         filenames[0], "*extract_1d.fits"

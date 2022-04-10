@@ -25,7 +25,8 @@ def setup_integration_times(filenames):
     first_hdu = fits.open(filenames[0])
 
     # does the first segment define some times?
-    if len(first_hdu["int_times"].data) > 0:
+    try:
+        assert len(first_hdu["int_times"].data) > 0
 
         # grab the integration time information
         for c in first_hdu["int_times"].data.columns.names:
@@ -34,7 +35,7 @@ def setup_integration_times(filenames):
         # be sure to set our standard time axis
         timelike["time"] = timelike["int_mid_BJD_TDB"] * u.day
     # if times are not in header, make up some imaginary ones!
-    else:
+    except:
         # alert the user to what we're doing
         warnings.warn("No times found! Making up imaginary ones!")
         last_hdu = fits.open(filenames[-1])
@@ -48,7 +49,7 @@ def setup_integration_times(filenames):
 
         # get the time per integration (DOES THIS INCLUDE OVERHEADS?)
         time_per_integration = last_hdu["PRIMARY"].header["EFFINTTM"] * u.s
-        print(f"The imaginary times assume {time_per_integration}/integration.")
+        warnings.warn(f"The imaginary times assume {time_per_integration}/integration.")
 
         # create a fake array of times
         fake_times = np.arange(N_integrations) * time_per_integration
@@ -104,9 +105,16 @@ def from_x1dints(rainbow, filepath):
         except KeyError:
             # (this kludge necessary for CV-simulated NIRSpec)
             integration_counter = 0
-        n_integrations_in_segment = (
-            len(hdu) - 3
-        )  # hdu["PRIMARY"].header["INTEND"] -  hdu["PRIMARY"].header["INTSTART"]
+
+        try:
+            n_integrations_predicted_by_header = (
+                hdu["PRIMARY"].header["INTEND"] - hdu["PRIMARY"].header["INTSTART"]
+            )
+        except KeyError:
+            n_integrations_predicted_by_header = 0
+        n_integrations_in_segment = np.maximum(
+            len(hdu) - 3, n_integrations_predicted_by_header
+        )
 
         # print(integration_counter, n_integrations_in_segment, len(hdu))
 
@@ -186,9 +194,7 @@ def from_x1dints(rainbow, filepath):
         where `x` is the Rainbow you just created.
         """
         warnings.warn(message)
+
     # try to guess wscale (and then kludge and call it linear)
     # rainbow._guess_wscale()
     # rainbow.metadata['wscale'] = 'linear' # TODO: fix this kludge
-
-    # remove units
-    # rainbow.fluxlike["flux"] /= u.Jy  # TODO: fix and/or test this kludge

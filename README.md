@@ -36,7 +36,9 @@ If you want to contribute to this project, especially as part of the ERS Pre-Lau
 
 To be careful we don't mess with each other's stuff, let's *please* avoid doing any code development on the `main` branch or pushing any code directly to `main`. If you want to work on something to contribute, please create a new branch, develop in that branch, and the submit a pull request to merge that branch back into `main`. Christina Hedges' [Astronomy Workflow](https://christinahedges.github.io/astronomy_workflow/notebooks/1.0-basics/git-basics.html) gives a great intro if this feels complicated to you!
 
-*And for context, Zach is a little new to trying to manage a big collaborative code project myself, so if there are things we could be doing better, please let him know!*
+*And for context, Zach is a little new to trying to manage a big collaborative code project, so if there are things we could be doing better, please let him know!*
+
+The approximate goal is currently (as of March 2022) to have the code ready and the documentation complete enough to submit `chromatic-lightcurves` to the [Journal of Open Source Software] early enough to be a documented tool in support of the real ERS data (so, like, early summer 2022). If you contribute before then, you'll be included on the paper!
 
 ## Usage
 

@@ -22,7 +22,8 @@ warnings.formatwarning = custom_formatwarning
 # astropy
 from astropy.io import ascii, fits
 from astropy.table import Table
-import astropy.units as u
+
+# import astropy.units as u
 import astropy.constants as con
 from astropy.visualization import quantity_support, simple_norm
 
@@ -33,6 +34,8 @@ from scipy.interpolate import interp1d
 
 # For modelling transits.
 import batman
+
+from .units import *
 
 # define a driectory where we can put any necessary data files
 data_directory = pkg_resources.resource_filename("chromatic", "data")
