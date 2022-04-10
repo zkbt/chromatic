@@ -5,10 +5,10 @@ of independent variables to another.
 
 from .imports import *
 
-__all__ = ["bintoR", "bintogrid"]
+__all__ = ["bintoR", "bintogrid", "resample_while_conserving_flux"]
 
 
-def binsizes(x):
+def calculate_bin_widths(x):
     """
     If x is an array of bin centers, calculate the bin sizes.
     (assumes outermost bins are same size as their neighbors)
@@ -30,7 +30,7 @@ def binsizes(x):
     return binsize
 
 
-def binedges(x):
+def calculate_bin_edges(x):
     """
     If x is an array of bin centers, calculate the bin edges.
     (assumes outermost bins are same size as their neighbors)
@@ -48,15 +48,17 @@ def binedges(x):
         The right edges of the bins.
     """
 
+    # TODO: confirm this isn't doing something weird on log grids!
+
     # what are bin edges (making a guess for those on the ends)
-    xbinsize = binsizes(x)
+    xbinsize = calculate_bin_widths(x)
     xleft = x - xbinsize / 2.0
     xright = x + xbinsize / 2.0
 
     return xleft, xright
 
 
-def plotboxy(x, y, **kwargs):
+def plot_as_boxes(x, y, **kwargs):
     """
     Plot with boxes, to show the left and right edges of a box.
     This is useful, or example, to plot flux associated with
@@ -74,7 +76,7 @@ def plotboxy(x, y, **kwargs):
     """
 
     # what are bin edges (making a guess for those on the ends)
-    xleft, xright = binedges(x)
+    xleft, xright = calculate_bin_edges(x)
 
     # create a array doubling up the y values and interleaving the edges
     plot_x = np.vstack((xleft, xright)).reshape((-1,), order="F")
@@ -84,10 +86,12 @@ def plotboxy(x, y, **kwargs):
     plt.plot(plot_x, plot_y, **kwargs)
 
 
-def fluxconservingresample(
-    xin_unsorted,
-    yin_unsorted,
-    xout,
+def resample_while_conserving_flux(
+    xin=None,
+    yin=None,
+    xout=None,
+    xin_edges=None,
+    xout_edges=None,
     replace_nans=0.0,
     visualize=False,
     pause=False,
@@ -106,17 +110,35 @@ def fluxconservingresample(
     Parameters
     ----------
 
-    xin_unsorted : np.array
+    xin : np.array
         The original independent variable.
         It doesn't necessarily have to be sorted.
-    yin_unsorted : np.array
+    yin : np.array
         The original dependent variable (same size as x).
         It doesn't necessarily have to be sorted.
     xout : np.array
         The new grid of independent variables onto which
-        you want to resample the y values.
+        you want to resample the y values. Refers to the
+        center of each bin (use `xout_edges` for finer
+        control over the exact edges of the bins)
+    xin_edges : np.array
+        The edges of the original independent variable bins.
+        The left and right edges of the bins are interpreted
+        to be `xin_edges[:-1]` and `xin_edges[1:]`,
+        respectively, so the associated `yin` should have exactly
+        1 fewer element than `xin_edges`. This provides finer
+        control over the size of each bin in the input than
+        simply supplying `xin`(still a little experimental)
+        They should probably be sorted?
+    xout_edges : np.array
+        The edges of the new grid of bins for the independent
+        variable, onto which you want to resample the y
+        values. The left and right edges of the bins will be,
+        respectively, `xout_edges[:-1]` and `xout_edges[1:]`,
+        so the size of the output array will be
+        `len(xout_edges) - 1`
     replace_nans : float, str
-        Replace nan values with this.
+        Replace nan values with this value.
         `replace_nans = 0`
             will add no flux where nans are
         `replace_nans = nan`
@@ -126,40 +148,58 @@ def fluxconservingresample(
             will try to replace nans by linearly interpolating
             from nearby values (not yet implemented)
     visualize : bool
-        Should we make a plot showing it worked?
+        Should we make a plot showing whether it worked?
     pause : bool
-        Should we pause after making that plot?
+        Should we pause to wait for a key press?
     """
 
-    # sort to make sure x is strictly increasing
-    s = np.argsort(xin_unsorted)
-    xin = xin_unsorted[s]
-    yin = yin_unsorted[s]
+    # make sure there are some reasonable input options
+    assert (xin is not None) or (xin_edges is not None)
+    assert yin is not None
+    assert (xout is not None) or (xout_edges is not None)
 
     # set up the bins, to calculate cumulative distribution of y
-    xinleft, xinright = binedges(xin)
+    if xin_edges is None:
+        # make sure the sizes match up
+        assert len(xin) == len(yin)
+        # sort to make sure x is strictly increasing
+        s = np.argsort(xin)
+        xin_sorted = xin[s]
+        yin_sorted = yin[s]
+        # estimate some bin edges (might fail for non-uniform grids)
+        xin_left, xin_right = calculate_bin_edges(xin_sorted)
+        # define an array of edges
+        xin_edges = np.hstack([xin_left, xin_right[-1]])
+    else:
+        # make sure the sizes match up
+        assert len(xin_edges) == (len(yin) + 1)
+        # sort to make sure x is strictly increasing
+        s = np.argsort(xin_edges)
+        xin_left, xin_right = xin_edges[s][:-1], xin_edges[s][1:]
+        xin_sorted = (xin_left + xin_right) / 2
+        yin_sorted = yin[s[:-1]]
 
     # the first element should be the left edge of the first pixel
     # last element will be right edge of last pixel
-    xinforcdf = np.hstack([xinleft, xinright[-1]])
+    xin_for_cdf = xin_edges
 
     # to the left of the first pixel, assume flux is zero
-    yinforcdf = np.hstack([0, yin])
+    yin_for_cdf = np.hstack([0, yin_sorted])
 
     # correct for any non-finite values
-    bad = np.isnan(yinforcdf)
+    bad = np.isnan(yin_for_cdf)
     if replace_nans == "interpolate":
         raise NotImplementedError(
             "The `replace_nans='interpolate'`` option doens't exist yet!"
         )
-    yinforcdf[bad] = replace_nans
+    yin_for_cdf[bad] = replace_nans
 
     # calculate the CDF of the flux (at pixel edge locations)
-    cdfin = np.cumsum(yinforcdf)
+    cdfin = np.cumsum(yin_for_cdf)
 
     # create an interpolator for that CDF
     cdfinterpolator = interp1d(
-        xinforcdf,
+        xin_for_cdf,
         cdfin,
         kind="linear",
         bounds_error=False,
@@ -167,11 +207,16 @@ def fluxconservingresample(
     )
 
     # calculate bin edges (of size len(xout)+1)
-    xoutleft, xoutright = binedges(xout)
-    xoutcdf = np.hstack([xoutleft, xoutright[-1]])
+    if xout_edges is None:
+        xout_left, xout_right = calculate_bin_edges(xout)
+    else:
+        xout_left, xout_right = xout_edges[:-1], xout_edges[1:]
+        xout = (xout_left + xout_right) / 2
+
+    xout_for_cdf = np.hstack([xout_left, xout_right[-1]])
 
     # interpolate the CDF onto those bin edges
-    cdfout = cdfinterpolator(xoutcdf)
+    cdfout = cdfinterpolator(xout_for_cdf)
 
     # take  derivative of the CDF to get flux per resampled bin
     # (xout is bin center, and yout is the flux in that bin)
@@ -202,24 +247,28 @@ def fluxconservingresample(
             bbox_to_anchor=(1, 1),
         )
 
+        xinbinsize = xin_right - xin_left
+        xoutbinsize = xout_right - xout_left
         # plot the PDFs
         plt.sca(ax_pdf)
         plt.ylabel("Flux per (Original) Pixel")
         plt.xlabel("Pixel")
         # plot the original pixels (in df/dpixel to compare with resampled)
-        plotboxy(xin, yin / xinbinsize, label="Original Pixels", **inkw)
+        plot_as_boxes(
+            xin_sorted, yin_sorted / xinbinsize, label="Original Pixels", **inkw
+        )
 
         # what would a bad interpolation look like?
-        badinterpolation = scipy.interpolate.interp1d(
-            xin,
-            yin / xinbinsize,
+        interpolate_badly = interp1d(
+            xin_sorted,
+            yin_sorted / xinbinsize,
             kind="linear",
             bounds_error=False,
             fill_value=0.0,
         )
         plt.plot(
             xout,
-            badinterpolation(xout),
+            interpolate_badly(xout),
             color="cornflowerblue",
             alpha=1,
             linewidth=1,
@@ -240,10 +289,10 @@ def fluxconservingresample(
         plt.ylabel("Cumulative Flux (from left)")
 
         # plot the original CDF
-        plt.plot(xinforcdf, cdfin, label="Original Pixels", **inkw)
+        plt.plot(xin_for_cdf, cdfin, label="Original Pixels", **inkw)
 
         # plot the interpolated CDF
-        plt.plot(xoutcdf, cdfout, label="Flux-Conserved Resample", **outkw)
+        plt.plot(xout_for_cdf, cdfout, label="Flux-Conserved Resample", **outkw)
         if pause:
             a = input(
                 "Pausing a moment to check on interpolation; press return to continue."
@@ -254,7 +303,7 @@ def fluxconservingresample(
         print(
             "{:>6} = {:.5f}".format(
                 "Silly",
-                np.sum(badinterpolation(xout) * xoutbinsize),
+                np.sum(interpolate_badly(xout) * xoutbinsize),
             )
         )
         print("{:>6} = {:.5f}".format("CDF", np.sum(yout)))
@@ -368,10 +417,10 @@ def bintogrid(
 
         if np.any(ok):
             # TO-DO: check this nan handling on input arrays is OK?
-            numerator = fluxconservingresample(
+            numerator = resample_while_conserving_flux(
                 x_without_unit[ok], (y_without_unit * weights)[ok], newx_without_unit
             )
-            denominator = fluxconservingresample(
+            denominator = resample_while_conserving_flux(
                 x_without_unit[ok], (weights)[ok], newx_without_unit
             )
 
