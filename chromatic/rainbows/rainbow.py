@@ -629,5 +629,6 @@ class Rainbow:
         _setup_wavelength_colors,
         _make_sure_cmap_is_defined,
         get_wavelength_color, 
-        imshow_fluxlike_quantities
+        imshow_fluxlike_quantities,
+        plot_quantities
     )
