@@ -34,9 +34,22 @@ def test_plot():
     SimulatedRainbow(R=10).plot()
     plt.savefig(os.path.join(test_directory, "plot-demonstration.pdf"))
 
+
 def test_plot_quantities():
-    SimulatedRainbow(R=10).plot_quantities()
-    plt.savefig(os.path.join(test_directory, "plot_quantities-demonstration.pdf"))
+    r = SimulatedRainbow(R=10)
+    for k in "abcdefg":
+        r.timelike[f'timelike quantity "{k}"'] = np.random.normal(0, 1, r.ntime) * u.m
+        r.wavelike[f'wavelike quantity "{k}"'] = np.random.normal(0, 1, r.nwave) * u.s
+
+    for k in ["time", "wavelength"]:
+        for x in [k, "index"]:
+            r.plot_quantities(data_like=k, x_axis=x)
+            plt.savefig(
+                os.path.join(
+                    test_directory,
+                    f"plot_quantities-demonstration-data={k}-xaxis={x}.pdf",
+                )
+            )
 
 
 def test_animate():
