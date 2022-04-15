@@ -8,6 +8,7 @@ def bin(
     self,
     dt=None,
     time=None,
+    time_edges=None,
     ntimes=None,
     R=None,
     dw=None,
@@ -16,15 +17,19 @@ def bin(
     nwavelengths=None,
 ):
     """
-    Bin the rainbow in wavelength and/or time.
+    Bin in wavelength and/or time.
+
+    By default, time binning happens before wavelength binning.
+    To control the order, use separate calls to `.bin()`.
 
     The time-setting order of precendence is
-    [`time`, `dt`], meaning that if `time` is set,
-    any values given for `dt` will be ignored.
+    [`time_edges`, `time`, `dt`, `ntimes`]
+    The first will be used, and others will be ignored.
+
     The wavelength-setting order of precendence is
-    [`wavelength`, `dw`, `R`], meaning that if `wavelength`
-    is set any values of `dw` or `R` will be ignored, and
-    if `dw` is set any value of `R` will be ignored.
+    [`wavelength_edges`, `wavelength`, `dw`, `R`, `nwavelengths`]
+    The first will be used, and others will be ignored.
+
 
     Parameters
     ----------
@@ -34,6 +39,16 @@ def bin(
     time : array of astropy.units.Quantity
         An array of times, if you just want to give
         it an entirely custom array.
+        The widths of the bins will be guessed from the centers
+        (well, if the spacing is uniform constant; pretty well
+        but not perfectly otherwise).
+    time_edges : array of astropy.units.Quantity
+        An array of times for the edges of bins,
+        if you just want to give an entirely custom array.
+        The bins will span `time_edges[:-1]` to
+        `time_edges[1:]`, so the resulting binned
+        Rainbow will have `len(time_edges) - 1`
+        time bins associated with it.
     ntimes : int
         A fixed number of time to bin together.
         Binning will start from the 0th element of the
@@ -48,6 +63,9 @@ def bin(
     wavelength : array of astropy.units.Quantity
         An array of wavelengths for the centers of bins,
         if you just want to give an entirely custom array.
+        The widths of the bins will be guessed from the centers
+        (well, if the spacing is uniform constant; pretty well
+        but not perfectly otherwise).
     wavelength_edges : array of astropy.units.Quantity
         An array of wavelengths for the edges of bins,
         if you just want to give an entirely custom array.
@@ -67,7 +85,9 @@ def bin(
         The binned Rainbow.
     """
     # bin first in time
-    binned_in_time = self.bin_in_time(dt=dt, time=time, ntimes=ntimes)
+    binned_in_time = self.bin_in_time(
+        dt=dt, time=time, time_edges=time_edges, ntimes=ntimes
+    )
 
     # then bin in wavelength
     binned = binned_in_time.bin_in_wavelength(
@@ -82,9 +102,14 @@ def bin(
     return binned
 
 
-def bin_in_time(self, dt=None, time=None, ntimes=None):
+def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
     """
-    Bin the rainbow in time.
+    Bin in time.
+
+    The time-setting order of precendence is
+    [`time_edges`, `time`, `dt`, `ntimes`]
+    The first will be used, and others will be ignored.
+
 
     Parameters
     ----------
@@ -94,16 +119,21 @@ def bin_in_time(self, dt=None, time=None, ntimes=None):
     time : array of astropy.units.Quantity
         An array of times, if you just want to give
         it an entirely custom array.
+        The widths of the bins will be guessed from the centers
+        (well, if the spacing is uniform constant; pretty well
+        but not perfectly otherwise).
+    time_edges : array of astropy.units.Quantity
+        An array of times for the edges of bins,
+        if you just want to give an entirely custom array.
+        The bins will span `time_edges[:-1]` to
+        `time_edges[1:]`, so the resulting binned
+        Rainbow will have `len(time_edges) - 1`
+        time bins associated with it.
     ntimes : int
         A fixed number of time to bin together.
         Binning will start from the 0th element of the
         starting times; if you want to start from
         a different index, trim before binning.
-
-    The time-setting order of precendence is:
-        1) time
-        2) dt
-        3) ntimes
 
     Returns
     -------
@@ -115,12 +145,12 @@ def bin_in_time(self, dt=None, time=None, ntimes=None):
         raise RuntimeWarning("🌈 Your binning option isn't implemented yet. Sorry! 😔")
 
     # if no bin information is provided, don't bin
-    if (time is None) and (dt is None):
+    if np.all([x is None for x in [dt, time, time_edges, ntimes]]):
         return self
 
     # set up binning parameters
     binkw = dict(weighting="inversevariance", drop_nans=False)
-    # TODO: make sure drop_nans doesn't skip rows or columns unexpectedly
+
     if time is not None:
         binkw["newx"] = time
         # self.speak(f'binning to time={time}')
@@ -205,7 +235,11 @@ def bin_in_wavelength(
     self, R=None, dw=None, wavelength=None, wavelength_edges=None, nwavelengths=None
 ):
     """
-    Bin the rainbow in wavelength.
+    Bin in wavelength.
+
+    The wavelength-setting order of precendence is
+    [`wavelength_edges`, `wavelength`, `dw`, `R`, `nwavelengths`]
+    The first will be used, and others will be ignored.
 
     Parameters
     ----------
@@ -216,8 +250,11 @@ def bin_in_wavelength(
         The d(wavelength) bin size for creating a grid
         that is uniform in linear space.
     wavelength : array of astropy.units.Quantity
-        An array of wavelengths, if you just want to give
-        it an entirely custom array.
+        An array of wavelength centers, if you just want to give
+        it an entirely custom array. The widths of the bins
+        will be guessed from the centers. It will do a good
+        job if the widths are constant, but don't 100% trust
+        it otherwise.
     wavelength_edges : array of astropy.units.Quantity
         An array of wavelengths for the edges of bins,
         if you just want to give an entirely custom array.
@@ -231,14 +268,6 @@ def bin_in_wavelength(
         starting wavelengths; if you want to start from
         a different index, trim before binning.
 
-    The wavelength-setting order of precendence is:
-        1) wavelength
-        2) wavelength_edges
-        3) nwavelengths
-        4) dw
-        5) R
-
-
     Returns
     -------
     binned : Rainbow
@@ -250,7 +279,8 @@ def bin_in_wavelength(
 
     # if no bin information is provided, don't bin
     if (
-        (wavelength is None)(wavelength_edges is None)
+        (wavelength is None)
+        and (wavelength_edges is None)
         and (nwavelengths is None)
         and (dw is None)
         and (R is None)
