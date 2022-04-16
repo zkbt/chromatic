@@ -4,12 +4,13 @@ from .setup_tests import *
 
 
 def test_resampling():
+
     N = 11
-    x_edges = np.linspace(3, 8, N)
+    x_edges = np.linspace(2, 4, N)
     x = (x_edges[1:] + x_edges[:-1]) / 2
-    y = np.random.normal(x ** 2, 0.5)
+    y = np.random.normal(x, 0.5)
     N_new = 29
-    x_new_edges = np.linspace(1, 12, N_new)
+    x_new_edges = np.linspace(1.6, 4.3, N_new)
     x_new = (x_new_edges[1:] + x_new_edges[:-1]) / 2
 
     a = resample_while_conserving_flux(xin=x, yin=y, xout=x_new, visualize=True)
@@ -31,4 +32,5 @@ def test_resampling():
     plt.savefig(os.path.join(test_directory, "resampling-demonstration-d.pdf"))
 
     for x in [b, c, d]:
-        assert np.sum(a) == np.sum(x)
+        assert np.isclose(np.sum(a["y"]), np.sum(x["y"]))
+        assert np.all(np.isclose(a["edges"], x["edges"]))

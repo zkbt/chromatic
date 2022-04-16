@@ -151,6 +151,15 @@ def resample_while_conserving_flux(
         Should we make a plot showing whether it worked?
     pause : bool
         Should we pause to wait for a key press?
+
+    Returns
+    -------
+    result : dict
+        A dictionary containing...
+            `x` = the center of the output grid
+            `y` = the resampled value on the output grid
+            `edges` = the edges of the output grid, which will
+                have one more element than x or y
     """
 
     # make sure there are some reasonable input options
@@ -209,6 +218,7 @@ def resample_while_conserving_flux(
     # calculate bin edges (of size len(xout)+1)
     if xout_edges is None:
         xout_left, xout_right = calculate_bin_edges(xout)
+        xout_edges = np.hstack([xout_left, xout_right[-1]])
     else:
         xout_left, xout_right = xout_edges[:-1], xout_edges[1:]
         xout = (xout_left + xout_right) / 2
@@ -223,7 +233,7 @@ def resample_while_conserving_flux(
     yout = np.diff(cdfout)
 
     if visualize:
-        fi, (ax_cdf, ax_pdf) = plt.subplots(2, 1, sharex=True, figsize=(9, 6))
+        fi, (ax_cdf, ax_pdf) = plt.subplots(2, 1, sharex=True, dpi=300, figsize=(8, 8))
         inkw = dict(
             color="black",
             alpha=1,
@@ -241,10 +251,8 @@ def resample_while_conserving_flux(
         )
 
         legkw = dict(
-            fontsize=10,
             frameon=False,
             loc="upper left",
-            bbox_to_anchor=(1, 1),
         )
 
         xinbinsize = xin_right - xin_left
@@ -282,6 +290,7 @@ def resample_while_conserving_flux(
         plt.plot(
             xout, yout / xoutbinsize, label="Flux-Conserving Interpolation", **outkw
         )
+
         plt.legend(**legkw)
 
         # plot the CDFs
@@ -298,7 +307,6 @@ def resample_while_conserving_flux(
                 "Pausing a moment to check on interpolation; press return to continue."
             )
 
-        plt.tight_layout(rect=[0.0, 0.0, 0.67, 1])
         print("{:>6} = {:.5f}".format("Actual", np.sum(yin)))
         print(
             "{:>6} = {:.5f}".format(
@@ -309,7 +317,7 @@ def resample_while_conserving_flux(
         print("{:>6} = {:.5f}".format("CDF", np.sum(yout)))
 
     # return the resampled y-values
-    return yout
+    return {"x": xout, "edges": xout_edges, "y": yout}
 
 
 def bintogrid(
@@ -425,10 +433,10 @@ def bintogrid(
             )
 
             # the binned weighted means on the new grid
-            newy = numerator / denominator
+            newy = numerator["y"] / denominator["y"]
 
             # the standard error on the means, for those bins
-            newunc = np.sqrt(1 / denominator)
+            newunc = np.sqrt(1 / denominator["y"])
         else:
             newy = np.nan * newx_without_unit
             newunc = np.nan * newx_without_unit
