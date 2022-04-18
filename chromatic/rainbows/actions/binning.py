@@ -173,9 +173,9 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
     # really hard to deal with.
     new.timelike = {}
     for k in self.timelike:
-        bt, bv = bintogrid(x=self.time, y=self.timelike[k], unc=None, **binkw)
-        new.timelike[k] = bv
-    new.timelike[k] = bt
+        binned = bintogrid(x=self.time, y=self.timelike[k], unc=None, **binkw)
+        new.timelike[k] = binned["y"]
+    new.timelike["time"] = binned["x"]
 
     # bin the flux-like variables
     # TODO (add more careful treatment of uncertainty + DQ)
@@ -194,33 +194,37 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
 
         # loop through wavelengths
         for w in range(new.nwave):
+
+            # FIXME - not being used yet?
             ok_times = ok[w, :]
 
+            # set what uncertainties should be used for binning
             if self.uncertainty is None:
-                bt, bv = bintogrid(
-                    x=self.time[:],
-                    y=self.fluxlike[k][w, :],
-                    unc=None,
-                    **binkw,
-                )
-                bu = None
+                uncertainty_for_binning = None
             else:
-                bt, bv, bu = bintogrid(
-                    x=self.time[:],
-                    y=self.fluxlike[k][w, :],
-                    unc=self.uncertainty[w, :],
-                    **binkw,
-                )
+                uncertainty_for_binning = self.uncertainty[w, :]
 
+            # bin the quantities for this wavelength
+            binned = bintogrid(
+                x=self.time[:],
+                y=self.fluxlike[k][w, :],
+                unc=uncertainty_for_binning,
+                **binkw,
+            )
+
+            # if necessary, create a new fluxlike array
             if k not in new.fluxlike:
                 new_shape = (new.nwave, new.ntime)
                 new.fluxlike[k] = np.zeros(new_shape)
-                # TODO make this more robust to units
+                # FIXME make this more robust to units
 
+            # store the binned array in the appropriate place
             if k == "uncertainty":
-                new.fluxlike[k][w, :] = bu
+                # uncertainties are usually standard error on the mean
+                new.fluxlike[k][w, :] = binned["uncertainty"]
             else:
-                new.fluxlike[k][w, :] = bv
+                # note: all quantities are weighted the same as flux (probably inversevariance)
+                new.fluxlike[k][w, :] = binned["y"]
 
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
@@ -312,11 +316,11 @@ def bin_in_wavelength(
     # TODO (add more careful treatment of uncertainty + DQ)
     new.wavelike = {}
     for k in self.wavelike:
-        bt, bv = binning_function(
+        binned = binning_function(
             x=self.wavelength, y=self.wavelike[k], unc=None, **binkw
         )
-        new.wavelike[k] = bv
-    new.wavelike[k] = bt
+        new.wavelike[k] = binned["y"]
+    new.wavelike["wavelength"] = binned["x"]
 
     # bin the flux-like variables
     # TODO (add more careful treatment of uncertainty + DQ)
@@ -326,43 +330,39 @@ def bin_in_wavelength(
     # get a fluxlike array of what's OK to include in the bins
     ok = self.is_ok()
     for k in self.fluxlike:
-        # self.speak(f" binning '{k}' in wavelength")
-        # self.speak(f"  original shape was {np.shape(self.fluxlike[k])}")
-        if k == "uncertainty":
-            warnings.warn(
-                """
-            Uncertainties and/or data quality flags might
-            not be handled absolutely perfectly yet...
-            """
-            )
 
         for t in range(new.ntime):
-            ok_wavelengths = ok[:, t]
-            if self.uncertainty is None:
-                bt, bv = binning_function(
-                    x=self.wavelength[:],
-                    y=self.fluxlike[k][:, t],
-                    unc=None,
-                    **binkw,
-                )
-                bu = None
-            else:
-                bt, bv, bu = binning_function(
-                    x=self.wavelength[:],
-                    y=self.fluxlike[k][:, t],
-                    unc=self.uncertainty[:, t],
-                    **binkw,
-                )
 
+            # FIXME - not being used yet?
+            ok_wavelengths = ok[:, t]
+
+            # set what uncertainties should be used for binning
+            if self.uncertainty is None:
+                uncertainty_for_binning = None
+            else:
+                uncertainty_for_binning = self.uncertainty[:, t]
+
+            # bin the quantities for this time
+            binned = binning_function(
+                x=self.wavelength[:],
+                y=self.fluxlike[k][:, t],
+                unc=uncertainty_for_binning,
+                **binkw,
+            )
+
+            # if necessary, create a new fluxlike array
             if k not in new.fluxlike:
                 new_shape = (new.nwave, new.ntime)
                 new.fluxlike[k] = np.zeros(new_shape)
-                # TODO make this more robust to units
+                # FIXME make this more robust to units
 
+            # store the binned array in the appropriate place
             if k == "uncertainty":
-                new.fluxlike[k][:, t] = bu
+                # uncertainties are usually standard error on the mean
+                new.fluxlike[k][:, t] = binned["uncertainty"]
             else:
-                new.fluxlike[k][:, t] = bv
+                # note: all quantities are weighted the same as flux (probably inversevariance)
+                new.fluxlike[k][:, t] = binned["y"]
 
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()

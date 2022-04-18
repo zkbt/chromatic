@@ -112,10 +112,8 @@ def resample_while_conserving_flux(
 
     xin : np.array
         The original independent variable.
-        It doesn't necessarily have to be sorted.
     yin : np.array
         The original dependent variable (same size as x).
-        It doesn't necessarily have to be sorted.
     xout : np.array
         The new grid of independent variables onto which
         you want to resample the y values. Refers to the
@@ -325,6 +323,7 @@ def bintogrid(
     y,
     unc=None,
     newx=None,
+    newx_edges=None,
     dx=None,
     weighting="inversevariance",
     drop_nans=True,
@@ -350,6 +349,7 @@ def bintogrid(
         be ignored if `newx` != None.
     newx : np.array
         A new custom grid onto which we should bin.
+
     weighting : str
         How should we weight values when averaging
         them together into one larger bin?
@@ -366,18 +366,15 @@ def bintogrid(
 
     Returns
     -------
-    newx : np.array
-        The new grid of x values.
-    newy : np.array
-        The new gridded y values.
-    newunc : np.array
-        The new gridded y uncertainties.
-        These will be returned only if `unc != None` in the
-        original inputs. Otherwise, only two outputs will be
-        returned, newx and newy.
+    result : dict
+        A dictionary containing at least...
+            `x` = the center of the output grid
+            `y` = the resampled value on the output grid
+            `edges` = the edges of the output grid, which will
+                have one more element than x or y
+        ...and possibly also
+            `uncertainty` = the calculated uncertainty per bin
 
-    # TODO: confirm nans in input arrays are handled OK
-    # TODO: confirm units in y and unc are handled OK
     """
 
     try:
@@ -448,11 +445,13 @@ def bintogrid(
         ok = np.ones_like(newx_without_unit).astype(bool)
 
     # if no uncertainties were given, don't return uncertainties
-    if unc is None:
-        return newx_without_unit[ok] * x_unit, newy[ok] * y_unit
-    else:
-        return newx_without_unit[ok] * x_unit, newy[ok] * y_unit, newunc[ok] * y_unit
-        # TODO: check units on uncertainties
+    result = {}
+    result["x"] = newx_without_unit[ok] * x_unit
+    result["y"] = newy[ok] * y_unit
+    result["edges"] = numerator["edges"] * x_unit
+    if unc is not None:
+        result["uncertainty"] = newunc[ok] * y_unit
+    return result
 
 
 def bintoR(
@@ -534,13 +533,12 @@ def bintoR(
     newlnx = np.arange(lnxbottom, lnxtop + dnewlnx, dnewlnx)
 
     # now do the binning on a uniform grid of lnx
-    if unc is None:
-        blnx, by = bintogrid(
-            lnx, y, unc, newx=newlnx, weighting=weighting, drop_nans=drop_nans
-        )
-        return np.exp(blnx) * x_unit, by
-    else:
-        blnx, by, bunc = bintogrid(
-            lnx, y, unc, newx=newlnx, weighting=weighting, drop_nans=drop_nans
-        )
-        return np.exp(blnx) * x_unit, by, bunc
+    result = bintogrid(
+        lnx, y, unc, newx=newlnx, weighting=weighting, drop_nans=drop_nans
+    )
+
+    # convert back from log to real values
+    result["x"] = np.exp(result["x"]) * x_unit
+    result["edges"] = np.exp(result["edges"]) * x_unit
+
+    return result
