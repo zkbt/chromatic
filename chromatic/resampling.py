@@ -5,7 +5,13 @@ of independent variables to another.
 
 from .imports import *
 
-__all__ = ["bintoR", "bintogrid", "resample_while_conserving_flux"]
+__all__ = [
+    "bintoR",
+    "bintogrid",
+    "resample_while_conserving_flux",
+    "leftright_to_edges",
+    "edges_to_leftright",
+]
 
 
 def calculate_bin_leftright(x):
@@ -512,6 +518,9 @@ def bintogrid(
         # define a grid of edges that will enclose the right number of indices
         x_left_i, x_right_i = calculate_bin_leftright(x_without_unit)
         newx_edges_without_unit = leftright_to_edges(x_left_i, x_right_i)[::nx]
+        newx_without_unit = 0.5 * (
+            newx_edges_without_unit[1:] + newx_edges_without_unit[:-1]
+        )
         # np.arange(-0.5, len(x_without_unit), nx)
 
         # calculate the actual x values corresponding to the bins

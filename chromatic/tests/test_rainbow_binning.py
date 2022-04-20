@@ -1,5 +1,6 @@
 from ..rainbows import *
 from .setup_tests import *
+from ..resampling import *
 
 
 def test_bin_in_time():
@@ -8,7 +9,7 @@ def test_bin_in_time():
     b = s.bin_in_time(dt=1 * u.hour)
     assert b.ntime < s.ntime
 
-    assert s.bin_in_time(dt=None, time=None) == s
+    assert s.bin_in_time(dt=None, time=None, time_edges=None, ntimes=None) == s
 
     fi, ax = plt.subplots(2, 1, sharex=True)
     imshowkw = dict(vmin=0.98, vmax=1.02)
@@ -23,7 +24,12 @@ def test_bin_in_wavelength():
     b = s.bin_in_wavelength(dw=500 * u.nm)
     assert b.nwave < s.nwave
 
-    assert s.bin_in_wavelength(R=None, dw=None, wavelength=None) == s
+    assert (
+        s.bin_in_wavelength(
+            R=None, dw=None, wavelength=None, wavelength_edges=None, nwavelengths=None
+        )
+        == s
+    )
 
     fi, ax = plt.subplots(2, 1, sharex=True)
     imshowkw = dict(vmin=0.98, vmax=1.02)
@@ -39,7 +45,20 @@ def test_bin():
     assert b.nwave < s.nwave
     assert b.ntime < s.ntime
 
-    assert s.bin(dw=None, dt=None, R=None, time=None, wavelength=None) == s
+    assert (
+        s.bin(
+            dw=None,
+            dt=None,
+            R=None,
+            time=None,
+            time_edges=None,
+            ntimes=None,
+            wavelength=None,
+            wavelength_edges=None,
+            nwavelengths=None,
+        )
+        == s
+    )
 
     fi, ax = plt.subplots(2, 1, sharex=True)
     imshowkw = dict(vmin=0.98, vmax=1.02)
@@ -49,6 +68,54 @@ def test_bin():
     plt.title("Binned")
     plt.tight_layout()
     plt.savefig(os.path.join(test_directory, "imshow-bin-demonstration.pdf"))
+
+
+def test_bin_input_options():
+    r = SimulatedRainbow(dw=0.2 * u.micron)
+
+    a = r.bin(nwavelengths=3)
+    centers = a.wavelength
+    b = r.bin(wavelength=centers)
+    edges = leftright_to_edges(a.wavelength_lower, a.wavelength_upper)
+    c = r.bin(wavelength_edges=edges)
+    dw = a.wavelength_upper - a.wavelength_lower
+    for x in [a, b, c]:
+        print(x.wavelength_lower)
+        for k in r.wavelike:
+            assert np.all(np.isclose(x.wavelike[k], a.wavelike[k]))
+
+    a = r.bin(dw=0.47 * u.micron)
+    centers = a.wavelength
+    b = r.bin(wavelength=centers)
+    edges = leftright_to_edges(a.wavelength_lower, a.wavelength_upper)
+    c = r.bin(wavelength_edges=edges)
+    dw = a.wavelength_upper - a.wavelength_lower
+    for x in [a, b, c]:
+        print(x.wavelength_lower)
+        for k in r.wavelike:
+            assert np.all(np.isclose(x.wavelike[k], a.wavelike[k]))
+
+    a = r.bin(ntimes=5)
+    centers = a.time
+    b = r.bin(time=centers)
+    edges = leftright_to_edges(a.time_lower, a.time_upper)
+    c = r.bin(time_edges=edges)
+    dw = a.time_upper - a.time_lower
+    for x in [a, b, c]:
+        print(x.time_lower)
+        for k in r.timelike:
+            assert np.all(np.isclose(x.timelike[k], a.timelike[k]))
+
+    a = r.bin(dt=0.37 * u.hour)
+    centers = a.time
+    b = r.bin(time=centers)
+    edges = leftright_to_edges(a.time_lower, a.time_upper)
+    c = r.bin(time_edges=edges)
+    dw = a.time_upper - a.time_lower
+    for x in [a, b, c]:
+        print(x.time_lower)
+        for k in r.timelike:
+            assert np.all(np.isclose(x.timelike[k], a.timelike[k]))
 
 
 def test_bin_uncertainty_basic(original_resolution=100, binned_resolution=42):

@@ -141,9 +141,6 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
         The binned Rainbow.
     """
 
-    if ntimes is not None:
-        raise RuntimeWarning("🌈 Your binning option isn't implemented yet. Sorry! 😔")
-
     # if no bin information is provided, don't bin
     if np.all([x is None for x in [dt, time, time_edges, ntimes]]):
         return self
@@ -151,12 +148,15 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
     # set up binning parameters
     binkw = dict(weighting="inversevariance", drop_nans=False)
 
-    if time is not None:
+    # [`time_edges`, `time`, `dt`, `ntimes`]
+    if time_edges is not None:
+        binkw["newx_edges"] = time_edges
+    elif time is not None:
         binkw["newx"] = time
-        # self.speak(f'binning to time={time}')
     elif dt is not None:
         binkw["dx"] = dt
-        # self.speak(f'binning to dt={dt}')
+    elif ntimes is not None:
+        binkw["nx"] = ntimes
 
     # create a new, empty Rainbow
     new = self._create_copy()
@@ -176,6 +176,8 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
         binned = bintogrid(x=self.time, y=self.timelike[k], unc=None, **binkw)
         new.timelike[k] = binned["y"]
     new.timelike["time"] = binned["x"]
+    new.timelike["time_lower"] = binned["x_edge_lower"]
+    new.timelike["time_upper"] = binned["x_edge_upper"]
 
     # bin the flux-like variables
     # TODO (add more careful treatment of uncertainty + DQ)
@@ -278,9 +280,6 @@ def bin_in_wavelength(
         The binned Rainbow.
     """
 
-    if (nwavelengths is not None) or (wavelength_edges is not None):
-        warnings.warn("🌈 Your binning option isn't implemented yet. Sorry! 😔")
-
     # if no bin information is provided, don't bin
     if (
         (wavelength is None)
@@ -293,18 +292,23 @@ def bin_in_wavelength(
 
     # set up binning parameters
     binkw = dict(weighting="inversevariance", drop_nans=False)
-    if wavelength is not None:
+
+    # [`wavelength_edges`, `wavelength`, `dw`, `R`, `nwavelengths`]
+    if wavelength_edges is not None:
+        binning_function = bintogrid
+        binkw["newx_edges"] = wavelength_edges
+    elif wavelength is not None:
         binning_function = bintogrid
         binkw["newx"] = wavelength
-        # self.speak(f'binning to wavelength={wavelength}')
     elif dw is not None:
         binning_function = bintogrid
         binkw["dx"] = dw
-        # self.speak(f'binning to dw={dw}')
     elif R is not None:
         binning_function = bintoR
         binkw["R"] = R
-        # self.speak(f'binning to R={R}')
+    elif nwavelengths is not None:
+        binning_function = bintogrid
+        binkw["nx"] = nwavelengths
 
     # create a new, empty Rainbow
     new = self._create_copy()
@@ -321,6 +325,8 @@ def bin_in_wavelength(
         )
         new.wavelike[k] = binned["y"]
     new.wavelike["wavelength"] = binned["x"]
+    new.wavelike["wavelength_lower"] = binned["x_edge_lower"]
+    new.wavelike["wavelength_upper"] = binned["x_edge_upper"]
 
     # bin the flux-like variables
     # TODO (add more careful treatment of uncertainty + DQ)
