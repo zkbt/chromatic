@@ -331,6 +331,14 @@ def bin_in_wavelength(
     ok = self.is_ok()
     for k in self.fluxlike:
 
+        if k == "uncertainty":
+            warnings.warn(
+                """
+            Uncertainties and/or data quality flags might
+            not be handled absolutely perfectly yet...
+            """
+            )
+
         for t in range(new.ntime):
 
             # FIXME - not being used yet?

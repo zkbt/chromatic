@@ -8,29 +8,7 @@ from .imports import *
 __all__ = ["bintoR", "bintogrid", "resample_while_conserving_flux"]
 
 
-def calculate_bin_widths(x):
-    """
-    If x is an array of bin centers, calculate the bin sizes.
-    (assumes outermost bins are same size as their neighbors)
-
-    Parameters
-    ----------
-    x : np.array
-        The array of bin centers.
-
-    Returns
-    ----------
-    s : np.array
-        The array of bin sizes (total size, from left to right).
-    """
-
-    binsize = np.zeros_like(x)
-    binsize[0:-1] = x[1:] - x[0:-1]
-    binsize[-1] = binsize[-2]
-    return binsize
-
-
-def calculate_bin_edges(x):
+def calculate_bin_leftright(x):
     """
     If x is an array of bin centers, calculate the bin edges.
     (assumes outermost bins are same size as their neighbors)
@@ -48,17 +26,47 @@ def calculate_bin_edges(x):
         The right edges of the bins.
     """
 
-    # TODO: confirm this isn't doing something weird on log grids!
-
     # what are bin edges (making a guess for those on the ends)
-    xbinsize = calculate_bin_widths(x)
-    xleft = x - xbinsize / 2.0
-    xright = x + xbinsize / 2.0
+    # xbinsize = calculate_bin_widths(x)
+    # left = x - xbinsize / 2.0
+    # right = x + xbinsize / 2.0
 
-    return xleft, xright
+    inner_edges = 0.5 * np.diff(x) + x[:-1]
+    first_edge = x[0] - (inner_edges[0] - x[0])
+    last_edge = x[-1] + (x[-1] - inner_edges[-1])
+
+    left = np.hstack([first_edge, inner_edges])
+    right = np.hstack([inner_edges, last_edge])
+
+    return left, right
 
 
-def plot_as_boxes(x, y, **kwargs):
+def calculate_bin_widths(x):
+    """
+    If x is an array of bin centers, calculate the bin sizes.
+    (assumes outermost bins are same size as their neighbors)
+
+    Parameters
+    ----------
+    x : np.array
+        The array of bin centers.
+
+    Returns
+    ----------
+    s : np.array
+        The array of bin sizes (total size, from left to right).
+    """
+
+    # OLD VERSION
+    # binsize = np.zeros_like(x)
+    # binsize[0:-1] = x[1:] - x[0:-1]
+    # binsize[-1] = binsize[-2]
+    left, right = calculate_bin_leftright(x)
+    binsize = right - left
+    return binsize
+
+
+def plot_as_boxes(x, y, xleft=None, xright=None, **kwargs):
     """
     Plot with boxes, to show the left and right edges of a box.
     This is useful, or example, to plot flux associated with
@@ -76,7 +84,8 @@ def plot_as_boxes(x, y, **kwargs):
     """
 
     # what are bin edges (making a guess for those on the ends)
-    xleft, xright = calculate_bin_edges(x)
+    if (xleft is None) and (xright is None):
+        xleft, xright = calculate_bin_leftright(x)
 
     # create a array doubling up the y values and interleaving the edges
     plot_x = np.vstack((xleft, xright)).reshape((-1,), order="F")
@@ -84,6 +93,22 @@ def plot_as_boxes(x, y, **kwargs):
 
     # plot those constructed arrays
     plt.plot(plot_x, plot_y, **kwargs)
+
+
+def edges_to_leftright(edges):
+    """
+    Convert N+1 contiguous edges to two arrays of N left/right edges.
+    """
+    left, right = edges[:-1], edges[1:]
+    return left, right
+
+
+def leftright_to_edges(left, right):
+    """
+    Convert two arrays of N left/right edges to N+1 continugous edges.
+    """
+    edges = np.hstack([left, right[-1]])
+    return edges
 
 
 def resample_while_conserving_flux(
@@ -174,15 +199,15 @@ def resample_while_conserving_flux(
         xin_sorted = xin[s]
         yin_sorted = yin[s]
         # estimate some bin edges (might fail for non-uniform grids)
-        xin_left, xin_right = calculate_bin_edges(xin_sorted)
+        xin_left, xin_right = calculate_bin_leftright(xin_sorted)
         # define an array of edges
-        xin_edges = np.hstack([xin_left, xin_right[-1]])
+        xin_edges = leftright_to_edges(xin_left, xin_right)
     else:
         # make sure the sizes match up
         assert len(xin_edges) == (len(yin) + 1)
         # sort to make sure x is strictly increasing
         s = np.argsort(xin_edges)
-        xin_left, xin_right = xin_edges[s][:-1], xin_edges[s][1:]
+        xin_left, xin_right = edges_to_leftright(xin_edges[s])
         xin_sorted = (xin_left + xin_right) / 2
         yin_sorted = yin[s[:-1]]
 
@@ -215,13 +240,13 @@ def resample_while_conserving_flux(
 
     # calculate bin edges (of size len(xout)+1)
     if xout_edges is None:
-        xout_left, xout_right = calculate_bin_edges(xout)
-        xout_edges = np.hstack([xout_left, xout_right[-1]])
+        xout_left, xout_right = calculate_bin_leftright(xout)
+        xout_edges = leftright_to_edges(xout_left, xout_right)
     else:
-        xout_left, xout_right = xout_edges[:-1], xout_edges[1:]
+        xout_left, xout_right = edges_to_leftright(xout_edges)
         xout = (xout_left + xout_right) / 2
 
-    xout_for_cdf = np.hstack([xout_left, xout_right[-1]])
+    xout_for_cdf = leftright_to_edges(xout_left, xout_right)
 
     # interpolate the CDF onto those bin edges
     cdfout = cdfinterpolator(xout_for_cdf)
@@ -315,21 +340,29 @@ def resample_while_conserving_flux(
         print("{:>6} = {:.5f}".format("CDF", np.sum(yout)))
 
     # return the resampled y-values
-    return {"x": xout, "edges": xout_edges, "y": yout}
+    return {"x": xout, "x_edge_lower": xout_left, "x_edge_upper": xout_right, "y": yout}
 
 
 def bintogrid(
-    x,
-    y,
+    x=None,
+    y=None,
     unc=None,
     newx=None,
     newx_edges=None,
     dx=None,
+    nx=None,
     weighting="inversevariance",
     drop_nans=True,
+    x_edges=None,
+    visualize=False,
 ):
     """
     Bin any x and y array onto a linearly uniform grid.
+
+
+    The order of precendence for setting the new grid is
+    [`newx_edges`, `newx`, `dx`, `nx`]
+    The first will be used, and others will be ignored.
 
     Parameters
     ----------
@@ -343,13 +376,22 @@ def bintogrid(
     unc : np.array, or None
         The unceratinty on the dependent variable
         (For a spectrum example = the flux uncertainty)
+    nx : np.array
+        The number of bins from the original grid to
+        bin together into the new one.
     dx : np.array
         The fixed spacing for creating a new, linearly uniform
         grid that start at the first value of x. This will
         be ignored if `newx` != None.
     newx : np.array
         A new custom grid onto which we should bin.
-
+    newx_edges : np.array
+        The edges of the new grid of bins for the independent
+        variable, onto which you want to resample the y
+        values. The left and right edges of the bins will be,
+        respectively, `newx_edges[:-1]` and `newx_edges[1:]`,
+        so the size of the output array will be
+        `len(newx_edges) - 1`
     weighting : str
         How should we weight values when averaging
         them together into one larger bin?
@@ -363,6 +405,14 @@ def bintogrid(
     drop_nans : bool
         Should we skip any bins turn out to be nans?
         This most often happens when bins are empty.
+    x_edges : np.array
+        The edges of the original independent variable bins.
+        The left and right edges of the bins are interpreted
+        to be `x_edges[:-1]` and `x_edges[1:]`,
+        respectively, so the associated `y` should have exactly
+        1 fewer element than `x_edges`. This provides finer
+        control over the size of each bin in the input than
+        simply supplying `x`(still a little experimental)
 
     Returns
     -------
@@ -370,13 +420,32 @@ def bintogrid(
         A dictionary containing at least...
             `x` = the center of the output grid
             `y` = the resampled value on the output grid
-            `edges` = the edges of the output grid, which will
-                have one more element than x or y
+            `x_edge_lower` = the lower edges of the output grid
+            `x_edge_upper` = the upper edges of the output grid
         ...and possibly also
             `uncertainty` = the calculated uncertainty per bin
 
     """
 
+    # check that an OK set of inputs has been supplied
+    if (x is not None) and (x_edges is not None):
+        raise RuntimeError(
+            """🌈 Both `x` and `x_edges` were supplied to `bintogrid`. Confusing!"""
+        )
+    if (x is None) and (x_edges is None):
+        raise RuntimeError(
+            """🌈 At least one of `x` or `x_edges` must be supplied to `bintogrid`."""
+        )
+    if y is None:
+        raise RuntimeError("""🌈 `y` must be supplied to `bintogrid`.""")
+
+    # make sure the edges and the centers are set
+    if x is None:
+        x_left, x_right = edges_to_leftright(x_edges)
+        x = 0.5 * (left + right)
+    else:
+        x_left, x_right = calculate_bin_leftright(x)
+        x_edges = leftright_to_edges(x_left, x_right)
     try:
         x_unit = x.unit
         x_without_unit = x.value
@@ -391,16 +460,78 @@ def bintogrid(
         y_unit = 1
         y_without_unit = y
 
-    # make up a grid, if one wasn't specified
-    if newx is None:
+    # warn if multiple inputs are provided
+    number_of_grid_options = np.sum([z is not None for z in [newx_edges, newx, dx, nx]])
+    if number_of_grid_options > 1:
+        warnings.warn(
+            """More than one output grid sent to `bintogrid`.
+                         The one being used is the first to appear in
+                         [`newx_edges`, `newx`, `dx`, `nx`]
+                         but you might want to choose more carefully."""
+        )
+
+    # define inputs based on the following order
+    if newx_edges is not None:
+        # define grid by its edges (and define others from there)
+        newx_edges_without_unit = u.Quantity(newx_edges).to(x_unit).value
+        dx_without_unit = np.diff(newx_edges_without_unit)
+        newx_without_unit = newx_edges_without_unit[:-1] + 0.5 * dx_without_unit
+        newx_left_without_unit = newx_edges_without_unit[:-1]
+        newx_right_without_unit = newx_edges_without_unit[1:]
+    elif newx is not None:
+        # define grid by its centers (and define others from there)
+        newx_without_unit = u.Quantity(newx).to(x_unit).value
+        newx_left_without_unit, newx_right_without_unit = calculate_bin_leftright(
+            newx_without_unit
+        )
+        newx_edges_without_unit = np.hstack(
+            [newx_left_without_unit, newx_right_without_unit[-1]]
+        )
+        dx_without_unit = np.diff(newx_edges_without_unit)
+    elif dx is not None:
+        # define grid by a bin width (and define others from there)
         dx_without_unit = u.Quantity(dx).to(x_unit).value
         newx_without_unit = np.arange(
             np.nanmin(x_without_unit),
             np.nanmax(x_without_unit) + dx_without_unit,
             dx_without_unit,
         )
+        newx_left_without_unit, newx_right_without_unit = calculate_bin_leftright(
+            newx_without_unit
+        )
+        newx_edges_without_unit = np.hstack(
+            [newx_left_without_unit, newx_right_without_unit[-1]]
+        )
+    elif nx is not None:
+        # define a grid by a number of bin indices (and define others from there)
+        original_x_without_unit = x_without_unit
+
+        # redefine the input x to indices, to do interpolation in index space
+        x_without_unit = np.arange(0, len(x_without_unit))
+
+        # define a grid of edges that will enclose the right number of indices
+        x_left_i, x_right_i = calculate_bin_leftright(x_without_unit)
+        newx_edges_without_unit = leftright_to_edges(x_left_i, x_right_i)[::nx]
+        # np.arange(-0.5, len(x_without_unit), nx)
+
+        # calculate the actual x values corresponding to the bins
+        original_edges = leftright_to_edges(
+            *calculate_bin_leftright(original_x_without_unit)
+        )
+        final_edges = original_edges[::nx] * x_unit
+        final_newx_left, final_newx_right = edges_to_leftright(final_edges)
+        # final_newx_left, final_newx_right = (
+        #    original_x_left[::nx] * x_unit,
+        #    original_x_right[nx - 1 :: nx] * x_unit,
+        # )
+        final_newx = 0.5 * (final_newx_left + final_newx_right)
+        dx_without_unit = (final_newx_right - final_newx_left) / x_unit
     else:
-        newx_without_unit = u.Quantity(newx).to(x_unit).value
+        raise RuntimeError(
+            """No output grid sent to `bintogrid`.
+                              Please choose one of the following:
+                              [`newx_edges`, `newx`, `dx`, `nx`]"""
+        )
 
     # don't complain about zero-divisions in here (to allow infinite uncertainties)
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -423,10 +554,14 @@ def bintogrid(
         if np.any(ok):
             # TO-DO: check this nan handling on input arrays is OK?
             numerator = resample_while_conserving_flux(
-                x_without_unit[ok], (y_without_unit * weights)[ok], newx_without_unit
+                xin=x_without_unit[ok],
+                yin=(y_without_unit * weights)[ok],
+                xout_edges=newx_edges_without_unit,
             )
             denominator = resample_while_conserving_flux(
-                x_without_unit[ok], (weights)[ok], newx_without_unit
+                xin=x_without_unit[ok],
+                yin=weights[ok],
+                xout_edges=newx_edges_without_unit,
             )
 
             # the binned weighted means on the new grid
@@ -446,11 +581,44 @@ def bintogrid(
 
     # if no uncertainties were given, don't return uncertainties
     result = {}
-    result["x"] = newx_without_unit[ok] * x_unit
+
+    # populate the new grid centers
+    try:
+        result["x"] = final_newx[ok]
+    except NameError:
+        result["x"] = newx_without_unit[ok] * x_unit
+
+    # populate the grid edges
+    try:
+        result["x_edge_lower"] = final_newx_left[ok]
+        result["x_edge_upper"] = final_newx_right[ok]
+    except NameError:
+        result["x_edge_lower"] = numerator["x_edge_lower"][ok] * x_unit
+        result["x_edge_upper"] = numerator["x_edge_upper"][ok] * x_unit
+
+    # populate the new grid values
     result["y"] = newy[ok] * y_unit
-    result["edges"] = numerator["edges"] * x_unit
+
+    # populate the new grid value uncertainties
     if unc is not None:
         result["uncertainty"] = newunc[ok] * y_unit
+
+    if visualize:
+        fi, ax = plt.subplots(1, 1, figsize=(8, 3), dpi=300)
+        plot_as_boxes(x, y, xleft=x_left, xright=x_right, color="silver", linewidth=1)
+        ekw = dict(elinewidth=1, linewidth=0)
+        plt.errorbar(x, y, yerr=unc, color="silver", marker="s", **ekw)
+        plt.errorbar(
+            result["x"],
+            result["y"],
+            yerr=result.get("uncertainty", None),
+            xerr=0.5 * dx_without_unit * x_unit,
+            marker="o",
+            color="black",
+            zorder=100,
+            **ekw,
+        )
+
     return result
 
 
@@ -538,7 +706,7 @@ def bintoR(
     )
 
     # convert back from log to real values
-    result["x"] = np.exp(result["x"]) * x_unit
-    result["edges"] = np.exp(result["edges"]) * x_unit
+    for k in ["x", "x_edge_lower", "x_edge_upper"]:
+        result[k] = np.exp(result[k]) * x_unit
 
     return result
