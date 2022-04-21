@@ -615,6 +615,7 @@ class Rainbow:
         get_spectral_resolution,
         plot_spectral_resolution,
         get_typical_uncertainty,
+        align_wavelengths,
     )
 
     # import visualizations that can act on Rainbows
@@ -628,7 +629,7 @@ class Rainbow:
         _setup_animated_scatter,
         _setup_wavelength_colors,
         _make_sure_cmap_is_defined,
-        get_wavelength_color, 
+        get_wavelength_color,
         imshow_fluxlike_quantities,
-        plot_quantities
+        plot_quantities,
     )
