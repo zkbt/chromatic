@@ -615,6 +615,7 @@ class Rainbow:
         get_spectral_resolution,
         plot_spectral_resolution,
         get_typical_uncertainty,
+        _create_shared_wavelength_axis,
         align_wavelengths,
     )
 

@@ -89,7 +89,7 @@ def from_abcdefgh(rainbow, filepath):
     # populate a 1D array of times (with astropy units of time)
     rainbow.timelike["time"] = the_1D_array_of_times()
 
-    # populate a 2D (row = wavelength, col = array of fluxes
+    # populate a 2D (row = wavelength, col = time) array of fluxes
     rainbow.fluxlike["flux"] = the_2D_array_of_fluxes()
 
     # add some warnings if there's any funny business

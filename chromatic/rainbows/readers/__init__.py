@@ -4,6 +4,9 @@ from .rainbow_npy import *
 from .rainbow_FITS import *
 from .text import *
 
+# some particular instruments
+from .nres import *
+
 # some individual-ish folks
 from .espinoza import *
 from .dossantos import *

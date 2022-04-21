@@ -1,8 +1,10 @@
 from ...imports import *
 from ...resampling import *
 
+__all__ = ["_create_shared_wavelength_axis", "align_wavelengths"]
 
-def create_shared_wavelength_axis(
+
+def _create_shared_wavelength_axis(
     rainbow, wscale="linear", supersampling=1, visualize=False
 ):
     """
@@ -37,6 +39,7 @@ def create_shared_wavelength_axis(
     """
 
     w = rainbow.fluxlike["wavelength"]
+    w[rainbow.ok == False] = np.nan
     dw_per_time = np.gradient(w, axis=rainbow.waveaxis)
     R_per_time = w / dw_per_time
 
@@ -59,10 +62,10 @@ def create_shared_wavelength_axis(
 
     min_w, max_w = np.nanmin(w).to("micron").value, np.nanmax(w).to("micron").value
     if wscale == "linear":
-        dw = np.median(dw_per_time).to("micron").value / supersampling
+        dw = np.nanmedian(dw_per_time).to("micron").value / supersampling
         shared_w = np.arange(min_w, max_w + dw, dw) * u.micron
     elif wscale == "log":
-        R = np.median(w / dw_per_time) * supersampling
+        R = np.nanmedian(w / dw_per_time) * supersampling
         shared_w = np.exp(np.arange(np.log(min_w), np.log(max_w) + 1 / R, 1 / R))
     shared_dw = np.gradient(shared_w)
     shared_R = shared_w / shared_dw
@@ -124,7 +127,7 @@ def align_wavelengths(self, **kw):
 
     """
     # create a shared wavelength array
-    shared_wavelengths = create_shared_wavelength_axis(self, **kw)
+    shared_wavelengths = self._create_shared_wavelength_axis(**kw)
 
     # bin the rainbow onto that new grid, starting from 2D wavelengths
     shifted = self.bin(wavelength=shared_wavelengths, starting_wavelengths="2D")
