@@ -7,3 +7,4 @@ from .test_rainbow_simulations import *
 from .test_rainbow_visualizations import *
 from .test_resampling import *
 from .test_units import *
+from .test_align_wavelengths import *
