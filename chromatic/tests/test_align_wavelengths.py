@@ -1,4 +1,5 @@
 from ..rainbows import *
+from ..rainbows.actions.align_wavelengths import create_shared_wavelength_axis
 from .setup_tests import *
 
 
@@ -31,3 +32,33 @@ def create_simulation_with_wobbly_wavelengths(
     r.fluxlike["flux"] = r.fluxlike["flux"] * r.fluxlike["model"]
 
     return r
+
+
+def test_create_shared_wavelength_axis(fractional_shift=0.002, dw=0.0001 * u.micron):
+    r = create_simulation_with_wobbly_wavelengths(
+        fractional_shift=fractional_shift, dw=dw
+    )
+    create_shared_wavelength_axis(r, wscale="linear", visualize=True)
+    plt.savefig(
+        os.path.join(
+            test_directory,
+            "create-shared-wavelength-demonstration.pdf",
+        )
+    )
+
+
+def test_align_wavelengths(fractional_shift=0.002, dw=0.0001 * u.micron):
+    r = create_simulation_with_wobbly_wavelengths(
+        fractional_shift=fractional_shift, dw=dw
+    )
+    a = r.align_wavelengths()
+
+    fi, ax = plt.subplots(2, 2, dpi=300, figsize=(8, 6))
+    for i, x in enumerate([r, a]):
+        x.imshow(ax=ax[0, i], quantity="flux")
+        plt.title(["original", "aligned"][i] + " flux")
+        x.imshow(ax=ax[1, i], quantity="wavelength")
+        plt.title(["original", "aligned"][i] + " wavelength")
+    plt.tight_layout()
+
+    plt.savefig(os.path.join(test_directory, "wavelength-alignment-demonstration.pdf"))

@@ -36,8 +36,8 @@ def create_shared_wavelength_axis(
         axis compares to the original input wavelength axes?
     """
 
-    w = self.fluxlike["wavelength"]
-    dw_per_time = np.gradient(w, axis=self.waveaxis)
+    w = rainbow.fluxlike["wavelength"]
+    dw_per_time = np.gradient(w, axis=rainbow.waveaxis)
     R_per_time = w / dw_per_time
 
     if visualize:
@@ -56,7 +56,6 @@ def create_shared_wavelength_axis(
         plt.title("R = $\lambda/\Delta\lambda$")
         plt.colorbar(orientation="horizontal", pad=0.25)
         plt.tight_layout()
-        plt.show()
 
     min_w, max_w = np.nanmin(w).to("micron").value, np.nanmax(w).to("micron").value
     if wscale == "linear":
@@ -128,6 +127,6 @@ def align_wavelengths(self, **kw):
     shared_wavelengths = create_shared_wavelength_axis(self, **kw)
 
     # bin the rainbow onto that new grid, starting from 2D wavelengths
-    shifted = self.bin(wavelength=shared_wavelengths, starting_wavelength="2D")
+    shifted = self.bin(wavelength=shared_wavelengths, starting_wavelengths="2D")
 
     return shifted
