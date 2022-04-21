@@ -70,5 +70,9 @@ def guess_reader(filepath, format=None):
         filenames[0], "*.csv"
     ):
         return from_text
+    elif fnmatch.fnmatch(filenames[0], "*e92-1d.fits") or fnmatch.fnmatch(
+        filenames[0], "*e92-1d.fits.fz"
+    ):
+        return from_nres
     else:
         raise RuntimeError(f"🌈 Failed to guess a good reader for {filenames}.")
