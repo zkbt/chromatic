@@ -16,6 +16,7 @@ def bin(
     wavelength_edges=None,
     nwavelengths=None,
     starting_wavelengths="1D",
+    trim=True,
 ):
     """
     Bin in wavelength and/or time.
@@ -79,6 +80,10 @@ def bin(
         Binning will start from the 0th element of the
         starting wavelengths; if you want to start from
         a different index, trim before binning.
+    trim : bool
+        Should any wavelengths or columns that end up
+        as entirely nan be trimmed out of the result?
+        (default = True)
 
     Returns
     -------
@@ -87,7 +92,7 @@ def bin(
     """
     # bin first in time
     binned_in_time = self.bin_in_time(
-        dt=dt, time=time, time_edges=time_edges, ntimes=ntimes
+        dt=dt, time=time, time_edges=time_edges, ntimes=ntimes, trim=trim
     )
 
     # then bin in wavelength
@@ -98,13 +103,14 @@ def bin(
         wavelength_edges=wavelength_edges,
         nwavelengths=nwavelengths,
         starting_wavelengths=starting_wavelengths,
+        trim=trim,
     )
 
     # return the binned object
     return binned
 
 
-def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
+def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=True):
     """
     Bin in time.
 
@@ -136,6 +142,10 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
         Binning will start from the 0th element of the
         starting times; if you want to start from
         a different index, trim before binning.
+    trim : bool
+        Should any wavelengths or columns that end up
+        as entirely nan be trimmed out of the result?
+        (default = True)
 
     Returns
     -------
@@ -188,13 +198,14 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
     ok = self.is_ok()
     for k in self.fluxlike:
 
+        '''
         if k == "uncertainty":
             warnings.warn(
                 """
             Uncertainties and/or data quality flags might
             not be handled absolutely perfectly yet...
             """
-            )
+            )'''
 
         # loop through wavelengths
         for w in range(new.nwave):
@@ -236,7 +247,10 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None):
     # figure out the scale, after binning
     new._guess_wscale()
 
-    return new
+    if trim:
+        return new.trim_nan_times()
+    else:
+        return new
 
 
 def bin_in_wavelength(
@@ -247,6 +261,7 @@ def bin_in_wavelength(
     wavelength_edges=None,
     nwavelengths=None,
     starting_wavelengths="1D",
+    trim=True,
 ):
     """
     Bin in wavelength.
@@ -281,6 +296,10 @@ def bin_in_wavelength(
         Binning will start from the 0th element of the
         starting wavelengths; if you want to start from
         a different index, trim before binning.
+    trim : bool
+        Should any wavelengths or columns that end up
+        as entirely nan be trimmed out of the result?
+        (default = True)
 
     Returns
     -------
@@ -345,13 +364,14 @@ def bin_in_wavelength(
     ok = self.is_ok()
     for k in self.fluxlike:
 
+        '''
         if k == "uncertainty":
             warnings.warn(
                 """
             Uncertainties and/or data quality flags might
             not be handled absolutely perfectly yet...
             """
-            )
+            )'''
 
         for t in range(new.ntime):
 
@@ -396,4 +416,7 @@ def bin_in_wavelength(
     # figure out the scale, after binning
     new._guess_wscale()
     # new.metadata["wscale"] = wscale
-    return new
+    if trim:
+        return new.trim_nan_wavelengths()
+    else:
+        return new

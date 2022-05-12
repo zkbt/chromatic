@@ -1,5 +1,5 @@
 from ..rainbows import *
-from ..rainbows.actions.align_wavelengths import create_shared_wavelength_axis
+from ..rainbows.actions.align_wavelengths import _create_shared_wavelength_axis
 from .setup_tests import *
 
 
@@ -38,7 +38,7 @@ def test_create_shared_wavelength_axis(fractional_shift=0.002, dw=0.0001 * u.mic
     r = create_simulation_with_wobbly_wavelengths(
         fractional_shift=fractional_shift, dw=dw
     )
-    create_shared_wavelength_axis(r, wscale="linear", visualize=True)
+    _create_shared_wavelength_axis(r, wscale="linear", visualize=True)
     plt.savefig(
         os.path.join(
             test_directory,

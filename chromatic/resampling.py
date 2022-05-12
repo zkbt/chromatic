@@ -484,6 +484,13 @@ def bintogrid(
         newx_without_unit = newx_edges_without_unit[:-1] + 0.5 * dx_without_unit
         newx_left_without_unit = newx_edges_without_unit[:-1]
         newx_right_without_unit = newx_edges_without_unit[1:]
+
+        # make sure the final output grid is defined
+        final_newx, final_newx_left, final_newx_right = (
+            newx_without_unit * x_unit,
+            newx_left_without_unit * x_unit,
+            newx_right_without_unit * x_unit,
+        )
     elif newx is not None:
         # define grid by its centers (and define others from there)
         newx_without_unit = u.Quantity(newx).to(x_unit).value
@@ -494,6 +501,13 @@ def bintogrid(
             [newx_left_without_unit, newx_right_without_unit[-1]]
         )
         dx_without_unit = np.diff(newx_edges_without_unit)
+
+        # make sure the final output grid is defined
+        final_newx, final_newx_left, final_newx_right = (
+            newx_without_unit * x_unit,
+            newx_left_without_unit * x_unit,
+            newx_right_without_unit * x_unit,
+        )
     elif dx is not None:
         # define grid by a bin width (and define others from there)
         dx_without_unit = u.Quantity(dx).to(x_unit).value
@@ -508,8 +522,16 @@ def bintogrid(
         newx_edges_without_unit = np.hstack(
             [newx_left_without_unit, newx_right_without_unit[-1]]
         )
+
+        # make sure the final output grid is defined
+        final_newx, final_newx_left, final_newx_right = (
+            newx_without_unit * x_unit,
+            newx_left_without_unit * x_unit,
+            newx_right_without_unit * x_unit,
+        )
+
     elif nx is not None:
-        # define a grid by a number of bin indices (and define others from there)
+        # keep track of the original input x values
         original_x_without_unit = x_without_unit
 
         # redefine the input x to indices, to do interpolation in index space
@@ -521,7 +543,6 @@ def bintogrid(
         newx_without_unit = 0.5 * (
             newx_edges_without_unit[1:] + newx_edges_without_unit[:-1]
         )
-        # np.arange(-0.5, len(x_without_unit), nx)
 
         # calculate the actual x values corresponding to the bins
         original_edges = leftright_to_edges(
@@ -529,10 +550,6 @@ def bintogrid(
         )
         final_edges = original_edges[::nx] * x_unit
         final_newx_left, final_newx_right = edges_to_leftright(final_edges)
-        # final_newx_left, final_newx_right = (
-        #    original_x_left[::nx] * x_unit,
-        #    original_x_right[nx - 1 :: nx] * x_unit,
-        # )
         final_newx = 0.5 * (final_newx_left + final_newx_right)
         dx_without_unit = (final_newx_right - final_newx_left) / x_unit
     else:
@@ -578,6 +595,8 @@ def bintogrid(
 
             # the standard error on the means, for those bins
             newunc = np.sqrt(1 / denominator["y"])
+
+            # pull out the grid definition (if not already defined)
         else:
             newy = np.nan * newx_without_unit
             newunc = np.nan * newx_without_unit
@@ -591,19 +610,10 @@ def bintogrid(
     # if no uncertainties were given, don't return uncertainties
     result = {}
 
-    # populate the new grid centers
-    try:
-        result["x"] = final_newx[ok]
-    except NameError:
-        result["x"] = newx_without_unit[ok] * x_unit
-
-    # populate the grid edges
-    try:
-        result["x_edge_lower"] = final_newx_left[ok]
-        result["x_edge_upper"] = final_newx_right[ok]
-    except NameError:
-        result["x_edge_lower"] = numerator["x_edge_lower"][ok] * x_unit
-        result["x_edge_upper"] = numerator["x_edge_upper"][ok] * x_unit
+    # populate the new grid centers + edges + values
+    result["x"] = final_newx[ok]
+    result["x_edge_lower"] = final_newx_left[ok]
+    result["x_edge_upper"] = final_newx_right[ok]
 
     # populate the new grid values
     result["y"] = newy[ok] * y_unit
