@@ -165,3 +165,11 @@ def test_bin_bad_data(visualize=False):
 
     assert np.any(np.isfinite(b.flux))
     return s
+
+
+def test_bin_both():
+    bintime = 5
+    binwave = 0.1
+    w = np.logspace(0, 1) * u.micron
+    r = SimulatedRainbow(signal_to_noise=1000, dt=bintime * u.minute)
+    b_withouttransit = r.bin(dw=binwave * u.micron, dt=bintime * u.minute)

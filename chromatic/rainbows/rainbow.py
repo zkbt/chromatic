@@ -611,6 +611,9 @@ class Rainbow:
         bin,
         bin_in_time,
         bin_in_wavelength,
+        trim,
+        trim_nan_times,
+        trim_nan_wavelengths,
         get_spectrum,
         get_spectral_resolution,
         plot_spectral_resolution,
@@ -628,7 +631,7 @@ class Rainbow:
         _setup_animated_scatter,
         _setup_wavelength_colors,
         _make_sure_cmap_is_defined,
-        get_wavelength_color, 
+        get_wavelength_color,
         imshow_fluxlike_quantities,
-        plot_quantities
+        plot_quantities,
     )
