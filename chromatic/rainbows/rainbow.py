@@ -415,6 +415,13 @@ class Rainbow:
         """
         return self.fluxlike.get("uncertainty", None)
 
+    @property
+    def ok(self):
+        """
+        The 2D array of whether data is OK (row = wavelength, col = time).
+        """
+        return self.fluxlike.get("ok", np.ones_like(self.flux).astype(bool))
+
     def __getattr__(self, key):
         """
         If an attribute/method isn't explicitly defined,
@@ -618,6 +625,8 @@ class Rainbow:
         get_spectral_resolution,
         plot_spectral_resolution,
         get_typical_uncertainty,
+        _create_shared_wavelength_axis,
+        align_wavelengths,
     )
 
     # import visualizations that can act on Rainbows

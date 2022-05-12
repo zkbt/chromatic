@@ -15,6 +15,7 @@ def bin(
     wavelength=None,
     wavelength_edges=None,
     nwavelengths=None,
+    starting_wavelengths="1D",
     trim=True,
 ):
     """
@@ -101,6 +102,7 @@ def bin(
         wavelength=wavelength,
         wavelength_edges=wavelength_edges,
         nwavelengths=nwavelengths,
+        starting_wavelengths=starting_wavelengths,
         trim=trim,
     )
 
@@ -258,6 +260,7 @@ def bin_in_wavelength(
     wavelength=None,
     wavelength_edges=None,
     nwavelengths=None,
+    starting_wavelengths="1D",
     trim=True,
 ):
     """
@@ -381,9 +384,13 @@ def bin_in_wavelength(
             else:
                 uncertainty_for_binning = self.uncertainty[:, t]
 
+            if starting_wavelengths.upper() == "1D":
+                w = self.wavelength[:]
+            elif starting_wavelengths.upper() == "2D":
+                w = self.fluxlike["wavelength"][:, t]
             # bin the quantities for this time
             binned = binning_function(
-                x=self.wavelength[:],
+                x=w,
                 y=self.fluxlike[k][:, t],
                 unc=uncertainty_for_binning,
                 **binkw,
