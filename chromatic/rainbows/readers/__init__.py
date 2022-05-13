@@ -6,6 +6,7 @@ from .text import *
 
 # some particular instruments
 from .nres import *
+from .atoca import *
 
 # some individual-ish folks
 from .espinoza import *
@@ -18,7 +19,6 @@ from .coloumbe import *
 
 # construct a dictionary of available readers
 available_readers = {k: globals()[k] for k in globals() if k[0:5] == "from_"}
-
 
 def guess_reader(filepath, format=None):
     """
