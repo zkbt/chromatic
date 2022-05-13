@@ -66,5 +66,3 @@ def from_atoca(rainbow, filepath, order=1):
             {rainbow.ntime} integrations, but only {n_filled_times} columns of
             the flux array were populated. Are you perhaps missing some 
             segment files?""")
-    #rainbow._guess_wscale()
-    #return rainbow
