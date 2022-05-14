@@ -610,9 +610,9 @@ class Rainbow:
         return f"<{n}({self.nwave}w, {self.ntime}t)>"
 
     # import the basic operations for Rainbows
-    from .operations import __add__, __sub__, __mul__, __truediv__, __eq__
+    from .actions.operations import __add__, __sub__, __mul__, __truediv__, __eq__
 
-    # import other axtions that return other Rainbows
+    # import other actions that return other Rainbows
     from .actions import (
         normalize,
         bin,
@@ -641,6 +641,6 @@ class Rainbow:
         _setup_wavelength_colors,
         _make_sure_cmap_is_defined,
         get_wavelength_color,
-        imshow_fluxlike_quantities,
+        imshow_quantities,
         plot_quantities,
     )

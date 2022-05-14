@@ -22,11 +22,11 @@ def test_imshow():
     plt.savefig(os.path.join(test_directory, "imshow-demonstration.pdf"))
 
 
-def test_imshow_fluxlike_quantities():
+def test_imshow_quantities():
     s = SimulatedRainbow(signal_to_noise=500).inject_transit()
     for k in "abcde":
         s.fluxlike[k] = np.random.uniform(4, 5, s.shape)
-    s.imshow_fluxlike_quantities(maxcol=1, panel_size=(8, 2))
+    s.imshow_quantities(maxcol=1, panel_size=(8, 2))
     plt.savefig(os.path.join(test_directory, "imshow-multiples-demonstration.pdf"))
 
 
