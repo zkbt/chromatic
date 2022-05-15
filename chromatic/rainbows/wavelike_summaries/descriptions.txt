@@ -1,0 +1,4 @@
+cartoon | name | description
+🌊🔭🌈 | get_spectrum | Get the median spectrum.
+🌊💎🌈 | get_spectral_resolution | Get the spectral resolution (R=w/dw).
+🌊🃏🌈 | get_typical_uncertainty | Get the typical uncertainty for each wavelength.
