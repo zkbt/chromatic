@@ -29,3 +29,7 @@ def test_rainbow_basics():
         nw / 2,
         nt / 2,
     )
+
+
+def test_help():
+    Rainbow().help()

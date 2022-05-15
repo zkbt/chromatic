@@ -609,6 +609,44 @@ class Rainbow:
         n = self.__class__.__name__.replace("Rainbow", "🌈")
         return f"<{n}({self.nwave}w, {self.ntime}t)>"
 
+    def help(self, categories=["actions", "visualizations", "wavelike_summaries"]):
+        """
+        Provide a quick reference of key actions available for this Rainbow.
+
+        Parameters
+        ----------
+
+        """
+        print(
+            textwrap.dedent(
+                """
+        Hooray for you! You asked for help on what you can do with this 🌈 object.
+        Here's a quick reference of a few available options for things to try."""
+            )
+        )
+
+        base_directory = pkg_resources.resource_filename("chromatic", "rainbows")
+        for c in categories:
+            print(
+                "\n"
+                + "-" * (len(c) + 4)
+                + "\n"
+                + f"| {c} |\n"
+                + "-" * (len(c) + 4)
+                + "\n"
+            )
+            directory = os.path.join(base_directory, c)
+            descriptions_file = os.path.join(directory, "descriptions.txt")
+            table = ascii.read(descriptions_file)
+            for row in table:
+                if row["name"] in "+-*/":
+                    function_call = f"{row['name']}"
+                else:
+                    function_call = f".{row['name']}()"
+
+                item = f"{row['cartoon']} | {function_call:<28} | {row['description']}"
+                print(item)
+
     # import the basic operations for Rainbows
     from .actions.operations import __add__, __sub__, __mul__, __truediv__, __eq__
 
@@ -621,12 +659,15 @@ class Rainbow:
         trim,
         trim_nan_times,
         trim_nan_wavelengths,
-        get_spectrum,
-        get_spectral_resolution,
-        plot_spectral_resolution,
-        get_typical_uncertainty,
         _create_shared_wavelength_axis,
         align_wavelengths,
+    )
+
+    # import summary statistics for each wavelength
+    from .wavelike_summaries import (
+        get_spectrum,
+        get_spectral_resolution,
+        get_typical_uncertainty,
     )
 
     # import visualizations that can act on Rainbows
