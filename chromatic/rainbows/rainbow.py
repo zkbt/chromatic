@@ -621,6 +621,7 @@ class Rainbow:
         trim,
         trim_nan_times,
         trim_nan_wavelengths,
+        shift,
         get_spectrum,
         get_spectral_resolution,
         plot_spectral_resolution,
