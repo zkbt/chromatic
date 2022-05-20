@@ -95,7 +95,7 @@ def plot(
                 this_textkw.update(**textkw)
                 plt.annotate(
                     f"{w.to(w_unit).value:.2f} {w_unit.to_string('latex_inline')}",
-                    (min_time, 1 - (i + 0.5) * spacing),
+                    (min_time, np.median(plot_flux) - 0.5 * spacing),
                     **this_textkw,
                 )
 
