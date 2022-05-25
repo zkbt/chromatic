@@ -35,6 +35,13 @@ def test_plot():
     plt.savefig(os.path.join(test_directory, "plot-demonstration.pdf"))
 
 
+def test_plot_unnormalized():
+    w = np.logspace(0, 1, 5) * u.micron
+    s = SimulatedRainbow(wavelength=w, star_flux=w.value ** 2, signal_to_noise=5)
+    s.plot(spacing=0)
+    plt.savefig(os.path.join(test_directory, "plot-demonstration-unnormalized.pdf"))
+
+
 def test_plot_quantities():
     r = SimulatedRainbow(R=10)
     for k in "abcdefg":
