@@ -104,6 +104,7 @@ setup(
             "mkdocs-exclude",
             "twine",
         ],
+        "interact": ["altair"],
         "cartoons": ["rainbow-connection>=0.0.7"],
     },
     # (I think just leave this set to False)
