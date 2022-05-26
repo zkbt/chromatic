@@ -661,6 +661,8 @@ class Rainbow:
         trim_nan_wavelengths,
         _create_shared_wavelength_axis,
         align_wavelengths,
+        to_nparray,
+        to_df,
     )
 
     # import summary statistics for each wavelength

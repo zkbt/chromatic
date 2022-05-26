@@ -36,6 +36,9 @@ from scipy.interpolate import interp1d
 # For modelling transits.
 import batman
 
+# For converting Rainbows to pandas dataframe
+import pandas as pd
+
 from .units import *
 
 # define a driectory where we can put any necessary data files
