@@ -686,4 +686,5 @@ class Rainbow:
         get_wavelength_color,
         imshow_quantities,
         plot_quantities,
+        imshow_interact,
     )
