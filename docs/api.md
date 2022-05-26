@@ -9,5 +9,3 @@
         - normalize
         - imshow
         - plot
-        - animate_lightcurves
-        - animate_spectra
