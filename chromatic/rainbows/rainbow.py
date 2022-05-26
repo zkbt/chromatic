@@ -275,16 +275,32 @@ class Rainbow:
         self.fluxlike["uncertainty"] = uncertainty
 
         # sort other arrays by shape
-        for k in kw:
-            if np.shape(kw[k]) == self.shape:
-                self.fluxlike[k] = kw[k]
-            elif np.shape(kw[k]) == (self.nwave,):
-                self.wavelike[k] = kw[k]
-            elif np.shape(kw[k]) == (self.ntime,):
-                self.timelike[k] = kw[k]
+        for k, v in kw.items():
+            self._put_array_in_right_dictionary(k, v)
 
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
+
+    def _put_array_in_right_dictionary(self, k, v):
+        """
+        Sort an input into the right core dictionary
+        (timelike, wavelike, fluxlike) based on its shape.
+
+        Parameters
+        ----------
+        k : str
+            The key for the (appropriate) dictionary.
+        v : np.array
+            The quantity to sort.
+        """
+        if np.shape(v) == self.shape:
+            self.fluxlike[k] = v
+        elif np.shape(v) == (self.nwave,):
+            self.wavelike[k] = v
+        elif np.shape(v) == (self.ntime,):
+            self.timelike[k] = v
+        else:
+            raise ValueError("'{k}' doesn't fit anywhere!")
 
     def _initialize_from_file(self, filepath=None, format=None, **kw):
         """
@@ -483,10 +499,31 @@ class Rainbow:
         message = f"🌈.{key} does not exist for this Rainbow"
         raise AttributeError(message)
 
-    # TODO - what should we do with __setattr__?
-    #   actually allow to reset things in metadata?
-    #   give a warning that you try to set something you shouldn't?
-    #   if things have the right size, just organize them
+    def __setattr__(self, key, value):
+        """
+        When setting a new attribute, try to sort it into the
+        appropriate core directory based on its size.
+
+        Let's say you have some quantity that has the same
+        shape as the wavelength array and you'd like to attach
+        it to this Rainbow object. This will try to save it
+        in the most relevant core dictionary (of the choices
+        timelike, wavelike, fluxlike).
+
+        Parameters
+        ----------
+        key : str
+            The attribute we're trying to get.
+        value : np.array
+            The quantity we're trying to attach to that name.
+        """
+        try:
+            if key in self._core_dictionaries:
+                raise ValueError("Trying to set a core dictionary.")
+            else:
+                self._put_array_in_right_dictionary(key, value)
+        except ValueError:
+            self.__dict__[key] = value
 
     @property
     def _nametag(self):

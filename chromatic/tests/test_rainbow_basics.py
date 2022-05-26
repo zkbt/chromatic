@@ -60,5 +60,26 @@ def test_essential_properties():
     assert np.all(r.ok == False)
 
 
+def test_automatic_quantity_sorting():
+    # create a simulated rainbow
+    r = SimulatedRainbow()
+
+    # does a wavelength-shaped array end up in the right spot?
+    r.background = np.random.normal(10, 1, r.nwave)
+    assert "background" in r.wavelike
+
+    # does a time-shaped array end up in the right spot?
+    r.temperature = np.random.normal(10, 1, r.ntime)
+    assert "temperature" in r.timelike
+
+    # does a fluxes-shaped array end up in the right spot?
+    r.saturated = np.random.normal(0, 1, r.shape) > 2
+    assert "saturated" in r.fluxlike
+
+    # does a weirdly-shaped array still get assigned somewhere?
+    r.weird = np.random.normal(0, 1, (1, 2, 3, 4))
+    r.weird + 1
+
+
 def test_help():
     Rainbow().help()
