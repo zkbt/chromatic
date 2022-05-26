@@ -620,8 +620,9 @@ class Rainbow:
         print(
             textwrap.dedent(
                 """
-        Hooray for you! You asked for help on what you can do with this 🌈 object.
-        Here's a quick reference of a few available options for things to try."""
+        Hooray for you! You asked for help on what you can do
+        with this 🌈 object. Here's a quick reference of a few
+        available options for things to try."""
             )
         )
 
@@ -644,7 +645,9 @@ class Rainbow:
                 else:
                     function_call = f".{row['name']}()"
 
-                item = f"{row['cartoon']} | {function_call:<28} | {row['description']}"
+                item = (
+                    f"{row['cartoon']} | {function_call:<28} \n   {row['description']}"
+                )
                 print(item)
 
     # import the basic operations for Rainbows

@@ -10,7 +10,7 @@ from ...imports import *
 __all__ = ["to_text"]
 
 
-def to_text(rainbow, filepath, overwrite=None, group_by="wavelength"):
+def to_text(rainbow, filepath, overwrite=True, group_by="wavelength"):
     """
     Write a Rainbow to a file in the text format.
 
