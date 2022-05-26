@@ -31,5 +31,34 @@ def test_rainbow_basics():
     )
 
 
+def test_essential_properties():
+    # create a simulated rainbow
+    r = SimulatedRainbow()
+
+    # wavelength
+    x = r.wavelength
+    r.wavelength = x * 2
+    assert np.all(r.wavelength == x * 2)
+
+    # time
+    x = r.time
+    r.time = x * 2
+    assert np.all(r.time == x * 2)
+
+    # flux
+    x = r.flux
+    r.flux = x * 2
+    assert np.all(r.flux == x * 2)
+
+    # uncertainty
+    x = r.uncertainty
+    r.uncertainty = x * 2
+    assert np.all(r.uncertainty == x * 2)
+
+    # ok
+    r.ok = np.isfinite(r.flux) == False
+    assert np.all(r.ok == False)
+
+
 def test_help():
     Rainbow().help()

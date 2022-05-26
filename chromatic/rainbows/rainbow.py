@@ -394,12 +394,26 @@ class Rainbow:
         """
         return self.wavelike.get("wavelength", None)
 
-    @property
-    def time(self):
+    @wavelength.setter
+    def wavelength(self, value):
         """
         The 1D array of wavelengths (with astropy units of length).
         """
+        self.wavelike["wavelength"] = value
+
+    @property
+    def time(self):
+        """
+        The 1D array of time (with astropy units of time).
+        """
         return self.timelike.get("time", None)
+
+    @time.setter
+    def time(self, value):
+        """
+        The 1D array of time (with astropy units of time).
+        """
+        self.timelike["time"] = value
 
     @property
     def flux(self):
@@ -408,6 +422,13 @@ class Rainbow:
         """
         return self.fluxlike.get("flux", None)
 
+    @flux.setter
+    def flux(self, value):
+        """
+        The 2D array of fluxes (row = wavelength, col = time).
+        """
+        self.fluxlike["flux"] = value
+
     @property
     def uncertainty(self):
         """
@@ -415,12 +436,26 @@ class Rainbow:
         """
         return self.fluxlike.get("uncertainty", None)
 
+    @uncertainty.setter
+    def uncertainty(self, value):
+        """
+        The 2D array of uncertainties on the fluxes.
+        """
+        self.fluxlike["uncertainty"] = value
+
     @property
     def ok(self):
         """
         The 2D array of whether data is OK (row = wavelength, col = time).
         """
         return self.fluxlike.get("ok", np.ones_like(self.flux).astype(bool))
+
+    @ok.setter
+    def ok(self, value):
+        """
+        The 2D array of whether data is OK (row = wavelength, col = time).
+        """
+        self.fluxlike["ok"] = value
 
     def __getattr__(self, key):
         """
