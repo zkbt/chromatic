@@ -61,7 +61,7 @@ def imshow_interact(self, quantity='Flux', ylog=False, timeformat='h'):
             warnings.warn("It looks like you might have unbinned data - you may want to use ylog=True!")
 
     # The unbinned Rainbow is sometimes in log scale, therefore plotting will be ugly with uniform axis spacing
-    # ylog tells the function to bin the y-axis data
+    # ylog tells the function to take the log10 of the y-axis data
     if ylog:
         source[ylabel] = np.log10(source[ylabel])
         source = source.rename(columns={ylabel: f"log({ylabel})"})

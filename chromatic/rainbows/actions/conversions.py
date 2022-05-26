@@ -19,7 +19,7 @@ def to_nparray(self, timeformat='h'):
         rfluxe : np.array
             flux error (MJy/sr)  [n_wavelengths x n_integrations]
         rtime : np.array
-            time (BJD_TDB, houra) [n_integrations]
+            time (BJD_TDB, hours) [n_integrations]
         rwavel : np.array
             wavelength (microns) [n_wavelengths]
     """
