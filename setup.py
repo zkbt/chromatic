@@ -84,6 +84,7 @@ setup(
         "scipy",
         "matplotlib>=3.0",
         "astropy>=4.0",
+        "pandas",
         "tqdm",
         "batman-package",
     ],
