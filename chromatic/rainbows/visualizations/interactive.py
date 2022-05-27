@@ -6,13 +6,14 @@ try:
     alt.data_transformers.disable_max_rows()
 except Exception as e:
     print(e)
-    warnings.warn("Issue importing Altair, cannot make interactive plot :(!")
+    warnings.warn("Issue importing Altair, cannot make interactive plot :(! \n \
+                  You can install Altair using: pip install altair")
 
 __all__ = ["imshow_interact"]
 
 
 # Convert this grid to columnar data expected by Altair
-def imshow_interact(self, quantity='Flux', ylog=False, timeformat='h'):
+def imshow_interact(self, quantity='Flux', ylog=False, t_unit='d', cmap="viridis"):
     """ Display interactive spectrum plot for chromatic Rainbow with a wavelength-averaged 2D quantity
     defined by the user. The user can interact with the 3D spectrum to choose the wavelength range over
     which the average is calculated.
@@ -28,30 +29,32 @@ def imshow_interact(self, quantity='Flux', ylog=False, timeformat='h'):
             (optional, default=False)
             Boolean for whether to take log10 of the y-axis data
         timeformat : str
-            (optional, default='hours')
+            (optional, default='d')
             The time format to use (seconds, minutes, hours, days etc.)
     """
 
     # preset the x and y axes as Time (in units defined by the user) and Wavelength
-    xlabel = f"Time ({timeformat})"
+    xlabel = f"Time ({t_unit})"
     ylabel = "Wavelength (microns)"
 
     # allow the user to plot flux or uncertainty
     if quantity.lower() == "flux":
         z = "Flux"
     elif quantity.lower() == "uncertainty":
-        z = "Flux Error"
+        z = "Flux Uncertainty"
     elif quantity.lower() == "error":
-        z = "Flux Error"
+        z = "Flux Uncertainty"
     elif quantity.lower() == "flux_error":
-        z = "Flux Error"
+        z = "Flux Uncertainty"
+    elif quantity.lower() == "flux_uncertainty":
+        z = "Flux Uncertainty"
     else:
         # if the quantity is not one of the predefined values:
         warnings.warn("Unrecognised Quantity!")
         return
 
     # convert rainbow object to pandas dataframe
-    source = self.to_df(timeformat=timeformat)[[xlabel, ylabel, z]]
+    source = self.to_df(timeformat=t_unit)[[xlabel, ylabel, z]]
 
     # if there are >10,000 data points Altair will be very laggy/slow. This is probably unbinned, therefore
     # encourage the user to bin the Rainbow before calling this function in future/
@@ -77,7 +80,7 @@ def imshow_interact(self, quantity='Flux', ylog=False, timeformat='h'):
                                                                                np.max(source[xlabel])])),
         y=alt.Y(f'{ylabel}:Q', scale=alt.Scale(zero=False, nice=False, domain=[np.max(source[ylabel]),
                                                                                np.min(source[ylabel])])),
-        fill=alt.Color(f'{z}:Q', scale=alt.Scale(scheme='viridis', zero=False, domain=[np.min(source[z]),
+        fill=alt.Color(f'{z}:Q', scale=alt.Scale(scheme=cmap, zero=False, domain=[np.min(source[z]),
                                                                                        np.max(source[z])])),
         tooltip=[f'{xlabel}', f'{ylabel}', f'{z}']
     )
@@ -105,7 +108,7 @@ def imshow_interact(self, quantity='Flux', ylog=False, timeformat='h'):
                                 domain=[np.min(source[xlabel]) - (0.02 * np.abs(np.min(source[xlabel]))),
                                         1.02 * np.max(source[xlabel])])),
         y=alt.Y(f'mean({z}):Q',
-                scale=alt.Scale(zero=False, domain=[np.mean(source[z]).min() - 0.01, np.mean(source[z]).max() + 0.01]),
+                scale=alt.Scale(zero=False, domain=[source[z].min() - 0.005, source[z].max() + 0.005]),
                 title='Mean ' + z)
     ).transform_filter(
         brush
