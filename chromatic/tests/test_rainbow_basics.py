@@ -81,5 +81,27 @@ def test_automatic_quantity_sorting():
     r.weird + 1
 
 
+def test_shape_warnings():
+    a = SimulatedRainbow()
+    with pytest.warns(match="transpose"):
+        a.flux = a.flux.T
+
+    b = SimulatedRainbow()
+    with pytest.warns(match="shape"):
+        b.wavelength = np.arange(b.nwave + 1)
+
+    c = SimulatedRainbow()
+    with pytest.warns(match="shape"):
+        c.time = np.arange(c.ntime + 1)
+
+    d = SimulatedRainbow()
+    with pytest.warns(match="shape"):
+        d.uncertainty = np.ones((d.nwave + 1, d.ntime + 1))
+
+    e = SimulatedRainbow()
+    with pytest.warns(match="shape"):
+        d.ok = np.ones((d.nwave + 1, d.ntime + 1))
+
+
 def test_help():
     Rainbow().help()

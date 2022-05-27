@@ -416,6 +416,7 @@ class Rainbow:
         The 1D array of wavelengths (with astropy units of length).
         """
         self.wavelike["wavelength"] = value
+        self._validate_core_dictionaries()
 
     @property
     def time(self):
@@ -424,13 +425,6 @@ class Rainbow:
         """
         return self.timelike.get("time", None)
 
-    @time.setter
-    def time(self, value):
-        """
-        The 1D array of time (with astropy units of time).
-        """
-        self.timelike["time"] = value
-
     @property
     def flux(self):
         """
@@ -438,26 +432,12 @@ class Rainbow:
         """
         return self.fluxlike.get("flux", None)
 
-    @flux.setter
-    def flux(self, value):
-        """
-        The 2D array of fluxes (row = wavelength, col = time).
-        """
-        self.fluxlike["flux"] = value
-
     @property
     def uncertainty(self):
         """
         The 2D array of uncertainties on the fluxes.
         """
         return self.fluxlike.get("uncertainty", None)
-
-    @uncertainty.setter
-    def uncertainty(self, value):
-        """
-        The 2D array of uncertainties on the fluxes.
-        """
-        self.fluxlike["uncertainty"] = value
 
     @property
     def ok(self):
@@ -472,6 +452,8 @@ class Rainbow:
         The 2D array of whether data is OK (row = wavelength, col = time).
         """
         self.fluxlike["ok"] = value
+        if value is not None:
+            assert np.shape(value) == self.shape
 
     def __getattr__(self, key):
         """
@@ -520,6 +502,15 @@ class Rainbow:
         try:
             if key in self._core_dictionaries:
                 raise ValueError("Trying to set a core dictionary.")
+            elif key == "wavelength":
+                self.wavelike["wavelength"] = value
+                self._validate_core_dictionaries()
+            elif key == "time":
+                self.timelike["time"] = value
+                self._validate_core_dictionaries()
+            elif key in ["flux", "uncertainty", "ok"]:
+                self.fluxlike[key] = value
+                self._validate_core_dictionaries()
             else:
                 self._put_array_in_right_dictionary(key, value)
         except ValueError:
@@ -612,18 +603,31 @@ class Rainbow:
 
         # does the flux have the right shape?
         if self.shape != self.flux.shape:
-            message = "Flux array shape does not match (wavelength, time)."
+            message = f"""
+            Something doesn't line up!
+            The flux array has a shape of {self.flux.shape}.
+            The wavelength array has {self.nwave} wavelengths.
+            The time array has {self.ntime} times.
+            """
             if self.shape == self.flux.shape[::-1]:
                 warnings.warn(
-                    f"""
-                {message}
-                Any chance it's transposed?"""
+                    f"""{message}
+                    Any chance your flux array is transposed?
+                    """
                 )
             else:
-                warnings.warn(
-                    f"""
-                {message}"""
-                )
+                warnings.warn(message)
+
+        for n in ["uncertainty", "ok"]:
+            x = getattr(self, n)
+            if x is not None:
+                if x.shape != self.flux.shape:
+                    message = f"""
+                    Watch out! The '{n}' array has
+                    a shape of {x.shape}, which doesn't match the
+                    flux array's shape of {self.flux.shape}.
+                    """
+                    warnings.warn(message)
 
     def __getitem__(self, key):
         """
