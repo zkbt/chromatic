@@ -13,7 +13,7 @@ __all__ = ["imshow_interact"]
 
 
 # Convert this grid to columnar data expected by Altair
-def imshow_interact(self, quantity='Flux', ylog=False, t_unit='d', cmap="viridis"):
+def imshow_interact(self, quantity='Flux', ylog=False, t_unit='d', w_unit='micron', cmap="viridis", custom_ylims=[]):
     """ Display interactive spectrum plot for chromatic Rainbow with a wavelength-averaged 2D quantity
     defined by the user. The user can interact with the 3D spectrum to choose the wavelength range over
     which the average is calculated.
@@ -28,14 +28,23 @@ def imshow_interact(self, quantity='Flux', ylog=False, t_unit='d', cmap="viridis
         ylog : boolean
             (optional, default=False)
             Boolean for whether to take log10 of the y-axis data
-        timeformat : str
+        t_unit : str
             (optional, default='d')
-            The time format to use (seconds, minutes, hours, days etc.)
+            The time unit to use (seconds, minutes, hours, days etc.)
+        w_unit : str
+            (optional, default='micron')
+            The wavelength unit to use
+        cmap : str
+            (optional, default='viridis')
+            The color scheme to use from Vega documentation
+        custom_ylims : list
+            (optional, default=[])
+            If the user wants to define their own ylimits on the lightcurve plot
     """
 
     # preset the x and y axes as Time (in units defined by the user) and Wavelength
     xlabel = f"Time ({t_unit})"
-    ylabel = "Wavelength (microns)"
+    ylabel = f"Wavelength ({w_unit})"
 
     # allow the user to plot flux or uncertainty
     if quantity.lower() == "flux":
@@ -54,7 +63,7 @@ def imshow_interact(self, quantity='Flux', ylog=False, t_unit='d', cmap="viridis
         return
 
     # convert rainbow object to pandas dataframe
-    source = self.to_df(timeformat=t_unit)[[xlabel, ylabel, z]]
+    source = self.to_df(t_unit=t_unit,w_unit=w_unit)[[xlabel, ylabel, z]]
 
     # if there are >10,000 data points Altair will be very laggy/slow. This is probably unbinned, therefore
     # encourage the user to bin the Rainbow before calling this function in future/
@@ -100,6 +109,11 @@ def imshow_interact(self, quantity='Flux', ylog=False, t_unit='d', cmap="viridis
         data=source
     )
 
+    if len(custom_ylims)>0:
+        domain = custom_ylims
+    else:
+        domain = [source[z].min() - 0.005, source[z].max() + 0.005]
+
     # Add the 2D averaged lightcurve (or uncertainty)
     lightcurve = alt.Chart(source, width=280, height=230, title=f"Mean {z} for Wavelength Range").mark_point(
         filled=True, size=20, color='black').encode(
@@ -108,7 +122,7 @@ def imshow_interact(self, quantity='Flux', ylog=False, t_unit='d', cmap="viridis
                                 domain=[np.min(source[xlabel]) - (0.02 * np.abs(np.min(source[xlabel]))),
                                         1.02 * np.max(source[xlabel])])),
         y=alt.Y(f'mean({z}):Q',
-                scale=alt.Scale(zero=False, domain=[source[z].min() - 0.005, source[z].max() + 0.005]),
+                scale=alt.Scale(zero=False, domain=domain),
                 title='Mean ' + z)
     ).transform_filter(
         brush
