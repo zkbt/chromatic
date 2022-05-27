@@ -15,7 +15,7 @@ def to_nparray(self, timeformat='d'):
     Returns
     ----------
         rflux : np.array
-            flux (MJy/sr)         [n_wavelengths x n_integrations]
+            flux                  [n_wavelengths x n_integrations]
         rfluxu : np.array
             flux uncertainty      [n_wavelengths x n_integrations]
         rtime : np.array
