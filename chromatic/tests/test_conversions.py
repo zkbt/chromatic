@@ -15,19 +15,19 @@ def test_to_df():
 
     # ensure we have the right column names
     columnnames = r_df.columns
-    for colname in ['Time (d)', 'Wavelength (microns)', 'Flux', 'Flux Uncertainty']:
+    for colname in ['Time (d)', 'Wavelength (micron)', 'Flux', 'Flux Uncertainty']:
         assert colname in columnnames
 
     # check the values in the df match the rainbow
-    assert r_df['Time (d)'].values[0] == r.time.to_value()[0] / 24.  # default=days
-    assert r_df['Wavelength (microns)'].values[0] == r.wavelength.to_value()[0]
+    assert np.isclose(r_df['Time (d)'].values[0],r.time.to_value()[0] / 24.)  # default=days
+    assert r_df['Wavelength (micron)'].values[0] == r.wavelength.to_value()[0]
     assert r_df['Flux'].values[0] == r.flux[0, 0]
     assert r_df['Flux Uncertainty'].values[0] == r.uncertainty[0, 0]
 
     # test the timeformat parameter
-    for timeformat in ['h', 'hour', 'day', 'minute', 'second', 's']:
-        r_df = r.to_df(timeformat=timeformat)
-        assert f'Time ({timeformat})' in r_df.columns
+    for t_unit in ['h', 'hour', 'day', 'minute', 'second', 's']:
+        r_df = r.to_df(t_unit=t_unit)
+        assert f'Time ({t_unit})' in r_df.columns
 
 
 def test_to_nparray():
@@ -51,18 +51,19 @@ def test_to_nparray():
     assert np.all(rwavel == r.wavelength.to_value())
     assert np.all(rwavel == r.wavelength.to_value())
 
-    assert np.all(rtime == r.time.to_value()/24.)  # the default is days
+    # issues with rounding errors:
+    assert np.all(np.isclose(rtime, r.time.to_value()/24.))  # the default is days
 
     # test if the hours format works
-    rflux, rfluxu, rtime, rwavel = r.to_nparray(timeformat='h')
+    rflux, rfluxu, rtime, rwavel = r.to_nparray(t_unit='h')
     assert np.all(rtime == r.time.to_value())
 
     # test if the minutes format works
-    rflux, rfluxu, rtime, rwavel = r.to_nparray(timeformat='m')
+    rflux, rfluxu, rtime, rwavel = r.to_nparray(t_unit='min')
     assert np.all(rtime == r.time.to_value()*60)
 
     # test if the minutes format works
-    rflux, rfluxu, rtime, rwavel = r.to_nparray(timeformat='s')
+    rflux, rfluxu, rtime, rwavel = r.to_nparray(t_unit='s')
     assert np.all(rtime == r.time.to_value()*3600)
 
 
