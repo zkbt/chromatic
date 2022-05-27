@@ -58,8 +58,12 @@ def test_to_nparray():
     assert np.all(rtime == r.time.to_value())
 
     # test if the minutes format works
-    rflux, rfluxu, rtime, rwavel = r.to_nparray(timeformat='min')
+    rflux, rfluxu, rtime, rwavel = r.to_nparray(timeformat='m')
     assert np.all(rtime == r.time.to_value()*60)
+
+    # test if the minutes format works
+    rflux, rfluxu, rtime, rwavel = r.to_nparray(timeformat='s')
+    assert np.all(rtime == r.time.to_value()*3600)
 
 
 
