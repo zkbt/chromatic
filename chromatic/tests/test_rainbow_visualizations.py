@@ -87,3 +87,8 @@ def test_wavelength_cmap():
     # test a few examples
     assert r.get_wavelength_color(r.wavelength[0]) == (0.0, 0.0, 0.0, 1.0)
     assert r.get_wavelength_color(r.wavelength[-1]) == (1.0, 0.0, 0.0, 1.0)
+
+
+def test_imshow_interact():
+    plt.figure()
+    SimulatedRainbow(R=10).imshow_interact()

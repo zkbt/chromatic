@@ -87,6 +87,7 @@ setup(
         "pandas",
         "tqdm",
         "batman-package",
+        "altair",
     ],
     # what version of Python is required?
     python_requires=">=3.6",  # f-strings are introduced in 3.6!
