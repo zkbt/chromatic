@@ -1,7 +1,7 @@
 site_name: chromatic
 site_url: https://zkbt.github.com/chromatic
 nav:
-    - index.md
+    - Welcome: index.md
     - installation.ipynb
     - quickstart.ipynb
     - User Guide:
