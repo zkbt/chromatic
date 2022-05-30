@@ -136,7 +136,7 @@ class SimulatedRainbow(Rainbow):
         else:
             t_unit = time.unit
 
-        self.timelike["time"] = u.Quantity(time)
+        self.timelike["time"] = u.Quantity(time).to(u.day)
         # TODO, make this match up better with astropy time
 
     def _setup_fake_wavelength_grid(
@@ -200,11 +200,8 @@ class SimulatedRainbow(Rainbow):
             w_unit = wavelength.unit
 
         # make sure the wavelength array has units
-        self.wavelike["wavelength"] = u.Quantity(wavelength)
+        self.wavelike["wavelength"] = u.Quantity(wavelength).to(u.micron)
         self._guess_wscale()
-
-        # this should break if the units aren't length
-        w_unit.to("m")
 
     def inject_transit(self, planet_params={}, planet_radius=0.1):
 
