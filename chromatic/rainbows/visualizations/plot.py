@@ -36,7 +36,7 @@ def plot(
         The minimum value to use for the wavelength colormap.
     vmax : astropy.units.Quantity
         The maximum value to use for the wavelength colormap.
-    plowkw : dict
+    plotkw : dict
         A dictionary of keywords passed to `plt.plot`
     textkw : dict
         A dictionary of keywords passed to `plt.text`
