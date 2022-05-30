@@ -86,6 +86,7 @@ setup(
         "astropy>=4.0",
         "tqdm",
         "batman-package",
+        "altair",
     ],
     # what version of Python is required?
     python_requires=">=3.6",  # f-strings are introduced in 3.6!
@@ -104,7 +105,6 @@ setup(
             "mkdocs-exclude",
             "twine",
         ],
-        "interact": ["altair"],
         "cartoons": ["rainbow-connection>=0.0.7"],
     },
     # (I think just leave this set to False)
