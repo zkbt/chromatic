@@ -105,6 +105,7 @@ setup(
             "mkdocs-jupyter",
             "mkdocs-exclude",
             "twine",
+            "pre-commit",
         ],
         "cartoons": ["rainbow-connection>=0.0.7"],
     },

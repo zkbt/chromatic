@@ -26,17 +26,17 @@ def get_time_axis(header):
     # Each integration is not time stamped - need to reconstruct the time axis
     # based on available information.
     # Get the observation start time
-    t_start = header['DATE-OBS']+'T'+header['TIME-OBS']
+    t_start = header["DATE-OBS"] + "T" + header["TIME-OBS"]
     # Get frame time and convert to days.
-    tframe = header['TFRAME']*u.s.to(u.d)
+    tframe = header["TFRAME"] * u.s.to(u.d)
     # Get number of frames, groups and integrations.
     # nframe willl generally be 1 for NIRISS/SOSS, but just in case...
-    nframe = header['NFRAMES']
-    ngroup = header['NGROUPS']+1  # Need to add one for reset.
-    nint = header['NINTS']
+    nframe = header["NFRAMES"]
+    ngroup = header["NGROUPS"] + 1  # Need to add one for reset.
+    nint = header["NINTS"]
     # Construct time axis and give units of days.
-    t_start = Time(t_start, format='isot', scale='utc')
-    t = np.arange(nint)*tframe*nframe*ngroup + t_start.jd
+    t_start = Time(t_start, format="isot", scale="utc")
+    t = np.arange(nint) * tframe * nframe * ngroup + t_start.jd
     t *= u.d
 
     return t, nint
@@ -63,11 +63,11 @@ def from_atoca(rainbow, filepath, order=1):
 
     # Verify that the requested order makes sense.
     if order not in [1, 2]:
-        msg = 'Only orders 1 and 2 are extracted by ATOCA.'
+        msg = "Only orders 1 and 2 are extracted by ATOCA."
         raise NotImplementedError(msg)
     else:
         # Ensure that the user knows which order they are getting.
-        print('Unpacking order {}'.format(order), flush=True)
+        print("Unpacking order {}".format(order), flush=True)
 
     filenames = expand_filenames(filepath)
 
@@ -82,15 +82,15 @@ def from_atoca(rainbow, filepath, order=1):
         # For the first file, define common time axis.
         if i_file == 0:
             # Create time axis
-            times, nints = get_time_axis(hdu_list['PRIMARY'].header)
-            rainbow.timelike['time'] = times
+            times, nints = get_time_axis(hdu_list["PRIMARY"].header)
+            rainbow.timelike["time"] = times
 
         # Loop over all extensions.
         for i in range(1, len(hdu_list)):
             # Only consider extract1d extensions of the correct order.
-            if hdu_list[i].header['EXTNAME'] != 'EXTRACT1D':
+            if hdu_list[i].header["EXTNAME"] != "EXTRACT1D":
                 continue
-            if hdu_list[i].header['SPORDER'] != order:
+            if hdu_list[i].header["SPORDER"] != order:
                 continue
             # Unpack each of the data types stored in each extension.
             # This includes the usual wavelength, flux, and error, but also
@@ -100,29 +100,35 @@ def from_atoca(rainbow, filepath, order=1):
                 if first_time:
                     quantities[quantity] = hdu_list[i].data[quantity]
                 else:
-                    quantities[quantity] = np.vstack([quantities[quantity],
-                                                      hdu_list[i].data[quantity]])
-            first_time = False 
+                    quantities[quantity] = np.vstack(
+                        [quantities[quantity], hdu_list[i].data[quantity]]
+                    )
+            first_time = False
 
     # Pack all the above data into a Rainbow object.
     for quantity in quantities.keys():
         # Try to keep the main key names consistant with other formats.
         # Flux-like things in electron/s and wavelengths in microns
-        if quantity == 'FLUX':
-            rainbow.fluxlike['flux'] = quantities[quantity].T*1.6*u.electron/u.s
-        elif quantity == 'FLUX_ERROR':
-            rainbow.fluxlike['uncertainty'] = quantities[quantity].T*1.6*u.electron/u.s
-        elif quantity == 'WAVELENGTH':
-            rainbow.wavelike['wavelength'] = np.nanmedian(quantities[quantity],
-                                                          axis=0)*u.micron
+        if quantity == "FLUX":
+            rainbow.fluxlike["flux"] = quantities[quantity].T * 1.6 * u.electron / u.s
+        elif quantity == "FLUX_ERROR":
+            rainbow.fluxlike["uncertainty"] = (
+                quantities[quantity].T * 1.6 * u.electron / u.s
+            )
+        elif quantity == "WAVELENGTH":
+            rainbow.wavelike["wavelength"] = (
+                np.nanmedian(quantities[quantity], axis=0) * u.micron
+            )
         else:
             rainbow.fluxlike[quantity] = quantities[quantity].T
 
     # Warn user if the number of unpacked integrations doesn't match the
     # expected amount.
-    n_filled_times = rainbow.fluxlike['flux'].shape[1]
+    n_filled_times = rainbow.fluxlike["flux"].shape[1]
     if n_filled_times != nints:
-        warnings.warn(f"""The extract1d header(s) indicate there should be 
+        warnings.warn(
+            f"""The extract1d header(s) indicate there should be
             {rainbow.ntime} integrations, but only {n_filled_times} columns of
-            the flux array were populated. Are you perhaps missing some 
-            segment files?""")
+            the flux array were populated. Are you perhaps missing some
+            segment files?"""
+        )
