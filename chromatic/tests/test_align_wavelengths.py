@@ -19,7 +19,7 @@ def create_simulation_with_wobbly_wavelengths(
     def fake_spectrum(w):
         f = u.Quantity(np.ones(np.shape(w)))
         for c, s, a in zip(centers, sigmas, amplitudes):
-            f *= 1 - a * np.exp(-0.5 * (w - c) ** 2 / s ** 2)
+            f *= 1 - a * np.exp(-0.5 * (w - c) ** 2 / s**2)
         return f
 
     # create

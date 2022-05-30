@@ -1,5 +1,5 @@
 # chromatic
-Tools for visualizing spectroscopic light curves, with flux as a function of wavelength and time. Read the 🌈[documentation](https://zkbt.github.io/chromatic/)🌈 to see how it works! 
+Tools for visualizing spectroscopic light curves, with flux as a function of wavelength and time. Read the 🌈[documentation](https://zkbt.github.io/chromatic/)🌈 to see how it works!
 
 It's being developed in support of Webb Transitng Exoplanet Community Early Release Science Program ([ers-transit](https://ers-transit.github.io/)) and easier multiwavelength observations of transiting exoplanets, in general, from telescopes in space or on the ground. This package is still activately being developed. Please submit Issues for bugs you notice, features that aren't clearly explained in the documentation, or functionality you'd like to see us implement.
 

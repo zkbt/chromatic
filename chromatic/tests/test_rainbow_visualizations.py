@@ -38,7 +38,7 @@ def test_plot():
 def test_plot_unnormalized():
     w = np.logspace(0, 1, 5) * u.micron
     plt.figure()
-    s = SimulatedRainbow(wavelength=w, star_flux=w.value ** 2, signal_to_noise=5)
+    s = SimulatedRainbow(wavelength=w, star_flux=w.value**2, signal_to_noise=5)
     s.plot(spacing=0)
     plt.savefig(os.path.join(test_directory, "plot-demonstration-unnormalized.pdf"))
 
