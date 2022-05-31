@@ -90,6 +90,7 @@ def bin(
     binned : Rainbow
         The binned Rainbow.
     """
+
     # bin first in time
     binned_in_time = self.bin_in_time(
         dt=dt, time=time, time_edges=time_edges, ntimes=ntimes, trim=trim
@@ -152,6 +153,7 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
     binned : Rainbow
         The binned Rainbow.
     """
+    h = self._create_history_entry("bin_in_time", locals())
 
     # if no bin information is provided, don't bin
     if np.all([x is None for x in [dt, time, time_edges, ntimes]]):
@@ -247,6 +249,8 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
     # figure out the scale, after binning
     new._guess_wscale()
 
+    new._record_history_entry(h)
+
     if trim:
         return new.trim_nan_times()
     else:
@@ -306,6 +310,7 @@ def bin_in_wavelength(
     binned : Rainbow
         The binned Rainbow.
     """
+    h = self._create_history_entry("bin_in_wavelength", locals())
 
     # if no bin information is provided, don't bin
     if (
@@ -415,7 +420,8 @@ def bin_in_wavelength(
 
     # figure out the scale, after binning
     new._guess_wscale()
-    # new.metadata["wscale"] = wscale
+
+    new._record_history_entry(h)
     if trim:
         return new.trim_nan_wavelengths()
     else:

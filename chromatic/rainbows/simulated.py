@@ -73,6 +73,8 @@ class SimulatedRainbow(Rainbow):
             dependent.  Must be same shape as wavelength array.
         """
         Rainbow.__init__(self)
+        self._remove_last_history_entry()
+        h = self._create_history_entry("SimulatedRainbow", locals())
 
         # set up the wavelength grid
         self._setup_fake_wavelength_grid(wlim=wlim, R=R, dw=dw, wavelength=wavelength)
@@ -101,6 +103,7 @@ class SimulatedRainbow(Rainbow):
         self.fluxlike["flux"] = np.random.normal(
             self.fluxlike["model"], self.fluxlike["uncertainty"]
         )
+        self._record_history_entry(h)
 
     def _setup_fake_time_grid(
         self, tlim=[-2.5 * u.hour, 2.5 * u.hour], dt=1 * u.minute, time=None
@@ -247,7 +250,7 @@ class SimulatedRainbow(Rainbow):
             example value: planet_radius = 0.01,
 
         """
-
+        h = self._create_history_entry("inject_transit", locals())
         # First, make sure planet_radius has the right dimension.
         if type(planet_radius) != float and len(planet_radius) != self.nwave:
             print(
@@ -322,4 +325,5 @@ class SimulatedRainbow(Rainbow):
         result.fluxlike["model"] *= planet_flux
         result.fluxlike["flux"] *= planet_flux
 
+        result._record_history_entry(h)
         return result

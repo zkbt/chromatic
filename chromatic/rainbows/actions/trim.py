@@ -11,12 +11,15 @@ def trim_nan_times(self, threshold=1.0):
         The fraction of wavelengths that must be nan in order for
         the entire time to be considered bad (default = 1).
     """
+    h = self._create_history_entry("trim_nan_times", locals())
 
     # figure out which times are good enough to keep
     fraction_of_nans = np.sum(np.isnan(self.flux), axis=self.waveaxis) / self.nwave
     indices_of_times_to_keep = fraction_of_nans < threshold
 
-    return self[:, indices_of_times_to_keep]
+    new = self[:, indices_of_times_to_keep]
+    new._record_history_entry(h)
+    return new
 
 
 def trim_nan_wavelengths(self, threshold=1.0):
@@ -29,12 +32,15 @@ def trim_nan_wavelengths(self, threshold=1.0):
         The fraction of times that must be nan in order for
         the entire wavelength to be considered bad (default = 1).
     """
+    h = self._create_history_entry("trim_nan_wavelength", locals())
 
     # figure out which times are good enough to keep
     fraction_of_nans = np.sum(np.isnan(self.flux), axis=self.timeaxis) / self.ntime
     indices_of_wavelengths_to_keep = fraction_of_nans < threshold
 
-    return self[indices_of_wavelengths_to_keep, :]
+    new = self[indices_of_wavelengths_to_keep, :]
+    new._record_history_entry(h)
+    return new
 
 
 def trim(self, threshold=1.0):
@@ -48,6 +54,8 @@ def trim(self, threshold=1.0):
         in order for the entire wavelength/time to be considered bad
         (default = 1).
     """
+
     trimmed = self.trim_nan_times(threshold=threshold)
     trimmed = trimmed.trim_nan_wavelengths(threshold=threshold)
+
     return trimmed

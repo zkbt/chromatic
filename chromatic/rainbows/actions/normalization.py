@@ -27,6 +27,8 @@ def normalize(self, axis="wavelength", percentile=50):
         The normalized MultiRainbow.
     """
 
+    h = self._create_history_entry("normalize", locals())
+
     # TODO, think about more careful treatment of uncertainties + good/bad data
     new = self._create_copy()
 
@@ -53,4 +55,5 @@ def normalize(self, axis="wavelength", percentile=50):
             except ValueError:
                 pass
 
+    new._record_history_entry(h)
     return new
