@@ -40,7 +40,7 @@ def trim_nan_wavelengths(self, threshold=1.0):
     """
 
     # create a history entry for this action (before other variables are defined)
-    h = self._create_history_entry("trim_nan_wavelength", locals())
+    h = self._create_history_entry("trim_nan_wavelengths", locals())
 
     # figure out which times are good enough to keep
     fraction_of_nans = np.sum(np.isnan(self.flux), axis=self.timeaxis) / self.ntime

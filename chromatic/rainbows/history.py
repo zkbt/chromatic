@@ -48,6 +48,31 @@ def _remove_last_history_entry(self):
         self.metadata["history"] = []
 
 
+def represent_as_copypasteable(x):
+    """
+    Represent a particular quantity as a copy-pastable string
+    within the chromatic import environment.
+
+    Parameters
+    ----------
+    x : any
+        The thing to represent
+
+    Returns
+    -------
+    r : str
+        The thing represented as a string
+    """
+    if isinstance(x, u.Quantity):
+        value = represent_as_copypasteable(x.value)
+        unit = x.unit
+        return f"u.Quantity({value})*u.Unit('{unit}')"
+    elif isinstance(x, np.ndarray):
+        return f"np.{repr(x)}"
+    else:
+        return repr(x)
+
+
 def _create_history_entry(self, name, inputs={}):
     """
     Create a history entry.
@@ -102,7 +127,9 @@ def history(self, format="string"):
     for h in self.metadata["history"]:
         d["names"].append(h["name"])
         d["arguments"].append(
-            ", ".join([f"{k}={repr(v)}" for k, v in h["inputs"].items()])
+            ", ".join(
+                [f"{k}={represent_as_copypasteable(v)}" for k, v in h["inputs"].items()]
+            )
         )
 
     # create a table of inputs
