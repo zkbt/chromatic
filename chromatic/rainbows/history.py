@@ -4,11 +4,25 @@ Add ability for Rainbow to keep track of their own history.
 from ..imports import *
 
 __all__ = [
+    "_setup_history",
     "_record_history_entry",
     "_remove_last_history_entry",
     "_create_history_entry",
     "history",
 ]
+
+
+def _setup_history(self):
+    """
+    Record the first history entry in the log.
+
+    Parameters
+    ----------
+    h : dict
+        A dictionary containing keys `name` as the name
+        of the action and `inputs` as its keyword inputs.
+    """
+    self.metadata["history"] = []
 
 
 def _record_history_entry(self, h):
@@ -21,10 +35,7 @@ def _record_history_entry(self, h):
         A dictionary containing keys `name` as the name
         of the action and `inputs` as its keyword inputs.
     """
-    try:
-        self.metadata["history"].append(h)
-    except KeyError:
-        self.metadata["history"] = [h]
+    self.metadata["history"].append(h)
 
 
 def _remove_last_history_entry(self):

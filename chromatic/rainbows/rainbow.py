@@ -151,6 +151,7 @@ class Rainbow:
         self._guess_wscale()
 
         # append the history entry to this Rainbow
+        self._setup_history()
         self._record_history_entry(h)
 
     def _validate_uncertainties(self):
@@ -777,6 +778,7 @@ class Rainbow:
 
     # import history abilities
     from .history import (
+        _setup_history,
         _record_history_entry,
         _remove_last_history_entry,
         _create_history_entry,
