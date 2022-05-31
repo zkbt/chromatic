@@ -12,8 +12,8 @@ def shift(self, velocity=5*u.km/u.s):
     
     new = self._create_copy()
     
-    c = 3e5 * u.km / u.s #speed of light in km/s
-    new_wavelength = new.wavelength * ( 1 / (1 - velocity/c) )
+    lightspeed = c.c.to('km/s') #speed of light in km/s
+    new_wavelength = new.wavelength * ( 1 / (1 - velocity/lightspeed) )
     new.wavelike['wavelength'] = new_wavelength
     
     return new
