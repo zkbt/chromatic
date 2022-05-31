@@ -105,6 +105,9 @@ class Rainbow:
                      fluxlike=dict(flux=np.random.normal(0, 1, (50, 100))))
 
         """
+        # create a history entry for this action (before other variables are defined)
+        h = self._create_history_entry("Rainbow", locals())
+
         # metadata are arbitrary types of information we need
         self.metadata = {}
 
@@ -146,6 +149,10 @@ class Rainbow:
 
         # finally, tidy up by guessing the wavelength scale
         self._guess_wscale()
+
+        # append the history entry to this Rainbow
+        self._setup_history()
+        self._record_history_entry(h)
 
     def _validate_uncertainties(self):
         """
@@ -740,6 +747,7 @@ class Rainbow:
         trim_nan_wavelengths,
         _create_shared_wavelength_axis,
         align_wavelengths,
+        inject_transit,
         to_nparray,
         to_df,
     )
@@ -766,4 +774,13 @@ class Rainbow:
         imshow_quantities,
         plot_quantities,
         imshow_interact,
+    )
+
+    # import history abilities
+    from .history import (
+        _setup_history,
+        _record_history_entry,
+        _remove_last_history_entry,
+        _create_history_entry,
+        history,
     )
