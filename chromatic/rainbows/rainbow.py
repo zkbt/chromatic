@@ -746,6 +746,7 @@ class Rainbow:
         trim_nan_wavelengths,
         _create_shared_wavelength_axis,
         align_wavelengths,
+        inject_transit,
         to_nparray,
         to_df,
     )
