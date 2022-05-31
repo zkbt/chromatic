@@ -105,7 +105,7 @@ class Rainbow:
                      fluxlike=dict(flux=np.random.normal(0, 1, (50, 100))))
 
         """
-        # create history
+        # create a history entry for this action (before other variables are defined)
         h = self._create_history_entry("Rainbow", locals())
 
         # metadata are arbitrary types of information we need
@@ -149,6 +149,8 @@ class Rainbow:
 
         # finally, tidy up by guessing the wavelength scale
         self._guess_wscale()
+
+        # append the history entry to this Rainbow
         self._record_history_entry(h)
 
     def _validate_uncertainties(self):

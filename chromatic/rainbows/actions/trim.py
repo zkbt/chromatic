@@ -11,6 +11,8 @@ def trim_nan_times(self, threshold=1.0):
         The fraction of wavelengths that must be nan in order for
         the entire time to be considered bad (default = 1).
     """
+
+    # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("trim_nan_times", locals())
 
     # figure out which times are good enough to keep
@@ -18,7 +20,11 @@ def trim_nan_times(self, threshold=1.0):
     indices_of_times_to_keep = fraction_of_nans < threshold
 
     new = self[:, indices_of_times_to_keep]
+
+    # append the history entry to the new Rainbow
     new._record_history_entry(h)
+
+    # return the new Rainbow
     return new
 
 
@@ -32,6 +38,8 @@ def trim_nan_wavelengths(self, threshold=1.0):
         The fraction of times that must be nan in order for
         the entire wavelength to be considered bad (default = 1).
     """
+
+    # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("trim_nan_wavelength", locals())
 
     # figure out which times are good enough to keep
@@ -39,7 +47,11 @@ def trim_nan_wavelengths(self, threshold=1.0):
     indices_of_wavelengths_to_keep = fraction_of_nans < threshold
 
     new = self[indices_of_wavelengths_to_keep, :]
+
+    # append the history entry to the new Rainbow
     new._record_history_entry(h)
+
+    # return the new Rainbow
     return new
 
 

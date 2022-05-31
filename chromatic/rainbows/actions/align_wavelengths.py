@@ -125,6 +125,7 @@ def align_wavelengths(self, **kw):
         Be careful when trying to use the resulting uncertainties!
 
     """
+    # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("align_wavelengths", locals())
 
     # create a shared wavelength array

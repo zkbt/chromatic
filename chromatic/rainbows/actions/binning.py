@@ -153,6 +153,8 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
     binned : Rainbow
         The binned Rainbow.
     """
+
+    # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("bin_in_time", locals())
 
     # if no bin information is provided, don't bin
@@ -249,8 +251,10 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
     # figure out the scale, after binning
     new._guess_wscale()
 
+    # append the history entry to the new Rainbow
     new._record_history_entry(h)
 
+    # return the new Rainbow (with trimming if necessary)
     if trim:
         return new.trim_nan_times()
     else:
@@ -310,6 +314,8 @@ def bin_in_wavelength(
     binned : Rainbow
         The binned Rainbow.
     """
+
+    # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("bin_in_wavelength", locals())
 
     # if no bin information is provided, don't bin
@@ -421,7 +427,10 @@ def bin_in_wavelength(
     # figure out the scale, after binning
     new._guess_wscale()
 
+    # append the history entry to the new Rainbow
     new._record_history_entry(h)
+
+    # return the new Rainbow (with trimming if necessary)
     if trim:
         return new.trim_nan_wavelengths()
     else:

@@ -73,7 +73,11 @@ class SimulatedRainbow(Rainbow):
             dependent.  Must be same shape as wavelength array.
         """
         Rainbow.__init__(self)
+
+        # (remove the history entry from creating the Rainbow)
         self._remove_last_history_entry()
+
+        # create a history entry for this action (before other variables are defined)
         h = self._create_history_entry("SimulatedRainbow", locals())
 
         # set up the wavelength grid
@@ -103,6 +107,8 @@ class SimulatedRainbow(Rainbow):
         self.fluxlike["flux"] = np.random.normal(
             self.fluxlike["model"], self.fluxlike["uncertainty"]
         )
+
+        # append the history entry to the new Rainbow
         self._record_history_entry(h)
 
     def _setup_fake_time_grid(
@@ -250,6 +256,8 @@ class SimulatedRainbow(Rainbow):
             example value: planet_radius = 0.01,
 
         """
+
+        # create a history entry for this action (before other variables are defined)
         h = self._create_history_entry("inject_transit", locals())
         # First, make sure planet_radius has the right dimension.
         if type(planet_radius) != float and len(planet_radius) != self.nwave:
@@ -321,9 +329,18 @@ class SimulatedRainbow(Rainbow):
                 m = batman.TransitModel(params, self.timelike["time"].to("day").value)
             planet_flux[i] = m.light_curve(params)
 
+        # create a copy of the existing Rainbow
         result = self._create_copy()
-        result.fluxlike["model"] *= planet_flux
+
+        # replace its flux (and model)
+        try:
+            result.fluxlike["model"] *= planet_flux
+        except KeyError:
+            pass
         result.fluxlike["flux"] *= planet_flux
 
+        # append the history entry to the new Rainbow
         result._record_history_entry(h)
+
+        # return the new object
         return result
