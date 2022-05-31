@@ -84,8 +84,10 @@ setup(
         "scipy",
         "matplotlib>=3.0",
         "astropy>=4.0",
+        "pandas",
         "tqdm",
         "batman-package",
+        "altair",
     ],
     # what version of Python is required?
     python_requires=">=3.6",  # f-strings are introduced in 3.6!
@@ -103,6 +105,7 @@ setup(
             "mkdocs-jupyter",
             "mkdocs-exclude",
             "twine",
+            "pre-commit",
         ],
         "cartoons": ["rainbow-connection>=0.0.7"],
     },

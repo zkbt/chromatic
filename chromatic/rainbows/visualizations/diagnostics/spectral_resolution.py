@@ -1,25 +1,6 @@
-from ...imports import *
+from ....imports import *
 
-
-def get_spectral_resolution(self, pixels_per_resolution_element=1):
-    """
-    Parameters
-    ----------
-    pixels_per_resolution_element : float
-        How many pixels do we consider as a resolution element?
-
-    Returns
-    -------
-    R : np.array (wavelike)
-        The spectral resolution, at each wavelength.
-    """
-
-    # calculate spectral resolution, for this pixels/element
-    w = self.wavelength
-    dw = np.gradient(self.wavelength)
-    R = np.abs(w / dw / pixels_per_resolution_element)
-
-    return R
+__all__ = ["plot_spectral_resolution"]
 
 
 def plot_spectral_resolution(
@@ -76,41 +57,3 @@ def plot_spectral_resolution(
         return ax
 
         ax.set_xlabel(f"Time ({self.time.unit.to_string('latex_inline')})")
-
-
-def get_typical_uncertainty(self, function=np.nanmedian):
-    """
-    Get the typical per-wavelength uncertainty.
-
-    Parameters
-    ----------
-    function : function
-        What function should be used to choose the "typical"
-        value for each wavelength? Good options are probably
-        things like `np.nanmedian`, `np.median`, `np.nanmean`
-        `np.mean`
-
-    Returns
-    -------
-    uncertainty_per_wavelength : np.array (wavelike)
-        The uncertainty associated with each wavelength.
-    """
-    uncertainty_per_wavelength = function(self.uncertainty, axis=self.timeaxis)
-    return uncertainty_per_wavelength
-
-
-def get_spectrum(self):
-    """
-    Return a spectrum of the star, averaged over all times.
-
-    Parameters
-    ----------
-
-
-    Returns
-    -------
-    s : np.array (wavelike)
-    """
-
-    # FIXME, think about error weighting/masking
-    return np.nanmedian(self.flux, axis=self.timeaxis)

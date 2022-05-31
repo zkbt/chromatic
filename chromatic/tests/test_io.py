@@ -21,7 +21,7 @@ def test_rainbow_FITS():
 def test_text():
     filename = os.path.join(test_directory, "test.rainbow.txt")
     a = SimulatedRainbow()
-    a.save(filename)
+    a.save(filename, overwrite=True)
     b = Rainbow(filename)
     # assert a == b
 

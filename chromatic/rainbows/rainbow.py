@@ -275,16 +275,32 @@ class Rainbow:
         self.fluxlike["uncertainty"] = uncertainty
 
         # sort other arrays by shape
-        for k in kw:
-            if np.shape(kw[k]) == self.shape:
-                self.fluxlike[k] = kw[k]
-            elif np.shape(kw[k]) == (self.nwave,):
-                self.wavelike[k] = kw[k]
-            elif np.shape(kw[k]) == (self.ntime,):
-                self.timelike[k] = kw[k]
+        for k, v in kw.items():
+            self._put_array_in_right_dictionary(k, v)
 
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
+
+    def _put_array_in_right_dictionary(self, k, v):
+        """
+        Sort an input into the right core dictionary
+        (timelike, wavelike, fluxlike) based on its shape.
+
+        Parameters
+        ----------
+        k : str
+            The key for the (appropriate) dictionary.
+        v : np.array
+            The quantity to sort.
+        """
+        if np.shape(v) == self.shape:
+            self.fluxlike[k] = v
+        elif np.shape(v) == (self.nwave,):
+            self.wavelike[k] = v
+        elif np.shape(v) == (self.ntime,):
+            self.timelike[k] = v
+        else:
+            raise ValueError("'{k}' doesn't fit anywhere!")
 
     def _initialize_from_file(self, filepath=None, format=None, **kw):
         """
@@ -394,10 +410,18 @@ class Rainbow:
         """
         return self.wavelike.get("wavelength", None)
 
+    @wavelength.setter
+    def wavelength(self, value):
+        """
+        The 1D array of wavelengths (with astropy units of length).
+        """
+        self.wavelike["wavelength"] = value
+        self._validate_core_dictionaries()
+
     @property
     def time(self):
         """
-        The 1D array of wavelengths (with astropy units of length).
+        The 1D array of time (with astropy units of time).
         """
         return self.timelike.get("time", None)
 
@@ -414,6 +438,22 @@ class Rainbow:
         The 2D array of uncertainties on the fluxes.
         """
         return self.fluxlike.get("uncertainty", None)
+
+    @property
+    def ok(self):
+        """
+        The 2D array of whether data is OK (row = wavelength, col = time).
+        """
+        return self.fluxlike.get("ok", np.ones_like(self.flux).astype(bool))
+
+    @ok.setter
+    def ok(self, value):
+        """
+        The 2D array of whether data is OK (row = wavelength, col = time).
+        """
+        self.fluxlike["ok"] = value
+        if value is not None:
+            assert np.shape(value) == self.shape
 
     def __getattr__(self, key):
         """
@@ -441,10 +481,40 @@ class Rainbow:
         message = f"🌈.{key} does not exist for this Rainbow"
         raise AttributeError(message)
 
-    # TODO - what should we do with __setattr__?
-    #   actually allow to reset things in metadata?
-    #   give a warning that you try to set something you shouldn't?
-    #   if things have the right size, just organize them
+    def __setattr__(self, key, value):
+        """
+        When setting a new attribute, try to sort it into the
+        appropriate core directory based on its size.
+
+        Let's say you have some quantity that has the same
+        shape as the wavelength array and you'd like to attach
+        it to this Rainbow object. This will try to save it
+        in the most relevant core dictionary (of the choices
+        timelike, wavelike, fluxlike).
+
+        Parameters
+        ----------
+        key : str
+            The attribute we're trying to get.
+        value : np.array
+            The quantity we're trying to attach to that name.
+        """
+        try:
+            if key in self._core_dictionaries:
+                raise ValueError("Trying to set a core dictionary.")
+            elif key == "wavelength":
+                self.wavelike["wavelength"] = value
+                self._validate_core_dictionaries()
+            elif key == "time":
+                self.timelike["time"] = value
+                self._validate_core_dictionaries()
+            elif key in ["flux", "uncertainty", "ok"]:
+                self.fluxlike[key] = value
+                self._validate_core_dictionaries()
+            else:
+                self._put_array_in_right_dictionary(key, value)
+        except ValueError:
+            self.__dict__[key] = value
 
     @property
     def _nametag(self):
@@ -533,18 +603,31 @@ class Rainbow:
 
         # does the flux have the right shape?
         if self.shape != self.flux.shape:
-            message = "Flux array shape does not match (wavelength, time)."
+            message = f"""
+            Something doesn't line up!
+            The flux array has a shape of {self.flux.shape}.
+            The wavelength array has {self.nwave} wavelengths.
+            The time array has {self.ntime} times.
+            """
             if self.shape == self.flux.shape[::-1]:
                 warnings.warn(
-                    f"""
-                {message}
-                Any chance it's transposed?"""
+                    f"""{message}
+                    Any chance your flux array is transposed?
+                    """
                 )
             else:
-                warnings.warn(
-                    f"""
-                {message}"""
-                )
+                warnings.warn(message)
+
+        for n in ["uncertainty", "ok"]:
+            x = getattr(self, n)
+            if x is not None:
+                if x.shape != self.flux.shape:
+                    message = f"""
+                    Watch out! The '{n}' array has
+                    a shape of {x.shape}, which doesn't match the
+                    flux array's shape of {self.flux.shape}.
+                    """
+                    warnings.warn(message)
 
     def __getitem__(self, key):
         """
@@ -602,18 +685,69 @@ class Rainbow:
         n = self.__class__.__name__.replace("Rainbow", "🌈")
         return f"<{n}({self.nwave}w, {self.ntime}t)>"
 
-    # import the basic operations for Rainbows
-    from .operations import __add__, __sub__, __mul__, __truediv__, __eq__
+    def help(self, categories=["actions", "visualizations", "wavelike_summaries"]):
+        """
+        Provide a quick reference of key actions available for this Rainbow.
 
-    # import other axtions that return other Rainbows
+        Parameters
+        ----------
+
+        """
+        print(
+            textwrap.dedent(
+                """
+        Hooray for you! You asked for help on what you can do
+        with this 🌈 object. Here's a quick reference of a few
+        available options for things to try."""
+            )
+        )
+
+        base_directory = pkg_resources.resource_filename("chromatic", "rainbows")
+        for c in categories:
+            print(
+                "\n"
+                + "-" * (len(c) + 4)
+                + "\n"
+                + f"| {c} |\n"
+                + "-" * (len(c) + 4)
+                + "\n"
+            )
+            directory = os.path.join(base_directory, c)
+            descriptions_file = os.path.join(directory, "descriptions.txt")
+            table = ascii.read(descriptions_file)
+            for row in table:
+                if row["name"] in "+-*/":
+                    function_call = f"{row['name']}"
+                else:
+                    function_call = f".{row['name']}()"
+
+                item = (
+                    f"{row['cartoon']} | {function_call:<28} \n   {row['description']}"
+                )
+                print(item)
+
+    # import the basic operations for Rainbows
+    from .actions.operations import __add__, __sub__, __mul__, __truediv__, __eq__
+
+    # import other actions that return other Rainbows
     from .actions import (
         normalize,
         bin,
         bin_in_time,
         bin_in_wavelength,
+        trim,
+        trim_nan_times,
+        trim_nan_wavelengths,
+        _create_shared_wavelength_axis,
+        align_wavelengths,
+        to_nparray,
+        to_df,
+    )
+
+    # import summary statistics for each wavelength
+    from .wavelike_summaries import (
         get_spectrum,
         get_spectral_resolution,
-        plot_spectral_resolution,
         get_typical_uncertainty,
     )
 
@@ -628,7 +762,8 @@ class Rainbow:
         _setup_animated_scatter,
         _setup_wavelength_colors,
         _make_sure_cmap_is_defined,
-        get_wavelength_color, 
-        imshow_fluxlike_quantities,
-        plot_quantities
+        get_wavelength_color,
+        imshow_quantities,
+        plot_quantities,
+        imshow_interact,
     )

@@ -22,6 +22,7 @@ warnings.formatwarning = custom_formatwarning
 # astropy
 from astropy.io import ascii, fits
 from astropy.table import Table
+from astropy.time import Time
 
 # import astropy.units as u
 import astropy.constants as con
@@ -34,6 +35,9 @@ from scipy.interpolate import interp1d
 
 # For modelling transits.
 import batman
+
+# For converting Rainbows to pandas dataframe
+import pandas as pd
 
 from .units import *
 

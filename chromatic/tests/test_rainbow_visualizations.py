@@ -22,17 +22,25 @@ def test_imshow():
     plt.savefig(os.path.join(test_directory, "imshow-demonstration.pdf"))
 
 
-def test_imshow_fluxlike_quantities():
+def test_imshow_quantities():
     s = SimulatedRainbow(signal_to_noise=500).inject_transit()
     for k in "abcde":
         s.fluxlike[k] = np.random.uniform(4, 5, s.shape)
-    s.imshow_fluxlike_quantities(maxcol=1, panel_size=(8, 2))
+    s.imshow_quantities(maxcol=1, panel_size=(8, 2))
     plt.savefig(os.path.join(test_directory, "imshow-multiples-demonstration.pdf"))
 
 
 def test_plot():
     SimulatedRainbow(R=10).plot()
     plt.savefig(os.path.join(test_directory, "plot-demonstration.pdf"))
+
+
+def test_plot_unnormalized():
+    w = np.logspace(0, 1, 5) * u.micron
+    plt.figure()
+    s = SimulatedRainbow(wavelength=w, star_flux=w.value**2, signal_to_noise=5)
+    s.plot(spacing=0)
+    plt.savefig(os.path.join(test_directory, "plot-demonstration-unnormalized.pdf"))
 
 
 def test_plot_quantities():
@@ -79,3 +87,8 @@ def test_wavelength_cmap():
     # test a few examples
     assert r.get_wavelength_color(r.wavelength[0]) == (0.0, 0.0, 0.0, 1.0)
     assert r.get_wavelength_color(r.wavelength[-1]) == (1.0, 0.0, 0.0, 1.0)
+
+
+def test_imshow_interact():
+    plt.figure()
+    SimulatedRainbow(R=10).imshow_interact()
