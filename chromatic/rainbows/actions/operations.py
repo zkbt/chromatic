@@ -257,7 +257,10 @@ def __eq__(self, other):
         # loop through elements of each dictionary
         for k in d1:
 
-            # test that all elements match for both
-            same *= np.all(d1[k] == d2.get(k, None))
+            # ignore different histories (e.g. new vs loaded)
+            if k != "history":
+
+                # test that all elements match for both
+                same *= np.all(d1[k] == d2.get(k, None))
 
     return same
