@@ -37,7 +37,6 @@ def _create_shared_wavelength_axis(
         Should we make some plots showing how the shared wavelength
         axis compares to the original input wavelength axes?
     """
-
     w = rainbow.fluxlike["wavelength"]
     w[rainbow.ok == False] = np.nan
     dw_per_time = np.gradient(w, axis=rainbow.waveaxis)
@@ -126,10 +125,17 @@ def align_wavelengths(self, **kw):
         Be careful when trying to use the resulting uncertainties!
 
     """
+    # create a history entry for this action (before other variables are defined)
+    h = self._create_history_entry("align_wavelengths", locals())
+
     # create a shared wavelength array
     shared_wavelengths = self._create_shared_wavelength_axis(**kw)
 
     # bin the rainbow onto that new grid, starting from 2D wavelengths
     shifted = self.bin(wavelength=shared_wavelengths, starting_wavelengths="2D")
 
+    # append the history entry to the new Rainbow
+    shifted._record_history_entry(h)
+
+    # return the new Rainbow
     return shifted
