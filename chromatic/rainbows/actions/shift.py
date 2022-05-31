@@ -1,6 +1,6 @@
 from ...imports import *
 
-def trim(self, velocity=5*u.km/u.s):
+def shift(self, velocity=5*u.km/u.s):
     """
     Apply a doppler shift to the wavelength array
 
@@ -9,7 +9,11 @@ def trim(self, velocity=5*u.km/u.s):
     velocity
         the systemic velocity in question, in km/s
     """
-    c = 3e5 * u.km / u.s #speed of light in km/s
-    shifted = self.wave * ( 1 / (1 + v/c) )
     
-    return shifted
+    new = self._create_copy()
+    
+    c = 3e5 * u.km / u.s #speed of light in km/s
+    new_wavelength = new.wavelength * ( 1 / (1 + v/c) )
+    new.wavelike['wavelength'] = new_wavelength
+    
+    return new
