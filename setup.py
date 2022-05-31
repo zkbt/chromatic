@@ -86,7 +86,7 @@ setup(
         "astropy>=4.0",
         "pandas",
         "tqdm",
-        "batman-package",
+        "batman-package>=2.4.9",
         "altair",
     ],
     # what version of Python is required?
