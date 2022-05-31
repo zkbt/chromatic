@@ -134,5 +134,8 @@ def align_wavelengths(self, **kw):
     # bin the rainbow onto that new grid, starting from 2D wavelengths
     shifted = self.bin(wavelength=shared_wavelengths, starting_wavelengths="2D")
 
+    # append the history entry to the new Rainbow
     shifted._record_history_entry(h)
+
+    # return the new Rainbow
     return shifted

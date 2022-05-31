@@ -69,6 +69,11 @@ def _create_history_entry(self, name, inputs={}):
     # remove "self" from the list of inputs
     inputs.pop("self", None)
 
+    # remove None inputs
+    to_remove = [k for k in inputs if inputs[k] is None]
+    for k in to_remove:
+        inputs.pop(k, None)
+
     # create history entry dictionary
     h = dict(name=name, inputs=inputs)
     return h
@@ -97,7 +102,7 @@ def history(self, format="string"):
     for h in self.metadata["history"]:
         d["names"].append(h["name"])
         d["arguments"].append(
-            ",".join([f"{k}={repr(v)}" for k, v in h["inputs"].items()])
+            ", ".join([f"{k}={repr(v)}" for k, v in h["inputs"].items()])
         )
 
     # create a table of inputs
