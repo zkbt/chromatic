@@ -1,5 +1,7 @@
 from ...imports import *
 
+__all__ = ['shift']
+
 def shift(self, velocity=5*u.km/u.s):
     """
     Apply a doppler shift to the wavelength array
