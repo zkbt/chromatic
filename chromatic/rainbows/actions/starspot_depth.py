@@ -2,20 +2,21 @@ from ...imports import *
 
 __all__ = ['spot_depth']
 
-from chromatic import *
+from rainbowconnection.sources.phoenix import *
 
 # create an example object to test on 
 tester = SimulatedRainbow()
 
 # define your new method - calculate delta D_spot (lambda)
-def spot_depths(self,
-                T_spot = 4000 *u.K,
-                T_unspot = 3500*u.K,
-                f_spot = 0.1,
-                f_tra = 0.,
-                r_sun = 0.5 * u.Rsun,
-                m_sun = 0.5 * u.Msun,
-                transit_depth = 0.06):
+def starspot_contribution(self,
+                          T_spot = 4000 *u.K,
+                          T_unspot = 3500*u.K,
+                          f_spot = 0.1,
+                          f_tra = 0.,
+                          r_sun = 0.5 * u.Rsun,
+                          m_sun = 0.5 * u.Msun,
+                          transit_depth = 0.06,
+                          plot == True):
     """
     Calculate delta D(lambda), the contribution of 
     starspot features to the wavelength dependent transit depth
@@ -34,17 +35,15 @@ def spot_depths(self,
         the stellar radius, in solar radii
     m_sun
         the stellar mass, in solar masses
-    transit_depth
-        the transit depth of the opaque planetary disk
     """
     
     new = self._create_copy()
     
-    S_spot = Star(teff=T_spot, radius=r_sun,mass=m_sun,R=1e4)
-    S_unspot = Star(teff=T_unspot, radius=r_sun,mass=m_sun,R=1e4)
+    S_spot = Star(teff=T_spot, radius=r_sun,mass=m_sun,R=1e5)
+    S_unspot = Star(teff=T_unspot, radius=r_sun,mass=m_sun,R=1e5)
     
-    s_spot = S_spot.spectrum(new.wavelength)/np.median(S_spot.spectrum(new.wavelength))
-    s_unspot = S_unspot.spectrum(new.wavelength)/np.median(S_unspot.spectrum(new.wavelength))
+    s_spot = S_spot.spectrum(new.wavelength)/np.nanmedian(S_spot.spectrum(new.wavelength))
+    s_unspot = S_unspot.spectrum(new.wavelength)/np.nanmedian(S_unspot.spectrum(new.wavelength))
     
     flux_ratio = s_spot/s_unspot
     
@@ -55,5 +54,11 @@ def spot_depths(self,
     delta_D_lam = (top / bottom) - 1
     
     depth = transit_depth * delta_D_lam
+
+    if plot: 
+        plt.plot(tester.wavelength, result)
+        plt.xlabel('wavelength')
+        plt.ylabel(r'$\Delta\rm{D}_{\lambda}$')
+        plt.show()
     
     return new, depth
