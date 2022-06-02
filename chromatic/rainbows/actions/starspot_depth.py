@@ -1,6 +1,6 @@
 from ...imports import *
 
-__all__ = ['shift']
+__all__ = ['spot_depth']
 
 from chromatic import *
 
@@ -8,13 +8,14 @@ from chromatic import *
 tester = SimulatedRainbow()
 
 # define your new method - calculate delta D_spot (lambda)
-def starspot_depth(self,
-                          T_spot = 4000 *u.K,
-                          T_unspot = 3500*u.K,
-                          f_spot = 0.1,
-                          f_tra = 0.,
-                          r_sun = 0.5 * u.Rsun,
-                          m_sun = 0.5 * u.Msun, ):
+def spot_depths(self,
+                T_spot = 4000 *u.K,
+                T_unspot = 3500*u.K,
+                f_spot = 0.1,
+                f_tra = 0.,
+                r_sun = 0.5 * u.Rsun,
+                m_sun = 0.5 * u.Msun,
+                transit_depth = 0.06):
     """
     Calculate delta D(lambda), the contribution of 
     starspot features to the wavelength dependent transit depth
@@ -33,6 +34,8 @@ def starspot_depth(self,
         the stellar radius, in solar radii
     m_sun
         the stellar mass, in solar masses
+    transit_depth
+        the transit depth of the opaque planetary disk
     """
     
     new = self._create_copy()
@@ -53,4 +56,4 @@ def starspot_depth(self,
     
     depth = transit_depth * delta_D_lam
     
-    return depth
+    return new, depth
