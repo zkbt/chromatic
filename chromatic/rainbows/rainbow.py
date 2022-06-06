@@ -774,6 +774,8 @@ class Rainbow:
         imshow_quantities,
         plot_quantities,
         imshow_interact,
+        get_time_color,
+        plot_spectra,
     )
 
     # import history abilities
