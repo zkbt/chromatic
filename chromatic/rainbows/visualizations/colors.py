@@ -4,7 +4,6 @@ __all__ = [
     "_setup_wavelength_colors",
     "_make_sure_cmap_is_defined",
     "get_wavelength_color",
-    "get_time_color",
 ]
 
 
