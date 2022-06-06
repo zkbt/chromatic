@@ -92,20 +92,3 @@ def get_wavelength_color(self, wavelength):
     w_unitless = wavelength.to("micron").value
     normalized_w = self.norm(w_unitless)
     return self.cmap(normalized_w)
-
-def get_time_color(self, time):
-    """
-    Determine the color corresponding to one or more time.
-
-    Parameters
-    ----------
-    time : astropy.units.Quantity
-        The time value(s), either an individual
-        time or an array of N times.
-
-    Returns
-    -------
-    colors : np.array
-        An array of RGBA colors [or an (N,4) array].
-    """
-    return self.cmap(time.value)
