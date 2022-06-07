@@ -211,8 +211,8 @@ class Rainbow:
                 self.timelike[k] = self.timelike[k][i_time]
         for k in self.fluxlike:
             if self.fluxlike[k] is not None:
-                self.fluxlike[k][:, :] = self.fluxlike[k][i_wavelength, :]
-                self.fluxlike[k][:, :] = self.fluxlike[k][:, i_time]
+                wave_sorted = self.fluxlike[k][i_wavelength, :]
+                self.fluxlike[k][:, :] = wave_sorted[:, i_time]
 
     def _validate_uncertainties(self):
         """

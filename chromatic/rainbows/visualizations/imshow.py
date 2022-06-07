@@ -41,19 +41,19 @@ def imshow(
 
     if self.wscale == "linear":
         extent = [
-            (min(self.time) / t_unit).decompose(),
-            (max(self.time) / t_unit).decompose(),
-            (max(self.wavelength) / w_unit).decompose(),
-            (min(self.wavelength) / w_unit).decompose(),
+            self.time[0].to_value(t_unit),
+            self.time[-1].to_value(t_unit),
+            self.wavelength[0].to_value(w_unit),
+            self.wavelength[-1].to_value(w_unit),
         ]
         ylabel = f"Wavelength ({w_unit.to_string('latex_inline')})"
 
     elif self.wscale == "log":
         extent = [
-            (min(self.time) / t_unit).decompose(),
-            (max(self.time) / t_unit).decompose(),
-            np.log10(max(self.wavelength) / w_unit),
-            np.log10(min(self.wavelength) / w_unit),
+            self.time[0].to_value(t_unit),
+            self.time[-1].to_value(t_unit),
+            np.log10(self.wavelength[0].to_value(w_unit)),
+            np.log10(self.wavelength[-1].to_value(w_unit)),
         ]
         ylabel = r"log$_{10}$" + f"[Wavelength/({w_unit.to_string('latex_inline')})]"
 
@@ -72,8 +72,8 @@ def imshow(
         """
         warnings.warn(message)
         extent = [
-            (min(self.time) / t_unit).decompose(),
-            (max(self.time) / t_unit).decompose(),
+            self.time[0].to_value(t_unit),
+            self.time[-1].to_value(t_unit),
             self.nwave,
             0,
         ]
