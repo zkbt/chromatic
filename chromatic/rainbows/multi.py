@@ -10,27 +10,49 @@ class MultiRainbow:
     same dataset.
     """
 
-    def __init__(self, list_of_rainbows, names=None):
+    def __init__(self, rainbows, names=None):
         """
-        Initialize from a list of Rainbows.
+        Initialize from a list or dictionary of Rainbows.
 
         Parameters
         ----------
-        list_of_rainbows : list
-            A list containing 1 or more Rainbow objects.
+        rainbows : list
+            A list or dictionary containing 1 or more Rainbow objects.
         names : list
-            A list of names with which to label the Rainbows.
+            A list of names for the Rainbows.
+            If `rainbows` is a list, `names` will be their labels.
+            If `rainbows` is a dict, `names` can specify a subset of elements to include.
         """
 
-        # store the Rainbow objects
-        self.rainbows = list_of_rainbows
-
-        # the list of names associated with those objects
-        self.names = names
+        # store the Rainbow objects as a dictionary
+        if isinstance(rainbows, list):
+            if names is None:
+                self.rainbows = {i: v for i, v in enumerate(rainbows)}
+                self.names = list(self.rainbows.keys())
+            else:
+                self.rainbows = {k: v for k, v in zip(names, rainbows)}
+                self.names = names
+        elif isinstance(rainbows, dict):
+            if names is None:
+                self.rainbows = rainbows
+                self.names = list(self.rainbows)
+            else:
+                self.rainbows = {k: rainbows[k] for k in names}
+                self.names = names
+        else:
+            raise RuntimeError("Inputs to `MultiRainbow` must be a list or dictionary.")
 
         # make sure the names and rainbows match up
         if self.names is not None:
             assert len(self.names) == len(self.rainbows)
+
+    @property
+    def list_of_rainbows(self):
+        return list(self.rainbows.values())
+
+    @property
+    def dict_of_rainbows(self):
+        return self.rainbows
 
     def __repr__(self):
         """
@@ -112,7 +134,7 @@ class MultiRainbow:
                 fill_value=np.inf,
                 bounds_error=False,
             )
-            for r in self.rainbows
+            for r in self.list_of_rainbows
         ]
 
         def smallest_dw(w):
@@ -133,7 +155,7 @@ class MultiRainbow:
 
         # compile w and dw, weighted by how many appear in each dataset
         w_represented = np.sort(
-            np.hstack([r.wavelength.to(w_unit).value for r in self.rainbows])
+            np.hstack([r.wavelength.to(w_unit).value for r in self.list_of_rainbows])
         )
         dw_represented = smallest_dw(w_represented)
 
@@ -170,7 +192,7 @@ class MultiRainbow:
         if plot:
 
             # plot the individual datasets
-            for r in self.rainbows:
+            for r in self.list_of_rainbows:
                 plt.plot(
                     r.wavelength, np.gradient(r.wavelength), marker="o", alpha=0.25
                 )
@@ -217,16 +239,19 @@ class MultiRainbow:
         aligned : bool
             Are the wavelengths the same across all?
         """
+
+        first_rainbow = self.list_of_rainbows[0]
+
         # check if they're already aligned
         wavelengths_are_same_size = np.all(
-            [np.all(r.nwave == self.rainbows[0].nwave) for r in self.rainbows]
+            [np.all(r.nwave == first_rainbow.nwave) for r in self.list_of_rainbows]
         )
 
         if wavelengths_are_same_size:
             wavelengths_are_already_aligned = np.all(
                 [
-                    np.all(r.wavelength == self.rainbows[0].wavelength)
-                    for r in self.rainbows
+                    np.all(r.wavelength == first_rainbow.wavelength)
+                    for r in self.list_of_rainbows
                 ]
             )
         else:
@@ -245,12 +270,18 @@ class MultiRainbow:
         """
         # check if they're already aligned
         times_are_same_size = np.all(
-            [np.all(r.ntime == self.rainbows[0].ntime) for r in self.rainbows]
+            [
+                np.all(r.ntime == self.list_of_rainbows[0].ntime)
+                for r in self.list_of_rainbows
+            ]
         )
 
         if times_are_same_size:
             times_are_already_aligned = np.all(
-                [np.all(r.time == self.rainbows[0].wavelength) for r in self.rainbows]
+                [
+                    np.all(r.time == self.list_of_rainbows[0].wavelength)
+                    for r in self.list_of_rainbows
+                ]
             )
         else:
             times_are_already_aligned = False
@@ -260,14 +291,14 @@ class MultiRainbow:
     @property
     def wavelength(self):
         if self._check_if_wavelengths_are_aligned():
-            return self.rainbows[0].wavelength
+            return self.list_of_rainbows[0].wavelength
         else:
             raise RuntimeError(f"🌈 {self} has more than one wavelength array.")
 
     @property
     def time(self):
         if self._check_if_times_are_aligned():
-            return self.rainbows[0].time
+            return self.list_of_rainbows[0].time
         else:
             raise RuntimeError(f"🌈 {self} has more than one time array.")
 
@@ -305,7 +336,7 @@ class MultiRainbow:
         key : tuple
             The (wavelength, time) slices, indices, or masks.
         """
-        new_rainbows = [r.__getitem__(key) for r in self.rainbows]
+        new_rainbows = [r.__getitem__(key) for r in self.list_of_rainbows]
         return MultiRainbow(new_rainbows, names=self.names)
 
     def normalize(self, **kwargs):
@@ -325,7 +356,7 @@ class MultiRainbow:
         normalized : MultiRainbow
             The normalized MultiRainbow.
         """
-        new_rainbows = [r.normalize(**kwargs) for r in self.rainbows]
+        new_rainbows = [r.normalize(**kwargs) for r in self.list_of_rainbows]
         return MultiRainbow(new_rainbows, names=self.names)
 
     def bin(self, **kwargs):
@@ -363,7 +394,7 @@ class MultiRainbow:
         binned : MultiRainbow
             The binned MultiRainbow.
         """
-        new_rainbows = [r.bin(**kwargs) for r in self.rainbows]
+        new_rainbows = [r.bin(**kwargs) for r in self.list_of_rainbows]
         return MultiRainbow(new_rainbows, names=self.names)
 
     def plot(self, **kwargs):
@@ -398,7 +429,7 @@ class MultiRainbow:
         self._setup_panels()
 
         # make all the individual plots
-        for r, a in zip(self.rainbows, self.axes):
+        for r, a in zip(self.list_of_rainbows, self.axes):
             r.plot(ax=a, **kwargs)
 
     def imshow(self, vmin=None, vmax=None, **kwargs):
@@ -427,14 +458,14 @@ class MultiRainbow:
 
         # figure out a good shared color limits
         vmin = vmin or np.nanmin(
-            [np.nanmin(u.Quantity(r.flux).value) for r in self.rainbows]
+            [np.nanmin(u.Quantity(r.flux).value) for r in self.list_of_rainbows]
         )
         vmax = vmax or np.nanmax(
-            [np.nanmax(u.Quantity(r.flux).value) for r in self.rainbows]
+            [np.nanmax(u.Quantity(r.flux).value) for r in self.list_of_rainbows]
         )
 
         # make all the individual imshows
-        for r, a in zip(self.rainbows, self.axes):
+        for r, a in zip(self.list_of_rainbows, self.axes):
             r.imshow(ax=a, vmin=vmin, vmax=vmax, **kwargs)
 
     def animate_lightcurves(
@@ -473,13 +504,15 @@ class MultiRainbow:
             A dictionary of keywords to be passed to `plt.text`
         """
 
-        assert np.all([r.nwave == self.rainbows[0].nwave for r in self.rainbows])
+        assert np.all(
+            [r.nwave == self.list_of_rainbows[0].nwave for r in self.list_of_rainbows]
+        )
 
         # set up a grid of panels
         self._setup_panels()
 
         # setup all the individual plots
-        for r, a in zip(self.rainbows, self.axes):
+        for r, a in zip(self.list_of_rainbows, self.axes):
             r._setup_animate_lightcurves(ax=a, **kwargs)
 
         # the figure should be the same for all panels
@@ -496,7 +529,7 @@ class MultiRainbow:
                 An integer that will advance with each frame.
             """
             artists = []
-            for r in self.rainbows:
+            for r in self.list_of_rainbows:
                 r._animate_lightcurves_components["update"](frame)
                 for k in ["text", "scatter"]:
                     artists.append(r._animate_lightcurves_components[k])
@@ -546,13 +579,15 @@ class MultiRainbow:
             A dictionary of keywords to be passed to `plt.text`
         """
 
-        assert np.all([r.ntime == self.rainbows[0].ntime for r in self.rainbows])
+        assert np.all(
+            [r.ntime == self.list_of_rainbows[0].ntime for r in self.list_of_rainbows]
+        )
 
         # set up a grid of panels
         self._setup_panels()
 
         # setup all the individual plots
-        for r, a in zip(self.rainbows, self.axes):
+        for r, a in zip(self.list_of_rainbows, self.axes):
             r._setup_animate_spectra(ax=a, **kwargs)
 
         # the figure should be the same for all panels
@@ -569,7 +604,7 @@ class MultiRainbow:
                 An integer that will advance with each frame.
             """
             artists = []
-            for r in self.rainbows:
+            for r in self.list_of_rainbows:
                 r._animate_spectra_components["update"](frame)
                 for k in ["text", "scatter"]:
                     artists.append(r._animate_spectra_components[k])
