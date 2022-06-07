@@ -10,7 +10,7 @@ class MultiRainbow:
     same dataset.
     """
 
-    def __init__(self, rainbows, names=None):
+    def __init__(self, rainbows, names=None, w_unit=None, t_unit=None):
         """
         Initialize from a list or dictionary of Rainbows.
 
@@ -46,6 +46,9 @@ class MultiRainbow:
         if self.names is not None:
             assert len(self.names) == len(self.rainbows)
 
+        self.w_unit = u.Unit(w_unit or self.list_of_rainbows[0].wavelength.unit)
+        self.t_unit = u.Unit(t_unit or self.list_of_rainbows[0].time.unit)
+
     @property
     def list_of_rainbows(self):
         return list(self.rainbows.values())
@@ -67,7 +70,7 @@ class MultiRainbow:
         """
         return len(self.rainbows)
 
-    def _setup_panels(self, rows=1, figsize=None):
+    def _setup_panels(self, rows=1, figsize=None, **kw):
         """
         Set up a grid of panels to plot into.
 
@@ -123,14 +126,11 @@ class MultiRainbow:
             Should we make a plot of the d[wavelength]/d[bin], for diagnostics?
         """
 
-        # pick a unit to make sure everything's consistent
-        w_unit = u.micron
-
         # create a list of interpolating functions for the datasets' dw
         dw_interpolators = [
             interp1d(
-                r.wavelength.to(w_unit).value,
-                np.gradient(r.wavelength.to(w_unit).value),
+                r.wavelength.to_value(self.w_unit),
+                np.gradient(r.wavelength.to_value(self.w_unit)),
                 fill_value=np.inf,
                 bounds_error=False,
             )
@@ -155,7 +155,9 @@ class MultiRainbow:
 
         # compile w and dw, weighted by how many appear in each dataset
         w_represented = np.sort(
-            np.hstack([r.wavelength.to(w_unit).value for r in self.list_of_rainbows])
+            np.hstack(
+                [r.wavelength.to_value(self.w_unit) for r in self.list_of_rainbows]
+            )
         )
         dw_represented = smallest_dw(w_represented)
 
@@ -228,7 +230,7 @@ class MultiRainbow:
             plt.title(f"{slope:.3} -> {wscale}!")
             plt.ylabel("d[wavelength]/d[bin]")
 
-        return new_wavelengths * w_unit
+        return new_wavelengths * self.w_unit
 
     def _check_if_wavelengths_are_aligned(self):
         """
@@ -432,14 +434,24 @@ class MultiRainbow:
         for r, a in zip(self.list_of_rainbows, self.axes):
             r.plot(ax=a, **kwargs)
 
-    def imshow(self, vmin=None, vmax=None, **kwargs):
+    def imshow(
+        self, vmin=None, vmax=None, rows=1, figsize=None, colorbar=True, **kwargs
+    ):
         """
         imshow flux as a function of time (x = time, y = wavelength, color = flux).
 
         Parameters
         ----------
-        ax : matplotlib.axes.Axes
-            The axes into which to make this plot.
+        vmin : float
+            The bottom of the color scale.
+        vmax : float
+            The top of the color scale.
+        rows : int
+            Over how many rows should the panels be distributed?
+        figsize : tuple
+            The (width, height) of the total figure.
+        colorbar : bool
+            Should we include a colorbar?
         quantity : str
             The fluxlike quantity to imshow.
             (Must be a key of `rainbow.fluxlike`).
@@ -447,16 +459,18 @@ class MultiRainbow:
             The unit for plotting wavelengths.
         t_unit : str, astropy.unit.Unit
             The unit for plotting times.
-        colorbar : bool
-            Should we include a colorbar?
         aspect : str
             What aspect ratio should be used for the imshow?
+        kwargs : dict
+            Most other keyword arguments will be passed on into
+            `plt.imshow`. If there's an `plt.imshow` keyword you
+            want to set, try it!
         """
 
         # set up a grid of panels
-        self._setup_panels()
+        self._setup_panels(rows=rows, figsize=figsize)
 
-        # figure out a good shared color limits
+        # figure out a good shared color limits (unless already supplied)
         vmin = vmin or np.nanmin(
             [np.nanmin(u.Quantity(r.flux).value) for r in self.list_of_rainbows]
         )
@@ -465,8 +479,21 @@ class MultiRainbow:
         )
 
         # make all the individual imshows
-        for r, a in zip(self.list_of_rainbows, self.axes):
-            r.imshow(ax=a, vmin=vmin, vmax=vmax, **kwargs)
+        for r, a, i in zip(self.list_of_rainbows, self.axes, range(self.nrainbows)):
+            r.imshow(ax=a, vmin=vmin, vmax=vmax, colorbar=False, **kwargs)
+            col = i % rows
+            if col > 0:
+                plt.set_ylabel("")
+
+        # add a colorbar, but steal from all the axes
+        if colorbar:
+            plt.colorbar(ax=self.axes)
+
+        # set the ylimits to span everything
+        w = np.hstack(
+            [x.wavelength.to_value(self.w_unit) for x in self.list_of_rainbows]
+        )
+        plt.ylim(np.nanmax(w), np.nanmin(w))
 
     def animate_lightcurves(
         self,

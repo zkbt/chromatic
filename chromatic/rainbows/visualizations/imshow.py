@@ -39,24 +39,17 @@ def imshow(
 
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
-    if self.wscale == "linear":
-        extent = [
-            self.time[0].to_value(t_unit),
-            self.time[-1].to_value(t_unit),
-            self.wavelength[0].to_value(w_unit),
-            self.wavelength[-1].to_value(w_unit),
-        ]
-        ylabel = f"Wavelength ({w_unit.to_string('latex_inline')})"
+    tmin, tmax = self.time[[0, -1]].to_value(t_unit)
 
+    if self.wscale == "linear":
+        wmin, wmax = self.wavelength[[0, -1]].to_value(w_unit)
+        ylabel = f"Wavelength ({w_unit.to_string('latex_inline')})"
     elif self.wscale == "log":
-        extent = [
-            self.time[0].to_value(t_unit),
-            self.time[-1].to_value(t_unit),
+        wmin, wmax = (
             np.log10(self.wavelength[0].to_value(w_unit)),
             np.log10(self.wavelength[-1].to_value(w_unit)),
-        ]
+        )
         ylabel = r"log$_{10}$" + f"[Wavelength/({w_unit.to_string('latex_inline')})]"
-
     else:
         message = f"""
         The wavelength scale for this rainbow is '{self.wscale}'.
@@ -71,13 +64,10 @@ def imshow(
         `rainbow.bin(dw=...)` (for linear wavelengths)
         """
         warnings.warn(message)
-        extent = [
-            self.time[0].to_value(t_unit),
-            self.time[-1].to_value(t_unit),
-            self.nwave,
-            0,
-        ]
+        wmin, wmax = -0.5, self.nwave - 0.5
         ylabel = "Wavelength Index"
+
+    extent = [tmin, tmax, wmax, wmin]
 
     # define some default keywords
     imshow_kw = dict(interpolation="nearest")
