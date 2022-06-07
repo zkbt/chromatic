@@ -505,6 +505,14 @@ class Rainbow:
         """
         return self.fluxlike.get("ok", np.ones_like(self.flux).astype(bool))
 
+    @property
+    def _time_label(self):
+        return self.metadata.get("time_label", "Time")
+
+    @property
+    def _wave_label(self):
+        return self.metadata.get("wave_label", "Wavelength")
+
     def __getattr__(self, key):
         """
         If an attribute/method isn't explicitly defined,
@@ -793,6 +801,7 @@ class Rainbow:
         _create_shared_wavelength_axis,
         align_wavelengths,
         inject_transit,
+        fold,
         to_nparray,
         to_df,
     )

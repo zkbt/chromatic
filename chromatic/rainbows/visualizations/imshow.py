@@ -43,13 +43,15 @@ def imshow(
 
     if self.wscale == "linear":
         wmin, wmax = self.wavelength[[0, -1]].to_value(w_unit)
-        ylabel = f"Wavelength ({w_unit.to_string('latex_inline')})"
+        ylabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"
     elif self.wscale == "log":
         wmin, wmax = (
             np.log10(self.wavelength[0].to_value(w_unit)),
             np.log10(self.wavelength[-1].to_value(w_unit)),
         )
-        ylabel = r"log$_{10}$" + f"[Wavelength/({w_unit.to_string('latex_inline')})]"
+        ylabel = (
+            r"log$_{10}$" + f"[{self._wave_label}/({w_unit.to_string('latex_inline')})]"
+        )
     else:
         message = f"""
         The wavelength scale for this rainbow is '{self.wscale}'.
@@ -82,7 +84,7 @@ def imshow(
             **imshow_kw,
         )
         plt.ylabel(ylabel)
-        plt.xlabel(f"Time ({t_unit.to_string('latex_inline')})")
+        plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         if colorbar:
             plt.colorbar(
                 ax=ax,

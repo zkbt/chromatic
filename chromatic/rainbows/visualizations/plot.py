@@ -100,5 +100,5 @@ def plot(
                 )
 
         # add text labels to the plot
-        plt.xlabel(f"Time ({t_unit.to_string('latex_inline')})")
+        plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")

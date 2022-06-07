@@ -56,4 +56,6 @@ def plot_spectral_resolution(
         plt.ylabel(f"$R=\lambda/d\lambda$ ({pixels_per_resolution_element} pixel)")
         return ax
 
-        ax.set_xlabel(f"Time ({self.time.unit.to_string('latex_inline')})")
+        ax.set_xlabel(
+            f"{self._time_label} ({self.time.unit.to_string('latex_inline')})"
+        )

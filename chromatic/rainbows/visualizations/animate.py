@@ -108,7 +108,9 @@ def _setup_animate_lightcurves(
             ylim[1] or 1.005 * np.nanmax(self.flux),
         )
         # set the axis labels
-        ax.set_xlabel(f"Time ({self.time.unit.to_string('latex_inline')})")
+        ax.set_xlabel(
+            f"{self._time_label} ({self.time.unit.to_string('latex_inline')})"
+        )
         ax.set_ylabel(f"Relative Flux")
 
         # guess a good number of digits to round
@@ -269,7 +271,9 @@ def _setup_animate_spectra(
             ylim[1] or 1.005 * np.nanmax(self.flux),
         )
         # set the axis labels
-        ax.set_xlabel(f"Wavelength ({self.wavelength.unit.to_string('latex_inline')})")
+        ax.set_xlabel(
+            f"{self._wave_label}  ({self.wavelength.unit.to_string('latex_inline')})"
+        )
         ax.set_ylabel(f"Relative Flux")
 
         # guess a good number of digits to round
