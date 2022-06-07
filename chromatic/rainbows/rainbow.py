@@ -33,6 +33,7 @@ class Rainbow:
         timelike=None,
         fluxlike=None,
         metadata=None,
+        name=None,
         **kw,
     ):
         """
@@ -153,6 +154,9 @@ class Rainbow:
         # append the history entry to this Rainbow
         self._setup_history()
         self._record_history_entry(h)
+
+        # record the name of this Rainbow somewhere
+        self.metadata["name"] = name
 
     def _sort(self):
         """
@@ -569,6 +573,8 @@ class Rainbow:
             elif key in ["flux", "uncertainty", "ok"]:
                 self.fluxlike[key] = value
                 self._validate_core_dictionaries()
+            elif isinstance(value, str):
+                self.metadata[key] = value
             else:
                 self._put_array_in_right_dictionary(key, value)
         except ValueError:
@@ -743,6 +749,8 @@ class Rainbow:
         How should this object be represented as a string?
         """
         n = self.__class__.__name__.replace("Rainbow", "🌈")
+        if self.name is not None:
+            n += f"'{self.name}'"
         return f"<{n}({self.nwave}w, {self.ntime}t)>"
 
     def help(self, categories=["actions", "visualizations", "wavelike_summaries"]):
