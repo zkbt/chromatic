@@ -92,3 +92,19 @@ def test_wavelength_cmap():
 def test_imshow_interact():
     plt.figure()
     SimulatedRainbow(R=10).imshow_interact()
+
+
+def test_imshow_one_wavelength():
+    s = SimulatedRainbow(wavelength=[1] * u.micron)
+    ax = s.imshow()
+    assert "Wavelength Index" in ax.get_ylabel()
+    plt.show()
+
+    s = SimulatedRainbow()
+    b = s.bin(nwavelengths=s.nwave)
+    ax = b.imshow()
+    assert "Wavelength (" in ax.get_ylabel()
+    ylim = ax.get_ylim()
+    assert ylim[0] > max(s.wavelength.value)
+    assert ylim[1] < min(s.wavelength.value)
+    plt.show()

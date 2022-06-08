@@ -1,6 +1,7 @@
 from ..imports import *
 from .readers import *
 from .writers import *
+from ..resampling import *
 
 
 class Rainbow:
@@ -698,6 +699,24 @@ class Rainbow:
                     warnings.warn(message)
 
         self._sort()
+
+    def _make_sure_wavelength_edges_are_defined(self):
+        """
+        Make sure there are some wavelength edges defined.
+        """
+        if self.nwave <= 1:
+            return
+        if ("wavelength_lower" not in self.wavelike) or (
+            "wavelength_upper" not in self.wavelike
+        ):
+            if self.metadata.get("wscale", None) == "log":
+                l, u = calculate_bin_leftright(np.log(self.wavelength.value))
+                self.wavelike["wavelength_lower"] = np.exp(l) * self.wavelength.unit
+                self.wavelike["wavelength_upper"] = np.exp(u) * self.wavelength.unit
+            elif self.metadata.get("wscale", None) == "linear":
+                l, u = calculate_bin_leftright(self.wavelength)
+                self.wavelike["wavelength_lower"] = l
+                self.wavelike["wavelength_upper"] = u
 
     def __getitem__(self, key):
         """

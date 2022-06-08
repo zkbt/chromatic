@@ -173,3 +173,40 @@ def test_bin_both():
     w = np.logspace(0, 1) * u.micron
     r = SimulatedRainbow(signal_to_noise=1000, dt=bintime * u.minute)
     b_withouttransit = r.bin(dw=binwave * u.micron, dt=bintime * u.minute)
+
+
+def test_binning_to_one():
+    """
+    Are things OK even if we bin down to one wavelength or time?
+    """
+    for N in np.random.randint(2, 100, 3):
+        for M in np.random.randint(2, 100, 3):
+            w = np.linspace(1, 2, N) * u.micron
+            t = np.linspace(-1, 1, M) * u.hour
+            s = SimulatedRainbow(wavelength=w, time=t, signal_to_noise=100)
+
+            bw = s.bin(nwavelengths=s.nwave)
+            print(bw.uncertainty[0, 0], s.uncertainty[0, 0] / np.sqrt(s.nwave))
+            predicted = 1 / np.sqrt(np.sum(1 / s.uncertainty**2, axis=s.waveaxis))
+            assert np.all(
+                np.isclose(
+                    predicted,
+                    np.mean(bw.uncertainty, axis=s.waveaxis),
+                    rtol=1e-10,
+                    atol=1e-13,
+                )
+            )
+            assert bw.nwave == 1
+
+            bt = s.bin(ntimes=s.ntime)
+            print(bt.uncertainty[0, 0], s.uncertainty[0, 0] / np.sqrt(s.ntime))
+            predicted = 1 / np.sqrt(np.sum(1 / s.uncertainty**2, axis=s.timeaxis))
+            assert np.all(
+                np.isclose(
+                    predicted,
+                    np.mean(bt.uncertainty, axis=s.timeaxis),
+                    rtol=1e-10,
+                    atol=1e-13,
+                )
+            )
+            assert bt.ntime == 1

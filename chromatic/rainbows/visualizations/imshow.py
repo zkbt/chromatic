@@ -47,25 +47,34 @@ def imshow(
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
     tmin, tmax = self.time[[0, -1]].to_value(t_unit)
+    left, right = tmin, tmax
 
-    if self.wscale == "linear":
-        wmin, wmax = self.wavelength[[0, -1]].to_value(w_unit)
+    # make sure some wavelength edges are defined
+    self._make_sure_wavelength_edges_are_defined()
+
+    try:
+        wmin = self.wavelength_lower[0].to_value(w_unit)
+        wmax = self.wavelength_upper[-1].to_value(w_unit)
+    except AttributeError:
+        wmin, wmax = None, None
+    if (self.wscale == "linear") and (wmin is not None) and (wmax is not None):
+        bottom, top = wmax, wmin
         ylabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"
-    elif self.wscale == "log":
-        wmin, wmax = (
-            np.log10(self.wavelength[0].to_value(w_unit)),
-            np.log10(self.wavelength[-1].to_value(w_unit)),
-        )
+    elif self.wscale == "log" and (wmin is not None) and (wmax is not None):
+        bottom, top = np.log10(wmax), np.log10(wmin)
         ylabel = (
             r"log$_{10}$" + f"[{self._wave_label}/({w_unit.to_string('latex_inline')})]"
         )
     else:
         message = f"""
-        The wavelength scale for this rainbow is '{self.wscale}'.
+        The wavelength scale for this rainbow is '{self.wscale}',
+        and there are {self.nwave} wavelength centers and
+        {len(self.wavelike.get('wavelength_lower', []))} wavelength edges defined.
+
         It's hard to imshow something with a wavelength axis
-        that isn't uniform in linear or logarithmic space, so
-        we're giving up and just using the wavelength index
-        as the wavelength axis.
+        that isn't linearly or logarithmically uniform, or doesn't
+        at least have its wavelength edges defined. We're giving up
+        and just using the wavelength index as the wavelength axis.
 
         If you want a real wavelength axis, one solution would
         be to bin your wavelengths to a more uniform grid with
@@ -73,10 +82,10 @@ def imshow(
         `rainbow.bin(dw=...)` (for linear wavelengths)
         """
         warnings.warn(message)
-        wmin, wmax = -0.5, self.nwave - 0.5
+        bottom, top = self.nwave - 0.5, -0.5
         ylabel = "Wavelength Index"
 
-    self._imshow_extent = [tmin, tmax, wmax, wmin]
+    self._imshow_extent = [left, right, bottom, top]
 
     # define some default keywords
     imshow_kw = dict(interpolation="nearest")
