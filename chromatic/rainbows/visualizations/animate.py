@@ -86,8 +86,19 @@ def _setup_animate_lightcurves(
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
+        so you can have more detailed control over the plot
+        appearance. Common keyword arguments might include:
+        `[s, c, marker, alpha, linewidths, edgecolors, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html
     textkw : dict
-        A dictionary of keywords to be passed to `plt.text`
+        A dictionary of keywords passed to `plt.text`
+        so you can have more detailed control over the text
+        appearance. Common keyword arguments might include:
+        `[alpha, backgroundcolor, color, fontfamily, fontsize,
+          fontstyle, fontweight, rotation, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
 
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
@@ -183,8 +194,19 @@ def animate_lightcurves(
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
+        so you can have more detailed control over the plot
+        appearance. Common keyword arguments might include:
+        `[s, c, marker, alpha, linewidths, edgecolors, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html
     textkw : dict
-        A dictionary of keywords to be passed to `plt.text`
+        A dictionary of keywords passed to `plt.text`
+        so you can have more detailed control over the text
+        appearance. Common keyword arguments might include:
+        `[alpha, backgroundcolor, color, fontfamily, fontsize,
+          fontstyle, fontweight, rotation, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
     self._setup_animate_lightcurves(**kwargs)
 
@@ -237,12 +259,19 @@ def _setup_animate_spectra(
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
+        so you can have more detailed control over the plot
+        appearance. Common keyword arguments might include:
+        `[s, c, marker, alpha, linewidths, edgecolors, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html
     textkw : dict
-        A dictionary of keywords to be passed to `plt.text`
-    fps : int
-        Frames per second for the animation.
-    dpi : float, default: :rc:`savefig.dpi`
-        Dots per inch for the movie.
+        A dictionary of keywords passed to `plt.text`
+        so you can have more detailed control over the text
+        appearance. Common keyword arguments might include:
+        `[alpha, backgroundcolor, color, fontfamily, fontsize,
+          fontstyle, fontweight, rotation, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
 
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
@@ -346,12 +375,19 @@ def animate_spectra(
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
+        so you can have more detailed control over the plot
+        appearance. Common keyword arguments might include:
+        `[s, c, marker, alpha, linewidths, edgecolors, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html
     textkw : dict
-        A dictionary of keywords to be passed to `plt.text`
-    fps : int
-        Frames per second for the animation.
-    dpi : float, default: :rc:`savefig.dpi`
-        Dots per inch for the movie.
+        A dictionary of keywords passed to `plt.text`
+        so you can have more detailed control over the text
+        appearance. Common keyword arguments might include:
+        `[alpha, backgroundcolor, color, fontfamily, fontsize,
+          fontstyle, fontweight, rotation, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
     self._setup_animate_spectra(**kwargs)
 
