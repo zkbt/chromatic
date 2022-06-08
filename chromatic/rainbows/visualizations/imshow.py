@@ -69,7 +69,7 @@ def imshow(
         wmin, wmax = -0.5, self.nwave - 0.5
         ylabel = "Wavelength Index"
 
-    extent = [tmin, tmax, wmax, wmin]
+    self._imshow_extent = [tmin, tmax, wmax, wmin]
 
     # define some default keywords
     imshow_kw = dict(interpolation="nearest")
@@ -78,7 +78,7 @@ def imshow(
         plt.sca(ax)
         plt.imshow(
             self.fluxlike[quantity],
-            extent=extent,
+            extent=self._imshow_extent,
             aspect=aspect,
             origin="upper",
             **imshow_kw,
