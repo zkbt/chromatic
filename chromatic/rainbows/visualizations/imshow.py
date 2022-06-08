@@ -31,6 +31,13 @@ def imshow(
         Should we include a colorbar?
     aspect : str
         What aspect ratio should be used for the imshow?
+    kw : dict
+        All other keywords will be passed on to `plt.imshow`,
+        so you can have more detailed control over the plot
+        appearance. Common keyword arguments might include:
+        `[cmap, norm, interpolation, alpha, vmin, vmax]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html
     """
 
     # self.speak(f'imshowing')

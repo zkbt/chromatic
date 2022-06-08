@@ -38,8 +38,20 @@ def plot(
         The maximum value to use for the wavelength colormap.
     plotkw : dict
         A dictionary of keywords passed to `plt.plot`
+        so you can have more detailed control over the plot
+        appearance. Common keyword arguments might include:
+        `[alpha, clip_on, zorder, marker, markersize,
+          linewidth, linestyle, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html
     textkw : dict
         A dictionary of keywords passed to `plt.text`
+        so you can have more detailed control over the text
+        appearance. Common keyword arguments might include:
+        `[alpha, backgroundcolor, color, fontfamily, fontsize,
+          fontstyle, fontweight, rotation, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
 
     # make sure that the wavelength-based colormap is defined
