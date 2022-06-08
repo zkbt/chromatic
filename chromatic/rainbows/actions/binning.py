@@ -1,7 +1,7 @@
 from ...imports import *
 from ...resampling import *
 
-__all__ = ["bin", "bin_in_time", "bin_in_wavelength"]
+__all__ = ["bin", "bin_in_time", "bin_in_wavelength", "get_integrated_lightcurve"]
 
 
 def bin(
@@ -435,3 +435,15 @@ def bin_in_wavelength(
         return new.trim_nan_wavelengths()
     else:
         return new
+
+
+def get_integrated_lightcurve(self):
+    """
+    Produce a wavelength-integrated light curve.
+
+    Returns
+    -------
+    lc : Rainbow
+        A Rainbow object with just one wavelength.
+    """
+    return self.bin(nwavelengths=self.nwave)

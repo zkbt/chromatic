@@ -834,6 +834,7 @@ class Rainbow:
         inject_transit,
         fold,
         compare,
+        get_integrated_lightcurve,
         to_nparray,
         to_df,
     )

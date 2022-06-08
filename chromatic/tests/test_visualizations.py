@@ -94,6 +94,11 @@ def test_imshow_interact():
     SimulatedRainbow(R=10).imshow_interact()
 
 
+def test_plot_one_wavelength():
+    s = SimulatedRainbow(wavelength=[1] * u.micron)
+    s.plot()
+
+
 def test_imshow_one_wavelength():
     s = SimulatedRainbow(wavelength=[1] * u.micron)
     ax = s.imshow()
