@@ -109,6 +109,9 @@ class SimulatedRainbow(Rainbow):
             self.fluxlike["model"], self.fluxlike["uncertainty"]
         )
 
+        # make sure everything is defined and sorted
+        self._validate_core_dictionaries()
+
         # append the history entry to the new Rainbow
         self._record_history_entry(h)
 
@@ -148,6 +151,8 @@ class SimulatedRainbow(Rainbow):
 
         self.timelike["time"] = u.Quantity(time).to(u.day)
         # TODO, make this match up better with astropy time
+
+        self._guess_tscale()
 
     def _setup_fake_wavelength_grid(
         self, wlim=[0.5 * u.micron, 5 * u.micron], R=100, dw=None, wavelength=None

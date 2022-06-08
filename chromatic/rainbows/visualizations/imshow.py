@@ -46,12 +46,11 @@ def imshow(
 
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
-    tmin, tmax = self.time[[0, -1]].to_value(t_unit)
-    left, right = tmin, tmax
-
-    # make sure some wavelength edges are defined
+    # make sure some wavelength and time edges are defined
     self._make_sure_wavelength_edges_are_defined()
+    self._make_sure_time_edges_are_defined()
 
+    # set up the wavelength extent
     try:
         wmin = self.wavelength_lower[0].to_value(w_unit)
         wmax = self.wavelength_upper[-1].to_value(w_unit)
@@ -85,6 +84,39 @@ def imshow(
         bottom, top = self.nwave - 0.5, -0.5
         ylabel = "Wavelength Index"
 
+    # set up the time extent
+    try:
+        tmin = self.time_lower[0].to_value(t_unit)
+        tmax = self.time_upper[-1].to_value(t_unit)
+    except AttributeError:
+        tmin, tmax = None, None
+    if (self.tscale == "linear") and (tmin is not None) and (tmax is not None):
+        right, left = tmax, tmin
+        xlabel = f"{self._time_label} ({t_unit.to_string('latex_inline')})"
+    elif self.tscale == "log" and (tmin is not None) and (tmax is not None):
+        right, left = np.log10(tmax), np.log10(tmin)
+        xlabel = (
+            r"log$_{10}$" + f"[{self._time_label}/({t_unit.to_string('latex_inline')})]"
+        )
+    else:
+        message = f"""
+        The time scale for this rainbow is '{self.tscale}',
+        and there are {self.ntime} time centers and
+        {len(self.timelike.get('time_lower', []))} time edges defined.
+
+        It's hard to imshow something with a time axis
+        that isn't linearly or logarithmically uniform, or doesn't
+        at least have its time edges defined. We're giving up
+        and just using the time index as the time axis.
+
+        If you want a real time axis, one solution would
+        be to bin your times to a more uniform grid with
+        `rainbow.bin(dt=...)` (for linear times).
+        """
+        warnings.warn(message)
+        right, left = self.ntime - 0.5, -0.5
+        xlabel = "Time Index"
+
     self._imshow_extent = [left, right, bottom, top]
 
     # define some default keywords
@@ -100,7 +132,7 @@ def imshow(
             **imshow_kw,
         )
         plt.ylabel(ylabel)
-        plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
+        plt.xlabel(xlabel)
         if colorbar:
             plt.colorbar(
                 ax=ax,

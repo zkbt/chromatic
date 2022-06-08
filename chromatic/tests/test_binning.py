@@ -213,3 +213,17 @@ def test_binning_to_one():
                 )
             )
             assert bt.ntime == 1
+
+
+def test_integrated_wrappers():
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        s = SimulatedRainbow().inject_transit()
+        s.fluxlike["flux"] += 0.003 * s.wavelength.value[:, np.newaxis]
+
+        fi, ax = plt.subplots(1, 3, figsize=(10, 3), constrained_layout=True)
+        kw = dict(vmin=0.98, vmax=1.02)
+        s.imshow(ax=ax[0], **kw)
+        s.get_spectrum_as_rainbow().imshow(ax=ax[1], **kw)
+        s.get_lightcurve_as_rainbow().imshow(ax=ax[2], **kw)
