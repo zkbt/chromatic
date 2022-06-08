@@ -11,6 +11,7 @@ __all__ = [
     "resample_while_conserving_flux",
     "leftright_to_edges",
     "edges_to_leftright",
+    "calculate_bin_leftright",
 ]
 
 

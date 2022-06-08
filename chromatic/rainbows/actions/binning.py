@@ -1,7 +1,13 @@
 from ...imports import *
 from ...resampling import *
 
-__all__ = ["bin", "bin_in_time", "bin_in_wavelength"]
+__all__ = [
+    "bin",
+    "bin_in_time",
+    "bin_in_wavelength",
+    "get_lightcurve_as_rainbow",
+    "get_spectrum_as_rainbow",
+]
 
 
 def bin(
@@ -248,8 +254,9 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
 
-    # figure out the scale, after binning
+    # figure out the scales, after binning
     new._guess_wscale()
+    new._guess_tscale()
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
@@ -424,8 +431,9 @@ def bin_in_wavelength(
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
 
-    # figure out the scale, after binning
+    # figure out the scales, after binning
     new._guess_wscale()
+    new._guess_tscale()
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
@@ -435,3 +443,41 @@ def bin_in_wavelength(
         return new.trim_nan_wavelengths()
     else:
         return new
+
+
+def get_lightcurve_as_rainbow(self):
+    """
+    Produce a wavelength-integrated light curve.
+
+    Returns
+    -------
+    lc : Rainbow
+        A Rainbow object with just one wavelength.
+    """
+    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        new = self.bin(nwavelengths=self.nwave)
+
+    new._record_history_entry(h)
+    return new
+
+
+def get_spectrum_as_rainbow(self):
+    """
+    Produce a time-integrated spectrum.
+
+    Returns
+    -------
+    lc : Rainbow
+        A Rainbow object with just one time.
+    """
+    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        new = self.bin(ntimes=self.ntime)
+
+    new._record_history_entry(h)
+    return new

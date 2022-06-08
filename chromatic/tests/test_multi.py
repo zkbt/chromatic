@@ -25,6 +25,7 @@ def test_multi():
     m.normalize()
     m.align_wavelengths().wavelength
     m[:, :]
+    plt.close("all")
 
 
 def test_compare_wrappers():
@@ -38,3 +39,4 @@ def test_compare_wrappers():
 
     a.imshow()
     b.imshow()
+    plt.close("all")

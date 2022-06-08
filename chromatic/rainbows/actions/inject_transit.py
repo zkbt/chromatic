@@ -51,6 +51,10 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
 
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("inject_transit", locals())
+
+    # create a copy of the existing Rainbow
+    result = self._create_copy()
+
     # First, make sure planet_radius has the right dimension.
     if type(planet_radius) != float and len(planet_radius) != self.nwave:
         print(
@@ -118,11 +122,8 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
         try:
             m
         except NameError:
-            m = batman.TransitModel(params, self.timelike["time"].to("day").value)
+            m = batman.TransitModel(params, result.time.to_value("day"))
         planet_flux[i] = m.light_curve(params)
-
-    # create a copy of the existing Rainbow
-    result = self._create_copy()
 
     # replace its flux (and model)
     try:

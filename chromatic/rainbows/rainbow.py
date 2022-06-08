@@ -1,6 +1,7 @@
 from ..imports import *
 from .readers import *
 from .writers import *
+from ..resampling import *
 
 
 class Rainbow:
@@ -148,8 +149,9 @@ class Rainbow:
         elif (type(filepath) == str) or (type(filepath) == list):
             self._initialize_from_file(filepath=filepath, format=format, **kw)
 
-        # finally, tidy up by guessing the wavelength scale
+        # finally, tidy up by guessing the scales
         self._guess_wscale()
+        self._guess_tscale()
 
         # append the history entry to this Rainbow
         self._setup_history()
@@ -197,7 +199,7 @@ class Rainbow:
             """
             warnings.warn(message)
 
-        # attach unsorted indices to this array, if it doesn't exist
+        # attach unsorted indices to this array, if the don't exist
         if "original_wave_index" not in self.wavelike:
             self.wavelike["original_wave_index"] = np.arange(self.nwave)
         if "original_time_index" not in self.timelike:
@@ -464,10 +466,16 @@ class Rainbow:
         # calculate difference arrays
         t = self.time.value
         dt = np.diff(t)
+        with warnings.catch_warnings():
+            # (don't complain about negative time)
+            warnings.simplefilter("ignore")
+            dlogt = np.diff(np.log(t))
 
         # test the three options
         if np.allclose(dt, np.median(dt), rtol=relative_tolerance):
-            self.metadata["tscale"] = "uniform"
+            self.metadata["tscale"] = "linear"
+        elif np.allclose(dlogt, np.median(dlogt), rtol=relative_tolerance):
+            self.metadata["tscale"] = "log"
         else:
             self.metadata["tscale"] = "?"
 
@@ -699,6 +707,40 @@ class Rainbow:
 
         self._sort()
 
+    def _make_sure_wavelength_edges_are_defined(self):
+        """
+        Make sure there are some wavelength edges defined.
+        """
+        if self.nwave <= 1:
+            return
+        if ("wavelength_lower" not in self.wavelike) or (
+            "wavelength_upper" not in self.wavelike
+        ):
+            if self.metadata.get("wscale", None) == "log":
+                l, u = calculate_bin_leftright(np.log(self.wavelength.value))
+                self.wavelike["wavelength_lower"] = np.exp(l) * self.wavelength.unit
+                self.wavelike["wavelength_upper"] = np.exp(u) * self.wavelength.unit
+            elif self.metadata.get("wscale", None) == "linear":
+                l, u = calculate_bin_leftright(self.wavelength)
+                self.wavelike["wavelength_lower"] = l
+                self.wavelike["wavelength_upper"] = u
+
+    def _make_sure_time_edges_are_defined(self):
+        """
+        Make sure there are some time edges defined.
+        """
+        if self.ntime <= 1:
+            return
+        if ("time_lower" not in self.timelike) or ("time_upper" not in self.timelike):
+            if self.metadata.get("tscale", None) == "log":
+                l, u = calculate_bin_leftright(np.log(self.time.value))
+                self.timelike["time_lower"] = np.exp(l) * self.time.unit
+                self.timelike["time_upper"] = np.exp(u) * self.time.unit
+            elif self.metadata.get("tscale", None) == "linear":
+                l, u = calculate_bin_leftright(self.time)
+                self.timelike["time_lower"] = l
+                self.timelike["time_upper"] = u
+
     def __getitem__(self, key):
         """
         Trim a rainbow by indexing, slicing, or masking.
@@ -745,6 +787,7 @@ class Rainbow:
         # finalize the new rainbow
         new._validate_core_dictionaries()
         new._guess_wscale()
+        new._guess_tscale()
 
         return new
 
@@ -815,6 +858,8 @@ class Rainbow:
         inject_transit,
         fold,
         compare,
+        get_lightcurve_as_rainbow,
+        get_spectrum_as_rainbow,
         to_nparray,
         to_df,
     )

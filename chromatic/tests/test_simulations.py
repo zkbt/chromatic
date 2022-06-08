@@ -43,3 +43,4 @@ def test_inject_transit():
         },
     ).imshow(ax=ax[2], vmin=0.975, vmax=1.005)
     plt.savefig(os.path.join(test_directory, "transit-injection-demonstration.pdf"))
+    plt.close("all")

@@ -25,3 +25,4 @@ def test_normalize(plot=False):
             assert np.all(np.isclose(r.uncertainty / r.flux, 1 / snr, rtol=0.1))
             if plot:
                 r.imshow_quantities(maxcol=4)
+    plt.close("all")
