@@ -248,6 +248,9 @@ def __eq__(self, other):
     # start by assuming the Rainbows are identical
     same = True
 
+    if type(self) != type(other):
+        return False
+
     # loop through the core dictionaries
     for d in self._core_dictionaries:
 

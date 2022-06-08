@@ -5,3 +5,4 @@ from .align_wavelengths import *
 from .conversions import *
 from .inject_transit import *
 from .fold import *
+from .compare import *

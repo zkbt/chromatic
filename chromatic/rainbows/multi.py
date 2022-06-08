@@ -14,51 +14,53 @@ class MultiRainbow:
 
     def __init__(self, rainbows, names=None):
         """
-        Initialize from a list or a dictionary of Rainbows.
+        Initialize from a list of Rainbows.
 
         Parameters
         ----------
-        rainbows : list, dict
-            A list or dictionary containing one or more Rainbow objects.
+        rainbows : list
+            A list containing two or more Rainbow objects.
         names : list
-            A list of names for the Rainbows.
-            If `rainbows` is a list, `names` will be their labels.
-            If `rainbows` is a dict, `names` can specify a subset of elements to include.
+            A list of names for the Rainbows. These will overwrite
+            the names provided in the `.metadata['name']` entry
+            of each input Rainbow.
         """
 
-        # store the Rainbow objects as a dictionary
-        if isinstance(rainbows, list):
-            if names is None:
-                self.rainbows = {i: v for i, v in enumerate(rainbows)}
-                self.names = list(self.rainbows.keys())
-            else:
-                self.rainbows = {k: v for k, v in zip(names, rainbows)}
-                self.names = names
-        elif isinstance(rainbows, dict):
-            if names is None:
-                self.rainbows = rainbows
-                self.names = list(self.rainbows)
-            else:
-                self.rainbows = {k: rainbows[k] for k in names}
-                self.names = names
-        else:
-            raise RuntimeError("Inputs to `MultiRainbow` must be a list or dictionary.")
+        if not isinstance(rainbows, list):
+            raise RuntimeError("Please provide a list of 🌈s.")
+        if len(rainbows) < 2:
+            raise RuntimeError("Please provide more than one 🌈.")
+
+        # decouple these rainbow from their inputs
+        self.rainbows = [x._create_copy() for x in rainbows]
+
+        # keep track of the names
+        self.names = names or [(x.name or i) for i, x in enumerate(rainbows)]
+        if len(np.unique(self.names)) < len(self.names):
+            message = """
+            The input names {self.names}
+            are not unique. Proceed with caution, or provide
+            each 🌈 with a unique name. You can do so either by
+            giving each individual 🌈 a name with `rainbow.name='?!?!?!'`
+            or by supplying a list of unique names to the `names=`
+            keyword argument when starting your comparison.
+            """
+            warnings.warn(message)
 
         # make sure the names and rainbows match up
-        if self.names is not None:
-            assert len(self.names) == len(self.rainbows)
+        assert len(self.names) == len(self.rainbows)
 
-        # pull units from first
+        # pull units from first rainbow
         self.w_unit = u.Unit(self.list_of_rainbows[0].wavelength.unit)
         self.t_unit = u.Unit(self.list_of_rainbows[0].time.unit)
 
     @property
     def list_of_rainbows(self):
-        return list(self.rainbows.values())
+        return self.rainbows
 
     @property
     def dict_of_rainbows(self):
-        return self.rainbows
+        return {k: v for k, v in zip(self.names, self.rainbows)}
 
     def __repr__(self):
         """
@@ -463,10 +465,10 @@ class MultiRainbow:
             plt.colorbar(ax=self.axes)
 
         # set the ylimits to span everything
-        w = np.hstack(
-            [x.wavelength.to_value(self.w_unit) for x in self.list_of_rainbows]
+        plt.ylim(
+            np.nanmax([x._imshow_extent[2] for x in self.list_of_rainbows]),
+            np.nanmin([x._imshow_extent[3] for x in self.list_of_rainbows]),
         )
-        plt.ylim(np.nanmax(w), np.nanmin(w))
 
     def animate_lightcurves(
         self,
@@ -620,4 +622,21 @@ class MultiRainbow:
         plt.close()
 
 
-compare_rainbows = MultiRainbow
+def compare_rainbows(*args, **kwargs):
+    """
+    Compare a group of Rainbows to each other.
+
+    Parameters
+    ----------
+    rainbows : list
+        A list containing two or more Rainbow objects.
+
+    Returns
+    -------
+    multirainbow : MultiRainbow
+        A MultiRainbow object that contains all of the rainbows to
+        be compared. This object can do many of the same actions or
+        visualizations as a normal Rainbow, but it will (attempt to)
+        automatically apply them to every Rainbow.
+    """
+    return MultiRainbow(*args, **kwargs)

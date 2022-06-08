@@ -810,6 +810,7 @@ class Rainbow:
         align_wavelengths,
         inject_transit,
         fold,
+        compare,
         to_nparray,
         to_df,
     )
