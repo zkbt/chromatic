@@ -103,7 +103,6 @@ def test_imshow_one_wavelength():
     s = SimulatedRainbow(wavelength=[1] * u.micron)
     ax = s.imshow()
     assert "Wavelength Index" in ax.get_ylabel()
-    plt.show()
 
     s = SimulatedRainbow()
     b = s.bin(nwavelengths=s.nwave)
@@ -112,4 +111,4 @@ def test_imshow_one_wavelength():
     ylim = ax.get_ylim()
     assert ylim[0] > max(s.wavelength.value)
     assert ylim[1] < min(s.wavelength.value)
-    plt.show()
+    plt.close("all")

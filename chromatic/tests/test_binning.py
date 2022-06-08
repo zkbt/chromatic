@@ -36,6 +36,7 @@ def test_bin_in_wavelength():
     s.imshow(ax=ax[0], **imshowkw)
     b.imshow(ax=ax[1], **imshowkw)
     plt.savefig(os.path.join(test_directory, "imshow-bin-wavelength-demonstration.pdf"))
+    plt.close("all")
 
 
 def test_bin():
@@ -68,6 +69,7 @@ def test_bin():
     plt.title("Binned")
     plt.tight_layout()
     plt.savefig(os.path.join(test_directory, "imshow-bin-demonstration.pdf"))
+    plt.close("all")
 
 
 def test_bin_input_options():
@@ -164,6 +166,7 @@ def test_bin_bad_data(visualize=False):
         b.imshow(ax=ax[1, 1], vmin=0.97, vmax=1.03)
 
     assert np.any(np.isfinite(b.flux))
+    plt.close("all")
     return s
 
 
