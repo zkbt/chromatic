@@ -110,7 +110,7 @@ class Rainbow:
         h = self._create_history_entry("Rainbow", locals())
 
         # metadata are arbitrary types of information we need
-        self.metadata = {}
+        self.metadata = {"name": name}
 
         # wavelike quanities are 1D arrays with nwave elements
         self.wavelike = {}
@@ -154,9 +154,6 @@ class Rainbow:
         # append the history entry to this Rainbow
         self._setup_history()
         self._record_history_entry(h)
-
-        # record the name of this Rainbow somewhere
-        self.metadata["name"] = name
 
     def _sort(self):
         """
@@ -473,6 +470,13 @@ class Rainbow:
             self.metadata["tscale"] = "uniform"
         else:
             self.metadata["tscale"] = "?"
+
+    @property
+    def name(self):
+        """
+        The name of this Rainbow object.
+        """
+        return self.metadata.get("name", None)
 
     @property
     def wavelength(self):
