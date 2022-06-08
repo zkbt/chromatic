@@ -86,7 +86,8 @@ class SimulatedRainbow(Rainbow):
         # set up the time grid
         self._setup_fake_time_grid(tlim=tlim, dt=dt, time=time)
 
-        # Save SNR.
+        # save the basic inputs that aren't stored elsewhere
+        self.metadata["name"] = name
         self.metadata["signal_to_noise"] = signal_to_noise
 
         # If the flux of the star is not given,
@@ -110,7 +111,6 @@ class SimulatedRainbow(Rainbow):
 
         # append the history entry to the new Rainbow
         self._record_history_entry(h)
-        self.metadata["name"] = name
 
     def _setup_fake_time_grid(
         self, tlim=[-2.5 * u.hour, 2.5 * u.hour], dt=1 * u.minute, time=None
