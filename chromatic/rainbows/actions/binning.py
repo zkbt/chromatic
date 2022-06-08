@@ -454,9 +454,14 @@ def get_lightcurve_as_rainbow(self):
     lc : Rainbow
         A Rainbow object with just one wavelength.
     """
+    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        return self.bin(nwavelengths=self.nwave)
+        new = self.bin(nwavelengths=self.nwave)
+
+    new._record_history_entry(h)
+    return new
 
 
 def get_spectrum_as_rainbow(self):
@@ -468,6 +473,11 @@ def get_spectrum_as_rainbow(self):
     lc : Rainbow
         A Rainbow object with just one time.
     """
+    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        return self.bin(ntimes=self.ntime)
+        new = self.bin(ntimes=self.ntime)
+
+    new._record_history_entry(h)
+    return new
