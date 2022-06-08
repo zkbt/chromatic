@@ -871,6 +871,9 @@ class Rainbow:
         get_typical_uncertainty,
     )
 
+    # import summary statistics for each wavelength
+    from .timelike_summaries import get_lightcurve
+
     # import visualizations that can act on Rainbows
     from .visualizations import (
         imshow,
