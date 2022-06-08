@@ -33,6 +33,7 @@ class Rainbow:
         timelike=None,
         fluxlike=None,
         metadata=None,
+        name=None,
         **kw,
     ):
         """
@@ -153,6 +154,69 @@ class Rainbow:
         # append the history entry to this Rainbow
         self._setup_history()
         self._record_history_entry(h)
+
+        # record the name of this Rainbow somewhere
+        self.metadata["name"] = name
+
+    def _sort(self):
+        """
+        Sort the wavelengths and times, from lowest to highest.
+        Attach the unsorted indices to be able to work backwards.
+        This sorts the object in-place (not returning a new Rainbow.)
+
+        Returns
+        -------
+        sorted : Rainbow
+            The sorted Rainbow.
+        """
+
+        # figure out the indices to sort from low to high
+        i_wavelength = np.argsort(self.wavelength)
+        i_time = np.argsort(self.time)
+
+        if self.flux.shape != (len(i_wavelength), len(i_time)):
+            message = """
+            Wavelength, time, and flux arrays don't match;
+            the `._sort()` step is being skipped.
+            """
+            warnings.warn(message)
+            return
+
+        if np.any(np.diff(i_wavelength) < 0):
+            message = f"""
+            The {self.nwave} input wavelengths were not monotonically increasing.
+            `Rainbow` {self} has been sorted from lowest to highest wavelength.
+            If you want to recover the original wavelength order, the original
+            wavelength indices are available in `rainbow.original_wave_index`.
+            """
+            warnings.warn(message)
+
+        if np.any(np.diff(i_time) < 0):
+            message = f"""
+            The {self.ntime} input times were not monotonically increasing.
+            `Rainbow` {self} has been sorted from lowest to highest time.
+            If you want to recover the original time order, the original
+            time indices are available in `rainbow.original_time_index`.
+            """
+            warnings.warn(message)
+
+        # attach unsorted indices to this array, if it doesn't exist
+        if "original_wave_index" not in self.wavelike:
+            self.wavelike["original_wave_index"] = np.arange(self.nwave)
+        if "original_time_index" not in self.timelike:
+            self.timelike["original_time_index"] = np.arange(self.ntime)
+
+        # sort that copy by wavelength and time
+        for k in self.wavelike:
+            if self.wavelike[k] is not None:
+                self.wavelike[k] = self.wavelike[k][i_wavelength]
+        for k in self.timelike:
+            if self.timelike[k] is not None:
+                self.timelike[k] = self.timelike[k][i_time]
+        for k in self.fluxlike:
+            if self.fluxlike[k] is not None:
+                wave_sorted = self.fluxlike[k][i_wavelength, :]
+                self.fluxlike[k][:, :] = wave_sorted[:, i_time]
 
     def _validate_uncertainties(self):
         """
@@ -417,14 +481,6 @@ class Rainbow:
         """
         return self.wavelike.get("wavelength", None)
 
-    @wavelength.setter
-    def wavelength(self, value):
-        """
-        The 1D array of wavelengths (with astropy units of length).
-        """
-        self.wavelike["wavelength"] = value
-        self._validate_core_dictionaries()
-
     @property
     def time(self):
         """
@@ -453,14 +509,13 @@ class Rainbow:
         """
         return self.fluxlike.get("ok", np.ones_like(self.flux).astype(bool))
 
-    @ok.setter
-    def ok(self, value):
-        """
-        The 2D array of whether data is OK (row = wavelength, col = time).
-        """
-        self.fluxlike["ok"] = value
-        if value is not None:
-            assert np.shape(value) == self.shape
+    @property
+    def _time_label(self):
+        return self.metadata.get("time_label", "Time")
+
+    @property
+    def _wave_label(self):
+        return self.metadata.get("wave_label", "Wavelength")
 
     def __getattr__(self, key):
         """
@@ -518,6 +573,8 @@ class Rainbow:
             elif key in ["flux", "uncertainty", "ok"]:
                 self.fluxlike[key] = value
                 self._validate_core_dictionaries()
+            elif isinstance(value, str):
+                self.metadata[key] = value
             else:
                 self._put_array_in_right_dictionary(key, value)
         except ValueError:
@@ -636,6 +693,8 @@ class Rainbow:
                     """
                     warnings.warn(message)
 
+        self._sort()
+
     def __getitem__(self, key):
         """
         Trim a rainbow by indexing, slicing, or masking.
@@ -690,6 +749,8 @@ class Rainbow:
         How should this object be represented as a string?
         """
         n = self.__class__.__name__.replace("Rainbow", "🌈")
+        if self.name is not None:
+            n += f"'{self.name}'"
         return f"<{n}({self.nwave}w, {self.ntime}t)>"
 
     def help(self, categories=["actions", "visualizations", "wavelike_summaries"]):
@@ -748,6 +809,8 @@ class Rainbow:
         _create_shared_wavelength_axis,
         align_wavelengths,
         inject_transit,
+        fold,
+        compare,
         to_nparray,
         to_df,
     )

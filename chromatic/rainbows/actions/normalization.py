@@ -23,8 +23,8 @@ def normalize(self, axis="wavelength", percentile=50):
 
     Returns
     -------
-    normalized : MultiRainbow
-        The normalized MultiRainbow.
+    normalized : Rainbow
+        The normalized Rainbow.
     """
 
     # create a history entry for this action (before other variables are defined)

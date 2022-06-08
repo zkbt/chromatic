@@ -25,3 +25,16 @@ def test_multi():
     m.normalize()
     m.align_wavelengths().wavelength
     m[:, :]
+
+
+def test_compare_wrappers():
+    rainbows = [SimulatedRainbow(R=10 ** np.random.uniform(0.1, 2)) for _ in range(3)]
+
+    a = compare_rainbows(rainbows)
+    b = rainbows[0].compare(rainbows)
+
+    assert a.names == b.names
+    assert a.rainbows == b.rainbows
+
+    a.imshow()
+    b.imshow()

@@ -13,6 +13,7 @@ class SimulatedRainbow(Rainbow):
         dw=None,
         wavelength=None,
         star_flux=None,
+        name=None,
     ):
         """
         Create a simulated rainbow object.
@@ -109,6 +110,7 @@ class SimulatedRainbow(Rainbow):
 
         # append the history entry to the new Rainbow
         self._record_history_entry(h)
+        self.metadata["name"] = name
 
     def _setup_fake_time_grid(
         self, tlim=[-2.5 * u.hour, 2.5 * u.hour], dt=1 * u.minute, time=None

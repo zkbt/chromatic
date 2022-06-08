@@ -39,24 +39,19 @@ def imshow(
 
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
+    tmin, tmax = self.time[[0, -1]].to_value(t_unit)
+
     if self.wscale == "linear":
-        extent = [
-            (min(self.time) / t_unit).decompose(),
-            (max(self.time) / t_unit).decompose(),
-            (max(self.wavelength) / w_unit).decompose(),
-            (min(self.wavelength) / w_unit).decompose(),
-        ]
-        ylabel = f"Wavelength ({w_unit.to_string('latex_inline')})"
-
+        wmin, wmax = self.wavelength[[0, -1]].to_value(w_unit)
+        ylabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"
     elif self.wscale == "log":
-        extent = [
-            (min(self.time) / t_unit).decompose(),
-            (max(self.time) / t_unit).decompose(),
-            np.log10(max(self.wavelength) / w_unit),
-            np.log10(min(self.wavelength) / w_unit),
-        ]
-        ylabel = r"log$_{10}$" + f"[Wavelength/({w_unit.to_string('latex_inline')})]"
-
+        wmin, wmax = (
+            np.log10(self.wavelength[0].to_value(w_unit)),
+            np.log10(self.wavelength[-1].to_value(w_unit)),
+        )
+        ylabel = (
+            r"log$_{10}$" + f"[{self._wave_label}/({w_unit.to_string('latex_inline')})]"
+        )
     else:
         message = f"""
         The wavelength scale for this rainbow is '{self.wscale}'.
@@ -71,13 +66,10 @@ def imshow(
         `rainbow.bin(dw=...)` (for linear wavelengths)
         """
         warnings.warn(message)
-        extent = [
-            (min(self.time) / t_unit).decompose(),
-            (max(self.time) / t_unit).decompose(),
-            self.nwave,
-            0,
-        ]
+        wmin, wmax = -0.5, self.nwave - 0.5
         ylabel = "Wavelength Index"
+
+    self._imshow_extent = [tmin, tmax, wmax, wmin]
 
     # define some default keywords
     imshow_kw = dict(interpolation="nearest")
@@ -86,13 +78,13 @@ def imshow(
         plt.sca(ax)
         plt.imshow(
             self.fluxlike[quantity],
-            extent=extent,
+            extent=self._imshow_extent,
             aspect=aspect,
             origin="upper",
             **imshow_kw,
         )
         plt.ylabel(ylabel)
-        plt.xlabel(f"Time ({t_unit.to_string('latex_inline')})")
+        plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         if colorbar:
             plt.colorbar(
                 ax=ax,
