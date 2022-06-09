@@ -173,7 +173,7 @@ class Rainbow:
         i_wavelength = np.argsort(self.wavelength)
         i_time = np.argsort(self.time)
 
-        if self.flux.shape != (len(i_wavelength), len(i_time)):
+        if np.shape(self.flux) != (len(i_wavelength), len(i_time)):
             message = """
             Wavelength, time, and flux arrays don't match;
             the `._sort()` step is being skipped.
@@ -555,6 +555,21 @@ class Rainbow:
         message = f"🌈.{key} does not exist for this Rainbow"
         raise AttributeError(message)
 
+    def get(self, key):
+        """
+        Retrieve an attribute by its string name.
+        (This is a friendlier wrapper for `getattr()`).
+
+        `r.get('flux')` is identical to `r.flux`
+
+        This is different from indexing directly into
+        a core dictionary (for example, `r.fluxlike['flux']`),
+        because it can also be used to get the results of
+        properties that do calculations on the fly (for example,
+        `r.residuals` in the `RainbowWithModel` class).
+        """
+        return getattr(self, key)
+
     def __setattr__(self, key, value):
         """
         When setting a new attribute, try to sort it into the
@@ -678,14 +693,14 @@ class Rainbow:
             )
 
         # does the flux have the right shape?
-        if self.shape != self.flux.shape:
+        if self.shape != np.shape(self.flux):
             message = f"""
             Something doesn't line up!
-            The flux array has a shape of {self.flux.shape}.
+            The flux array has a shape of {np.shape(self.flux)}.
             The wavelength array has {self.nwave} wavelengths.
             The time array has {self.ntime} times.
             """
-            if self.shape == self.flux.shape[::-1]:
+            if self.shape == np.shape(self.flux)[::-1]:
                 warnings.warn(
                     f"""{message}
                     Any chance your flux array is transposed?
@@ -697,11 +712,11 @@ class Rainbow:
         for n in ["uncertainty", "ok"]:
             x = getattr(self, n)
             if x is not None:
-                if x.shape != self.flux.shape:
+                if x.shape != np.shape(self.flux):
                     message = f"""
                     Watch out! The '{n}' array has
                     a shape of {x.shape}, which doesn't match the
-                    flux array's shape of {self.flux.shape}.
+                    flux array's shape of {np.shape(self.flux)}.
                     """
                     warnings.warn(message)
 
@@ -840,6 +855,44 @@ class Rainbow:
                     f"{row['cartoon']} | {function_call:<28} \n   {row['description']}"
                 )
                 print(item)
+
+    def attach_model(self, model, **kw):
+        """
+        Attach a fluxlike model to this Rainbow,
+        storing it as `self.fluxlike['model']`
+
+        After running this once, it's OK (and faster) to simply
+        update the `.model` attribute of the result.
+
+        Parameters
+        ----------
+        model : np.array, u.Quantity
+            An array of model values, with the same shape as 'flux'
+        kw : dict
+            All other keywords will be interpreted as items
+            that can be added to a Rainbow. You might use this
+            to attach intermediate model steps or quantities
+            (for example, 'planet_model' or 'systematics_model').
+        """
+        # make sure the shape is reasonable
+        assert np.shape(model) == np.shape(self.flux)
+
+        # add the model to the fluxlike array
+        inputs = self._create_copy()._get_core_dictionaries()
+        inputs["fluxlike"]["model"] = model
+
+        # import here (rather than globally) to avoid recursion?
+        from .withmodel import RainbowWithModel
+
+        # create new object
+        new = RainbowWithModel(**inputs)
+
+        # add other inputs to the model
+        for k, v in kw.items():
+            new.__setattr__(k, v)
+
+        # return the RainboWithModel
+        return new
 
     # import the basic operations for Rainbows
     from .actions.operations import __add__, __sub__, __mul__, __truediv__, __eq__

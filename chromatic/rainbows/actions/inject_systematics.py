@@ -154,7 +154,7 @@ def _create_fake_fluxlike_quantity(self, timelike_kw={}, wavelike_kw={}):
 
 def inject_systematics(
     self,
-    amplitude=0.005,
+    amplitude=0.003,
     wavelike=[],
     timelike=["x", "y", "time"],
     fluxlike=["background"],

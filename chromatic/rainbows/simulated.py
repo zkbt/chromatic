@@ -1,7 +1,18 @@
-from .rainbow import *
+from .withmodel import *
 
 
-class SimulatedRainbow(Rainbow):
+class SimulatedRainbow(RainbowWithModel):
+    """
+    `SimulatedRainbow` objects are created from scratch
+    within `chromatic`, with options for various different
+    wavelength grids, time grids, noise sources, and injected
+    models. They can be useful for generating quick simulated
+    dataset for testing analysis and visualization tools.
+
+    This class definition inherits from `RainbowWithModel`,
+    which itself inherits from `Rainbow`.
+    """
+
     def __init__(
         self,
         signal_to_noise=100,
