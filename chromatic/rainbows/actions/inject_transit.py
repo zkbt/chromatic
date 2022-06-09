@@ -53,7 +53,7 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
     h = self._create_history_entry("inject_transit", locals())
 
     # create a copy of the existing Rainbow
-    result = self._create_copy()
+    new = self._create_copy()
 
     # First, make sure planet_radius has the right dimension.
     if type(planet_radius) != float and len(planet_radius) != self.nwave:
@@ -122,18 +122,15 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
         try:
             m
         except NameError:
-            m = batman.TransitModel(params, result.time.to_value("day"))
+            m = batman.TransitModel(params, new.time.to_value("day"))
         planet_flux[i] = m.light_curve(params)
 
-    # replace its flux (and model)
-    try:
-        result.fluxlike["model"] *= planet_flux
-    except KeyError:
-        pass
-    result.fluxlike["flux"] *= planet_flux
+    new.planet_model = planet_flux
+    new.flux *= new.planet_model
+    new.model = new.fluxlike.get("model", 1) * new.planet_model
 
     # append the history entry to the new Rainbow
-    result._record_history_entry(h)
+    new._record_history_entry(h)
 
     # return the new object
-    return result
+    return new

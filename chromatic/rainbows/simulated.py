@@ -93,7 +93,7 @@ class SimulatedRainbow(Rainbow):
         # If the flux of the star is not given,
         # assume a continuum-normlized flux where fx=1 at all wavelengths.
         if star_flux is None:
-            self.fluxlike["model"] = np.ones(self.shape)
+            model = np.ones(self.shape)
 
         # If the flux vs wavelength of the star is supplied,
         # include it in the model.
@@ -101,13 +101,13 @@ class SimulatedRainbow(Rainbow):
             # Check to make sure the flux and wavelengths
             # have the same shape.
             if len(star_flux) == len(self.wavelike["wavelength"]):
-                self.fluxlike["model"] = np.transpose([star_flux] * self.shape[1])
+                model = np.transpose([star_flux] * self.shape[1])
 
         # Set uncertainty.
-        self.fluxlike["uncertainty"] = self.fluxlike["model"] / signal_to_noise
-        self.fluxlike["flux"] = np.random.normal(
-            self.fluxlike["model"], self.fluxlike["uncertainty"]
-        )
+        uncertainty = model / signal_to_noise
+        self.fluxlike["flux"] = np.random.normal(model, uncertainty)
+        self.fluxlike["uncertainty"] = uncertainty
+        self.fluxlike["model"] = model
 
         # make sure everything is defined and sorted
         self._validate_core_dictionaries()

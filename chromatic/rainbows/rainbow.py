@@ -860,6 +860,10 @@ class Rainbow:
         compare,
         get_lightcurve_as_rainbow,
         get_spectrum_as_rainbow,
+        inject_systematics,
+        _create_fake_wavelike_quantity,
+        _create_fake_timelike_quantity,
+        _create_fake_fluxlike_quantity,
         to_nparray,
         to_df,
     )
