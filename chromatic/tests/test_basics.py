@@ -103,5 +103,29 @@ def test_shape_warnings():
         d.ok = np.ones((d.nwave + 1, d.ntime + 1))
 
 
+def test_sort():
+    w = np.linspace(2, 1) * u.micron
+    t = np.linspace(1, -1) * u.day
+    r = SimulatedRainbow(wavelength=w, time=t)
+    print(r.wavelength)
+    print(r.time)
+    r._validate_core_dictionaries()
+    print(r.wavelength)
+    print(r.time)
+    assert np.all(r.wavelength == w[::-1])
+    assert np.all(r.time == t[::-1])
+
+    # test the warnings
+    with pytest.warns(match="input times were not monotonically increasing"):
+        r = SimulatedRainbow(time=t)
+        r._validate_core_dictionaries()
+        r.original_time_index
+
+    with pytest.warns(match="input wavelengths were not monotonically increasing"):
+        r = SimulatedRainbow(wavelength=w)
+        r._validate_core_dictionaries()
+        r.original_wave_index
+
+
 def test_help():
     Rainbow().help()

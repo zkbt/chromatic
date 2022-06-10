@@ -62,3 +62,4 @@ def test_align_wavelengths(fractional_shift=0.002, dw=0.0001 * u.micron):
     plt.tight_layout()
 
     plt.savefig(os.path.join(test_directory, "wavelength-alignment-demonstration.pdf"))
+    plt.close("all")

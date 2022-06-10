@@ -13,6 +13,7 @@ class SimulatedRainbow(Rainbow):
         dw=None,
         wavelength=None,
         star_flux=None,
+        name=None,
     ):
         """
         Create a simulated rainbow object.
@@ -85,7 +86,8 @@ class SimulatedRainbow(Rainbow):
         # set up the time grid
         self._setup_fake_time_grid(tlim=tlim, dt=dt, time=time)
 
-        # Save SNR.
+        # save the basic inputs that aren't stored elsewhere
+        self.metadata["name"] = name
         self.metadata["signal_to_noise"] = signal_to_noise
 
         # If the flux of the star is not given,
@@ -106,6 +108,9 @@ class SimulatedRainbow(Rainbow):
         self.fluxlike["flux"] = np.random.normal(
             self.fluxlike["model"], self.fluxlike["uncertainty"]
         )
+
+        # make sure everything is defined and sorted
+        self._validate_core_dictionaries()
 
         # append the history entry to the new Rainbow
         self._record_history_entry(h)
@@ -146,6 +151,8 @@ class SimulatedRainbow(Rainbow):
 
         self.timelike["time"] = u.Quantity(time).to(u.day)
         # TODO, make this match up better with astropy time
+
+        self._guess_tscale()
 
     def _setup_fake_wavelength_grid(
         self, wlim=[0.5 * u.micron, 5 * u.micron], R=100, dw=None, wavelength=None

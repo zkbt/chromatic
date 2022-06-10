@@ -92,3 +92,45 @@ def test_wavelength_cmap():
 def test_imshow_interact():
     plt.figure()
     SimulatedRainbow(R=10).imshow_interact()
+
+
+def test_plot_one_wavelength():
+    s = SimulatedRainbow(wavelength=[1] * u.micron)
+    s.plot()
+
+
+def test_imshow_one_wavelength():
+    s = SimulatedRainbow(wavelength=[1] * u.micron)
+    ax = s.imshow()
+    assert "Wavelength Index" in ax.get_ylabel()
+
+    s = SimulatedRainbow()
+    b = s.bin(nwavelengths=s.nwave)
+    ax = b.imshow()
+    assert "Wavelength (" in ax.get_ylabel()
+    ylim = ax.get_ylim()
+    assert ylim[0] > max(s.wavelength.value)
+    assert ylim[1] < min(s.wavelength.value)
+    plt.close("all")
+
+
+def test_imshow_randomized_axes():
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        s = SimulatedRainbow(
+            time=np.random.uniform(-3, 3, 12) * u.hour,
+            wavelength=np.random.uniform(0.5, 5, 8) * u.micron,
+            signal_to_noise=300,
+        ).inject_transit()
+        s.fluxlike["flux"] += 0.003 * s.wavelength.value[:, np.newaxis]
+
+        fi, ax = plt.subplots(1, 3, figsize=(10, 3), constrained_layout=True)
+        kw = dict(vmin=0.98, vmax=1.02)
+        s.imshow(ax=ax[0], **kw)
+        s.get_spectrum_as_rainbow().imshow(ax=ax[1], **kw)
+        s.get_lightcurve_as_rainbow().imshow(ax=ax[2], **kw)
+        for i in [0, 2]:
+            assert "Time Index" in ax[i].get_xlabel()
+        for i in [0, 1]:
+            assert "Wavelength Index" in ax[1].get_ylabel()

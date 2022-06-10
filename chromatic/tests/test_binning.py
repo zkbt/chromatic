@@ -36,6 +36,7 @@ def test_bin_in_wavelength():
     s.imshow(ax=ax[0], **imshowkw)
     b.imshow(ax=ax[1], **imshowkw)
     plt.savefig(os.path.join(test_directory, "imshow-bin-wavelength-demonstration.pdf"))
+    plt.close("all")
 
 
 def test_bin():
@@ -68,6 +69,7 @@ def test_bin():
     plt.title("Binned")
     plt.tight_layout()
     plt.savefig(os.path.join(test_directory, "imshow-bin-demonstration.pdf"))
+    plt.close("all")
 
 
 def test_bin_input_options():
@@ -164,6 +166,7 @@ def test_bin_bad_data(visualize=False):
         b.imshow(ax=ax[1, 1], vmin=0.97, vmax=1.03)
 
     assert np.any(np.isfinite(b.flux))
+    plt.close("all")
     return s
 
 
@@ -173,3 +176,54 @@ def test_bin_both():
     w = np.logspace(0, 1) * u.micron
     r = SimulatedRainbow(signal_to_noise=1000, dt=bintime * u.minute)
     b_withouttransit = r.bin(dw=binwave * u.micron, dt=bintime * u.minute)
+
+
+def test_binning_to_one():
+    """
+    Are things OK even if we bin down to one wavelength or time?
+    """
+    for N in np.random.randint(2, 100, 3):
+        for M in np.random.randint(2, 100, 3):
+            w = np.linspace(1, 2, N) * u.micron
+            t = np.linspace(-1, 1, M) * u.hour
+            s = SimulatedRainbow(wavelength=w, time=t, signal_to_noise=100)
+
+            bw = s.bin(nwavelengths=s.nwave)
+            print(bw.uncertainty[0, 0], s.uncertainty[0, 0] / np.sqrt(s.nwave))
+            predicted = 1 / np.sqrt(np.sum(1 / s.uncertainty**2, axis=s.waveaxis))
+            assert np.all(
+                np.isclose(
+                    predicted,
+                    np.mean(bw.uncertainty, axis=s.waveaxis),
+                    rtol=1e-10,
+                    atol=1e-13,
+                )
+            )
+            assert bw.nwave == 1
+
+            bt = s.bin(ntimes=s.ntime)
+            print(bt.uncertainty[0, 0], s.uncertainty[0, 0] / np.sqrt(s.ntime))
+            predicted = 1 / np.sqrt(np.sum(1 / s.uncertainty**2, axis=s.timeaxis))
+            assert np.all(
+                np.isclose(
+                    predicted,
+                    np.mean(bt.uncertainty, axis=s.timeaxis),
+                    rtol=1e-10,
+                    atol=1e-13,
+                )
+            )
+            assert bt.ntime == 1
+
+
+def test_integrated_wrappers():
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        s = SimulatedRainbow().inject_transit()
+        s.fluxlike["flux"] += 0.003 * s.wavelength.value[:, np.newaxis]
+
+        fi, ax = plt.subplots(1, 3, figsize=(10, 3), constrained_layout=True)
+        kw = dict(vmin=0.98, vmax=1.02)
+        s.imshow(ax=ax[0], **kw)
+        s.get_spectrum_as_rainbow().imshow(ax=ax[1], **kw)
+        s.get_lightcurve_as_rainbow().imshow(ax=ax[2], **kw)
