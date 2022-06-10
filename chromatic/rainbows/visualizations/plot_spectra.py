@@ -12,6 +12,7 @@ def plot_spectra(
     cmap=None,
     vmin=None,
     vmax=None,
+    errorbar=False,
     plotkw={},
     textkw={},
 ):
@@ -80,24 +81,41 @@ def plot_spectra(
 
                 # add an offset to this spectrum
                 plot_flux = -i * spacing + spectrum
+                
 
                 # get the color for this spectrum
-                color = "darkblue"#self.get_time_color(t)
+                color = 'blue'#cm.jet#self.get_wavelength_color(self.wavelength)
 
                 # plot the data points (with offsets)
-                this_plotkw = dict(marker="o", linestyle="-", color= color)
+                this_plotkw = dict(marker="o", linestyle="-", c= self.wavelength.to(w_unit), cmap=self.cmap, norm = self.norm,linewidths=10)
                 this_plotkw.update(**plotkw)
-                plt.plot(self.wavelength.to(w_unit), plot_flux, **this_plotkw)
+                if errorbar:
+                    plot_uncertainty = self.normalize().uncertainty[:,i]
+                    plt.errorbar(self.wavelength.to(w_unit), plot_flux,yerr=plot_uncertainty, color='k',ecolor = 'darkred')
+                    plt.scatter(self.wavelength.to(w_unit), plot_flux, **this_plotkw)
+    
+                    # add text labels next to each spectrum
+                    this_textkw = dict(va="bottom", color= color)
+                    this_textkw.update(**textkw)
+                    plt.annotate(
+                        f"{t.to(t_unit).value:.2f} {t_unit.to_string('latex_inline')}",
+                        (min_wave, np.median(plot_flux) - 0.5 * spacing),
+                        **this_textkw,
+                    )
+   
+                else:
 
-                # add text labels next to each spectrum
-                this_textkw = dict(va="bottom", color='k')
-                this_textkw.update(**textkw)
-                plt.annotate(
-                    f"{t.to(t_unit).value:.2f} {t_unit.to_string('latex_inline')}",
-                    (min_wave, np.median(plot_flux) - 0.5 * spacing),
-                    **this_textkw,
-                )
-
+                    plt.plot(self.wavelength.to(w_unit), plot_flux, color = 'k')
+                    plt.scatter(self.wavelength.to(w_unit), plot_flux, **this_plotkw)
+    
+                    # add text labels next to each spectrum
+                    this_textkw = dict(va="bottom", color= color)
+                    this_textkw.update(**textkw)
+                    plt.annotate(
+                        f"{t.to(t_unit).value:.2f} {t_unit.to_string('latex_inline')}",
+                        (min_wave, np.median(plot_flux) - 0.5 * spacing),
+                        **this_textkw,
+                    )
         # add text labels to the plot
         plt.xlabel(f"Wavelength ({w_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")
