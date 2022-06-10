@@ -1,10 +1,11 @@
 from ...imports import *
 
-__all__ = ["plot"]
+__all__ = ["plot_light_curves"]
 
 
-def plot(
+def plot_light_curves(
     self,
+    quantity='flux',
     ax=None,
     spacing=None,
     w_unit="micron",
@@ -12,7 +13,7 @@ def plot(
     cmap=None,
     vmin=None,
     vmax=None,
-    plot_yerr=False,
+    plot_fluxerr=False,
     plotkw={},
     textkw={},
 ):
@@ -87,32 +88,32 @@ def plot(
         #  loop through wavelengths
         for i, w in enumerate(self.wavelength):
 
-            # grab the light curve for this particular wavelength
-            lc = self.flux[i, :]
-            yerr = self.uncertainty[i,:]
+            # grab the quantity and yerr for this particular wavelength
+            quan = self.fluxlike[quantity][i, :]
+            uncertainty = self.fluxlike["uncertainty"][i,:]
 
-            if np.any(np.isfinite(lc)):
+            if np.any(np.isfinite(quan)):
 
-                # add an offset to this light curve
-                plot_flux = -i * spacing + lc
+                # add an offset to this quantity
+                plot_quan = -i * spacing + quan
 
-                # get the color for this light curve
+                # get the color for this quantity
                 color = self.get_wavelength_color(w)
 
                 # plot the data points (with offsets)
                 this_plotkw = dict(marker="o", linestyle="-", color=color)
                 this_plotkw.update(**plotkw)
-                if plot_yerr:
-                    plt.errorbar(self.time.to(t_unit),plot_flux,yerr=yerr,**this_plotkw)
+                if plot_fluxerr:
+                    plt.errorbar(self.time.to(t_unit),plot_quan,yerr=uncertainty,**this_plotkw)
                 else:
-                    plt.plot(self.time.to(t_unit), plot_flux, **this_plotkw)
+                    plt.plot(self.time.to(t_unit), plot_quan, **this_plotkw)
 
-                # add text labels next to each light curve
+                # add text labels next to each quantity plot
                 this_textkw = dict(va="bottom", color=color)
                 this_textkw.update(**textkw)
                 plt.annotate(
                     f"{w.to(w_unit).value:.2f} {w_unit.to_string('latex_inline')}",
-                    (min_time, np.median(plot_flux) - 0.5 * spacing),
+                    (min_time, np.median(plot_quan) - 0.5 * spacing),
                     **this_textkw,
                 )
 
