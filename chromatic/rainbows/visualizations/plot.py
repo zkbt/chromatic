@@ -12,6 +12,7 @@ def plot(
     cmap=None,
     vmin=None,
     vmax=None,
+    plot_yerr=False,
     plotkw={},
     textkw={},
 ):
@@ -88,6 +89,7 @@ def plot(
 
             # grab the light curve for this particular wavelength
             lc = self.flux[i, :]
+            yerr = self.uncertainty[i,:]
 
             if np.any(np.isfinite(lc)):
 
@@ -100,7 +102,10 @@ def plot(
                 # plot the data points (with offsets)
                 this_plotkw = dict(marker="o", linestyle="-", color=color)
                 this_plotkw.update(**plotkw)
-                plt.plot(self.time.to(t_unit), plot_flux, **this_plotkw)
+                if plot_yerr:
+                    plt.errorbar(self.time.to(t_unit),plot_flux,yerr=yerr,**this_plotkw)
+                else:
+                    plt.plot(self.time.to(t_unit), plot_flux, **this_plotkw)
 
                 # add text labels next to each light curve
                 this_textkw = dict(va="bottom", color=color)
