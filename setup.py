@@ -82,7 +82,7 @@ setup(
     install_requires=[
         "numpy",
         "scipy",
-        "matplotlib>=3.0",
+        "matplotlib>=3.5",
         "astropy>=4.0",
         "pandas",
         "tqdm",

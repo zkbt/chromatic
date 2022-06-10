@@ -1,5 +1,6 @@
 from ..rainbows import *
 from .setup_tests import *
+from ..rainbows.visualizations import _add_panel_labels
 
 
 def test_imshow():
@@ -51,7 +52,7 @@ def test_plot_quantities():
 
     for k in ["time", "wavelength"]:
         for x in [k, "index"]:
-            r.plot_quantities(data_like=k, x_axis=x)
+            r.plot_quantities(xaxis=k, x_axis=x)
             plt.savefig(
                 os.path.join(
                     test_directory,
@@ -136,6 +137,20 @@ def test_imshow_randomized_axes():
             assert "Wavelength Index" in ax[1].get_ylabel()
 
 
+def test_imshow_both_orientations():
+    s = (
+        SimulatedRainbow(R=5, dt=10 * u.minute, signal_to_noise=1000)
+        .inject_transit(planet_radius=0.2)
+        .inject_systematics(amplitude=0.005)
+    )
+
+    fi, ax = plt.subplots(2, 2, constrained_layout=True, figsize=(6, 6))
+    for i, k in enumerate(["time", "wavelength"]):
+        s.plot(ax=ax[0, i], xaxis=k)
+        s.imshow(ax=ax[1, i], xaxis=k, colorbar=False)
+    plt.savefig(os.path.join(test_directory, "imshow-both-orientations.png"))
+
+
 def test_both_types_of_plot():
     N, M = 10, 20
     r = SimulatedRainbow(
@@ -154,10 +169,15 @@ def test_both_types_of_plot():
             spacing=0,
             errorbar=True,
             plotkw=dict(color="orchid"),
-            scatterkw=dict(c="orchid"),
+            scatterkw=dict(),
             textkw=dict(color="orchid"),
             errorbarkw=dict(color="orchid"),
         )
     plt.savefig(
         os.path.join(test_directory, "test-plot-lightcurve-and-spectra-many.png")
     )
+
+
+def test_add_labels_to_panels():
+    fi, ax = plt.subplots(3, 3)
+    _add_panel_labels(ax, preset="inside", color="blue")

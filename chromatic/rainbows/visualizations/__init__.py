@@ -6,3 +6,4 @@ from .diagnostics import *
 from .interactive import *
 from .plot_spectra import *
 from .plot import *
+from .utilities import *

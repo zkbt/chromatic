@@ -29,3 +29,16 @@ def test_imshow_data_with_models():
     plt.savefig(os.path.join(test_directory, "imshow-data-with-model.pdf"))
     s.imshow_data_with_models(models=["systematics_model", "planet_model"], cmap="gray")
     plt.savefig(os.path.join(test_directory, "imshow-data-with-model-components.pdf"))
+
+    s.imshow_data_with_models(models=["systematics_model", "planet_model"], cmap="gray")
+    s.imshow_data_with_models(
+        models=["systematics_model", "planet_model"], cmap="gray", label=False
+    )
+    s.imshow_data_with_models(
+        models=["systematics_model", "planet_model"],
+        cmap="gray",
+        labelkw=dict(color="red"),
+    )
+    s.imshow_data_with_models(
+        models=["systematics_model", "planet_model"], cmap="gray", label="outside"
+    )
