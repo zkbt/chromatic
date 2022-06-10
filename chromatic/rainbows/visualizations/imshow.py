@@ -124,8 +124,9 @@ def imshow(
     imshow_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
+        z = self.get(quantity)
         plt.imshow(
-            self.fluxlike[quantity],
+            z,
             extent=self._imshow_extent,
             aspect=aspect,
             origin="upper",
@@ -136,8 +137,6 @@ def imshow(
         if colorbar:
             plt.colorbar(
                 ax=ax,
-                label=u.Quantity(self.fluxlike[quantity]).unit.to_string(
-                    "latex_inline"
-                ),
+                label=u.Quantity(z).unit.to_string("latex_inline"),
             )
     return ax
