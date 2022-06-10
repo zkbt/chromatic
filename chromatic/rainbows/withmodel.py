@@ -1,4 +1,5 @@
 from .rainbow import *
+from .visualizations import _add_panel_labels
 
 
 class RainbowWithModel(Rainbow):
@@ -39,6 +40,8 @@ class RainbowWithModel(Rainbow):
         vlimits_data=[0.98, 1.02],
         vspan_residuals=0.02,
         figsize=(8, 3),
+        label="inside",
+        labelkw={},
         **kw,
     ):
         """
@@ -69,6 +72,17 @@ class RainbowWithModel(Rainbow):
         figsize : tuple
             The figure size for the multipanel plot.
             It should probably be wider than it is tall.
+        label : bool
+            Should we add (a), (b), (c) labels to the panels,
+            and where? False or None give no labels, 'inside'
+            sets them in the upper left inside corner, 'outside'
+            sets them above the upper left corner.
+        labelkw : dict
+            Keywords to pass along to the `plt.text` command
+            that makes the labels.
+        kw : dict
+            All additional keywords will be passed along
+            to `Rainbow.imshow` for all imshow panels.
         """
         # make sure color limits are set for data and model
         percentiles = [1, 99]
@@ -150,3 +164,6 @@ class RainbowWithModel(Rainbow):
             a.set_xlabel("")
         fi.supxlabel(xlabel)
         fi.supylabel(ylabel)
+
+        if label:
+            _add_panel_labels(ax[row_data, :], preset=label, **labelkw)

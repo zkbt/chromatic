@@ -175,3 +175,8 @@ def test_both_types_of_plot():
     plt.savefig(
         os.path.join(test_directory, "test-plot-lightcurve-and-spectra-many.png")
     )
+
+
+def test_add_labels_to_panels():
+    fi, ax = plt.subplots(3, 3)
+    _add_panel_labels(ax, preset="inside", color="blue")
