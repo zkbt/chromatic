@@ -168,7 +168,7 @@ def test_both_types_of_plot():
             spacing=0,
             errorbar=True,
             plotkw=dict(color="orchid"),
-            scatterkw=dict(c="orchid"),
+            scatterkw=dict(),
             textkw=dict(color="orchid"),
             errorbarkw=dict(color="orchid"),
         )
