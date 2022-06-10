@@ -1,5 +1,6 @@
 from ..rainbows import *
 from .setup_tests import *
+from ..rainbows.visualizations import _add_panel_labels
 
 
 def test_imshow():
@@ -51,7 +52,7 @@ def test_plot_quantities():
 
     for k in ["time", "wavelength"]:
         for x in [k, "index"]:
-            r.plot_quantities(data_like=k, x_axis=x)
+            r.plot_quantities(xaxis=k, x_axis=x)
             plt.savefig(
                 os.path.join(
                     test_directory,
