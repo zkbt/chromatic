@@ -4,7 +4,7 @@ __all__ = ['shift']
 
 def shift(self, velocity=5*u.km/u.s):
     """
-    Apply a doppler shift to the wavelength array
+    Apply a relativistic longitudinal doppler effect to the wavelength array
 
     Parameters
     ----------
@@ -14,12 +14,10 @@ def shift(self, velocity=5*u.km/u.s):
     
     new = self._create_copy()
     
-<<<<<<< Updated upstream
-    lightspeed = c.c.to('km/s') #speed of light in km/s
-=======
     lightspeed = con.c.to('km/s') #speed of light in km/s
->>>>>>> Stashed changes
-    new_wavelength = new.wavelength * ( 1 / (1 - velocity/lightspeed) )
+
+    beta = velocity/lightspeed
+    new_wavelength = new.wavelength * ( (1 - beta) / (1 + beta) )
     new.wavelike['wavelength'] = new_wavelength
     
     return new
