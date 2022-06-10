@@ -555,7 +555,7 @@ class Rainbow:
         message = f"🌈.{key} does not exist for this Rainbow"
         raise AttributeError(message)
 
-    def get(self, key):
+    def get(self, key, default=None):
         """
         Retrieve an attribute by its string name.
         (This is a friendlier wrapper for `getattr()`).
@@ -567,8 +567,13 @@ class Rainbow:
         because it can also be used to get the results of
         properties that do calculations on the fly (for example,
         `r.residuals` in the `RainbowWithModel` class).
+
+        This will default to None if the attribute can't be found.
         """
-        return getattr(self, key)
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            return None
 
     def __setattr__(self, key, value):
         """

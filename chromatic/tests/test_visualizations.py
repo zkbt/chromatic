@@ -136,6 +136,20 @@ def test_imshow_randomized_axes():
             assert "Wavelength Index" in ax[1].get_ylabel()
 
 
+def test_imshow_both_orientations():
+    s = (
+        SimulatedRainbow(R=5, dt=10 * u.minute, signal_to_noise=1000)
+        .inject_transit(planet_radius=0.2)
+        .inject_systematics(amplitude=0.005)
+    )
+
+    fi, ax = plt.subplots(2, 2, constrained_layout=True, figsize=(6, 6))
+    for i, k in enumerate(["time", "wavelength"]):
+        s.plot(ax=ax[0, i], xaxis=k)
+        s.imshow(ax=ax[1, i], xaxis=k, colorbar=False)
+    plt.savefig(os.path.join(test_directory, "imshow-both-orientations.png"))
+
+
 def test_both_types_of_plot():
     N, M = 10, 20
     r = SimulatedRainbow(

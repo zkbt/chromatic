@@ -7,6 +7,7 @@ def imshow(
     self,
     ax=None,
     quantity="flux",
+    xaxis="time",
     w_unit="micron",
     t_unit="day",
     colorbar=True,
@@ -44,6 +45,7 @@ def imshow(
     if ax is None:
         ax = plt.subplot()
 
+    # get units
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
     # make sure some wavelength and time edges are defined
@@ -57,11 +59,11 @@ def imshow(
     except AttributeError:
         wmin, wmax = None, None
     if (self.wscale == "linear") and (wmin is not None) and (wmax is not None):
-        bottom, top = wmax, wmin
-        ylabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"
+        wlower, wupper = wmin, wmax
+        wlabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"
     elif self.wscale == "log" and (wmin is not None) and (wmax is not None):
-        bottom, top = np.log10(wmax), np.log10(wmin)
-        ylabel = (
+        wlower, wupper = np.log10(wmin), np.log10(wmax)
+        wlabel = (
             r"log$_{10}$" + f"[{self._wave_label}/({w_unit.to_string('latex_inline')})]"
         )
     else:
@@ -81,8 +83,8 @@ def imshow(
         `rainbow.bin(dw=...)` (for linear wavelengths)
         """
         warnings.warn(message)
-        bottom, top = self.nwave - 0.5, -0.5
-        ylabel = "Wavelength Index"
+        wlower, wupper = -0.5, self.nwave - 0.5
+        wlabel = "Wavelength Index"
 
     # set up the time extent
     try:
@@ -91,11 +93,11 @@ def imshow(
     except AttributeError:
         tmin, tmax = None, None
     if (self.tscale == "linear") and (tmin is not None) and (tmax is not None):
-        right, left = tmax, tmin
-        xlabel = f"{self._time_label} ({t_unit.to_string('latex_inline')})"
+        tlower, tupper = tmin, tmax
+        tlabel = f"{self._time_label} ({t_unit.to_string('latex_inline')})"
     elif self.tscale == "log" and (tmin is not None) and (tmax is not None):
-        right, left = np.log10(tmax), np.log10(tmin)
-        xlabel = (
+        tlower, tupper = np.log10(tmin), np.log10(tmax)
+        tlabel = (
             r"log$_{10}$" + f"[{self._time_label}/({t_unit.to_string('latex_inline')})]"
         )
     else:
@@ -114,17 +116,27 @@ def imshow(
         `rainbow.bin(dt=...)` (for linear times).
         """
         warnings.warn(message)
-        right, left = self.ntime - 0.5, -0.5
-        xlabel = "Time Index"
+        tlower, tupper = -0.5, self.ntime - 0.5
+        tlabel = "Time Index"
 
-    self._imshow_extent = [left, right, bottom, top]
+    if xaxis.lower()[0] == "t":
+        self._imshow_extent = [tlower, tupper, wupper, wlower]
+        xlabel, ylabel = tlabel, wlabel
+        z = self.get(quantity)
+    elif xaxis.lower()[0] == "w":
+        self._imshow_extent = [wlower, wupper, tupper, tlower]
+        xlabel, ylabel = wlabel, tlabel
+        z = self.get(quantity).T
+    else:
+        warnings.warn(
+            "Please specify either `xaxis='time'` or `xaxis='wavelength'` for `.plot()`"
+        )
 
     # define some default keywords
     imshow_kw = dict(interpolation="nearest")
     imshow_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
-        z = self.get(quantity)
         plt.imshow(
             z,
             extent=self._imshow_extent,
