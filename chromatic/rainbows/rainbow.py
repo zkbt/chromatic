@@ -869,6 +869,7 @@ class Rainbow:
         get_spectrum,
         get_spectral_resolution,
         get_typical_uncertainty,
+	get_measured_scatter,
     )
 
     # import summary statistics for each wavelength
