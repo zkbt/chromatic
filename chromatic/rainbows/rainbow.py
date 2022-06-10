@@ -877,7 +877,7 @@ class Rainbow:
     # import visualizations that can act on Rainbows
     from .visualizations import (
         imshow,
-        plot,
+        plot_lightcurves,
         _setup_animate_lightcurves,
         animate_lightcurves,
         _setup_animate_spectra,
@@ -889,6 +889,8 @@ class Rainbow:
         imshow_quantities,
         plot_quantities,
         imshow_interact,
+        plot_spectra,
+        plot,
     )
 
     # import history abilities

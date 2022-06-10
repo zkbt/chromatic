@@ -134,3 +134,30 @@ def test_imshow_randomized_axes():
             assert "Time Index" in ax[i].get_xlabel()
         for i in [0, 1]:
             assert "Wavelength Index" in ax[1].get_ylabel()
+
+
+def test_both_types_of_plot():
+    N, M = 10, 20
+    r = SimulatedRainbow(
+        wavelength=np.linspace(1, 2, N) * u.micron,
+        time=np.linspace(-3, 3, M) * u.hour,
+        star_flux=np.linspace(1, 1.1, N),
+        signal_to_noise=500,
+    ).inject_transit(planet_radius=0.2)
+    fi, ax = plt.subplots(4, 2, figsize=(8, 15), constrained_layout=True)
+    for i, f in enumerate(["plot_lightcurves", "plot_spectra"]):
+        getattr(r, f)(ax=ax[0, i])
+        getattr(r.normalize(), f)(ax=ax[1, i], errorbar=True, spacing=0)
+        getattr(r.normalize(), f)(ax=ax[2, i], spacing=0.01)
+        getattr(r.normalize(), f)(
+            ax=ax[3, i],
+            spacing=0,
+            errorbar=True,
+            plotkw=dict(color="orchid"),
+            scatterkw=dict(c="orchid"),
+            textkw=dict(color="orchid"),
+            errorbarkw=dict(color="orchid"),
+        )
+    plt.savefig(
+        os.path.join(test_directory, "test-plot-lightcurve-and-spectra-many.png")
+    )
