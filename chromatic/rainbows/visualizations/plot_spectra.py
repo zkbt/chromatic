@@ -119,7 +119,7 @@ def plot_spectra(
         #  loop through times
         for i, t in enumerate(self.time):
             # grab the spectrum for this particular time
-            quan = self.fluxlike[quantity][:, i]
+            quan = u.Quantity(self.fluxlike[quantity][:, i]).value
             fluxerr = self.fluxlike["uncertainty"][:, i]
             if np.any(np.isfinite(quan)):
 
@@ -136,7 +136,7 @@ def plot_spectra(
                 this_scatterkw = dict(
                     marker="o",
                     linestyle="-",
-                    c=self.wavelength.to(w_unit),
+                    c=self.wavelength.to_value(w_unit),
                     cmap=self.cmap,
                     norm=self.norm,
                 )
@@ -170,3 +170,5 @@ def plot_spectra(
         # add text labels to the plot
         plt.xlabel(f"Wavelength ({w_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")
+        if self.get("wscale") == "log":
+            plt.xscale("log")
