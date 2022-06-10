@@ -1,11 +1,11 @@
 from ...imports import *
 
-__all__ = ["plot_light_curves"]
+__all__ = ["plot_lightcurves"]
 
 
-def plot_light_curves(
+def plot_lightcurves(
     self,
-    quantity='flux',
+    quantity="flux",
     ax=None,
     spacing=None,
     w_unit="micron",
@@ -13,9 +13,11 @@ def plot_light_curves(
     cmap=None,
     vmin=None,
     vmax=None,
-    plot_fluxerr=False,
+    errorbar=False,
     plotkw={},
+    errorbarkw={},
     textkw={},
+    **kw,
 ):
     """
     Plot flux as sequence of offset light curves.
@@ -38,6 +40,8 @@ def plot_light_curves(
         The minimum value to use for the wavelength colormap.
     vmax : astropy.units.Quantity
         The maximum value to use for the wavelength colormap.
+    errorbar : boolean
+        Should we plot errorbars?
     plotkw : dict
         A dictionary of keywords passed to `plt.plot`
         so you can have more detailed control over the plot
@@ -46,6 +50,13 @@ def plot_light_curves(
           linewidth, linestyle, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html
+    errorbarkw : dict
+        A dictionary of keywords passed to `plt.errorbar`
+        so you can have more detailed control over the plot
+        appearance. Common keyword arguments might include:
+        `[alpha, elinewidth, color, zorder]` (and more)
+        More details are available at
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.errorbar.html
     textkw : dict
         A dictionary of keywords passed to `plt.text`
         so you can have more detailed control over the text
@@ -54,7 +65,18 @@ def plot_light_curves(
           fontstyle, fontweight, rotation, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
+    kw : dict
+        Any additional keywords will be stored as `kw`.
+        Nothing will happen with them.
     """
+    if len(kw) > 0:
+        message = f"""
+        You provided the keyword argument(s)
+        {kw}
+        but this function doesn't know how to
+        use them. Sorry!
+        """
+        warnings.warn(message)
 
     # make sure that the wavelength-based colormap is defined
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
@@ -90,7 +112,7 @@ def plot_light_curves(
 
             # grab the quantity and yerr for this particular wavelength
             quan = self.fluxlike[quantity][i, :]
-            uncertainty = self.fluxlike["uncertainty"][i,:]
+            uncertainty = self.fluxlike["uncertainty"][i, :]
 
             if np.any(np.isfinite(quan)):
 
@@ -103,10 +125,21 @@ def plot_light_curves(
                 # plot the data points (with offsets)
                 this_plotkw = dict(marker="o", linestyle="-", color=color)
                 this_plotkw.update(**plotkw)
-                if plot_fluxerr:
-                    plt.errorbar(self.time.to(t_unit),plot_quan,yerr=uncertainty,**this_plotkw)
-                else:
-                    plt.plot(self.time.to(t_unit), plot_quan, **this_plotkw)
+
+                # set default for error bar lines
+                this_errorbarkw = dict(
+                    color=color, linewidth=0, elinewidth=1, zorder=-1
+                )
+                this_errorbarkw.update(**errorbarkw)
+
+                if errorbar:
+                    plt.errorbar(
+                        self.time.to(t_unit),
+                        plot_quan,
+                        yerr=uncertainty,
+                        **this_errorbarkw,
+                    )
+                plt.plot(self.time.to(t_unit), plot_quan, **this_plotkw)
 
                 # add text labels next to each quantity plot
                 this_textkw = dict(va="bottom", color=color)
