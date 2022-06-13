@@ -22,11 +22,11 @@ def from_schlawin(rainbow, filepath):
     hdu_list = fits.open(filepath)
 
     # populate a 1D array of wavelengths (with astropy units of length)
-    rainbow.wavelike["indices"] = hdu_list["disp indices"].data
-    rainbow.wavelike["wavelength"] = hdu_list["wavelength"].data * u.micron
+    rainbow.wavelike["indices"] = hdu_list["disp indices"].data * 1
+    rainbow.wavelike["wavelength"] = hdu_list["wavelength"].data * u.micron * 1
 
     # populate a 1D array of times (with astropy units of time)
-    rainbow.timelike["time"] = hdu_list["time"].data * u.day
+    rainbow.timelike["time"] = hdu_list["time"].data * u.day * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes
     for k in [
@@ -37,9 +37,9 @@ def from_schlawin(rainbow, filepath):
         "background spec",
         "refpix",
     ]:
-        rainbow.fluxlike[k] = hdu_list[k].data.T.squeeze()
-    rainbow.fluxlike["flux"] = rainbow.fluxlike["optimal spec"]
-    rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["opt spec err"]
+        rainbow.fluxlike[k] = hdu_list[k].data.T.squeeze() * 1
+    rainbow.fluxlike["flux"] = rainbow.fluxlike["optimal spec"] * 1
+    rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["opt spec err"] * 1
 
     # kludgily pull all extension headers into the metadata
     for k in hdu_list:

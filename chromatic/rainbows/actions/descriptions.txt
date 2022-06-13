@@ -1,0 +1,12 @@
+cartoon | name | description
+🌈🧺🧱 | bin | Bin to a new wavelength or time grid.
+🌈🫓😑 | normalize | Normalize by dividing through by a typical spectrum (and/or light curve).
+🌈🍱💇 | trim | Trim away wavelengths or times that contain no good data.
+🌈🚧🌊 | align_wavelengths | Align spectra with different wavelength grids onto one shared axis.
+🌈🪐🚞 | inject_transit | Inject a transit signal into all wavelengths.
+🌈⏲🎞 | fold | Fold times relative to a particular period and epoch.
+🌈🧑‍🤝‍🧑🌈 | compare | Connect to other 🌈 objects for easy comparison.
+🌈🧮📝 | + | Add two Rainbows together.
+🌈🧮📝 | - | Subtract one Rainbows from another.
+🌈🧮📝 | * | Multiply two Rainbows together.
+🌈🧮📝 | / | Divide one Rainbows by another.

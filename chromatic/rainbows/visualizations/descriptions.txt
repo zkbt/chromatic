@@ -1,0 +1,7 @@
+cartoon | name | description
+🎨🖌📺 | imshow               | Paint a map of flux across wavelength and time.
+🎨🖌🧶 | plot                 | Plot a sequence of light curves with vertical offsets.
+🎨📽⏰ | animate_lightcurves  | Animate a sequence of light curves across different wavelengths.
+🎨📽🌊 | animate_spectra      | Animate a sequence of spectra across different times.
+🎨🗂📺 | imshow_quantities    | Show multiple 2D (wavelength and time) quantities as imshow maps.
+🎨🗂🧶 | plot_quantities      | Show multiple 1D (wavelength or time) quantities as scatter plots.

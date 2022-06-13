@@ -68,10 +68,10 @@ def test_bintogrid(N_original=23):
             plt.close("all")
             if uncertainties == "no":
                 u = None
-                y = np.exp(-0.5 * x ** 2)
+                y = np.exp(-0.5 * x**2)
             else:
                 u = np.ones(N_original) * 0.2
-                y = np.random.normal(np.exp(-0.5 * x ** 2), u)
+                y = np.random.normal(np.exp(-0.5 * x**2), u)
 
             for how in ["bigger", "smaller"]:
                 if how == "bigger":
@@ -112,3 +112,4 @@ def test_bintogrid(N_original=23):
                 e = bintogrid(x, y, unc=u, nx=nx, visualize=True)
                 plt.title(f"bin by {nx} bins, {label}")
                 save_binning_example_figure()
+    plt.close("all")

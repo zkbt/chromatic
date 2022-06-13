@@ -11,6 +11,7 @@ __all__ = [
     "resample_while_conserving_flux",
     "leftright_to_edges",
     "edges_to_leftright",
+    "calculate_bin_leftright",
 ]
 
 
@@ -570,7 +571,7 @@ def bintogrid(
             weights = np.ones_like(x_without_unit)
         else:
             if weighting == "inversevariance":
-                weights = 1 / unc ** 2
+                weights = 1 / unc**2
             else:
                 weights = np.ones_like(x_without_unit)
 

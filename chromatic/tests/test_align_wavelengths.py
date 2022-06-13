@@ -19,7 +19,7 @@ def create_simulation_with_wobbly_wavelengths(
     def fake_spectrum(w):
         f = u.Quantity(np.ones(np.shape(w)))
         for c, s, a in zip(centers, sigmas, amplitudes):
-            f *= 1 - a * np.exp(-0.5 * (w - c) ** 2 / s ** 2)
+            f *= 1 - a * np.exp(-0.5 * (w - c) ** 2 / s**2)
         return f
 
     # create
@@ -55,10 +55,11 @@ def test_align_wavelengths(fractional_shift=0.002, dw=0.0001 * u.micron):
 
     fi, ax = plt.subplots(2, 2, dpi=300, figsize=(8, 6))
     for i, x in enumerate([r, a]):
-        x.imshow(ax=ax[0, i], quantity="flux")
+        ax[0, i].imshow(x.flux)
         plt.title(["original", "aligned"][i] + " flux")
-        x.imshow(ax=ax[1, i], quantity="wavelength")
+        ax[1, i].imshow(x.fluxlike["wavelength"])
         plt.title(["original", "aligned"][i] + " wavelength")
     plt.tight_layout()
 
     plt.savefig(os.path.join(test_directory, "wavelength-alignment-demonstration.pdf"))
+    plt.close("all")

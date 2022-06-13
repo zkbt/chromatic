@@ -1,16 +1,20 @@
 site_name: chromatic
 site_url: https://zkbt.github.com/chromatic
 nav:
-    #- Home: index.md
+    - Welcome: index.md
     - installation.ipynb
     - quickstart.ipynb
-    - basics.ipynb
-    - io.ipynb
-    - creating.ipynb
-    - actions.ipynb
-    - visualizing.ipynb
-    - multi.ipynb
-    - api.md
+    - User Guide:
+      - basics.ipynb
+      - io.ipynb
+      - creating.ipynb
+      - actions.ipynb
+      - visualizing.ipynb
+      - multi.ipynb
+    - Developer Guide:
+        - designing.ipynb
+        - documentation.ipynb
+        - github.ipynb
 theme:
   name: "material"
   features:
@@ -36,6 +40,8 @@ plugins:
       glob:
         - "example-datasets/*"
         - "*.pdf"
-
+markdown_extensions:
+    - toc:
+        permalink: "#"
 # this is super borrowed from Christina Hedges' fabulous
 # https://christinahedges.github.io/astronomy_workflow/
