@@ -26,7 +26,7 @@ def shift(self, velocity=0 * u.km / u.s):
     beta = (velocity / lightspeed).decompose()
 
     # apply wavelength shift
-    new_wavelength = new.wavelength * np.sqrt((1 - beta) / (1 + beta))
+    new_wavelength = new.wavelength * np.sqrt((1 + beta) / (1 - beta))
     new.wavelike["wavelength"] = new_wavelength
 
     # return the new object
