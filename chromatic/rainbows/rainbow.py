@@ -911,6 +911,7 @@ class Rainbow:
         trim,
         trim_nan_times,
         trim_nan_wavelengths,
+        shift,
         _create_shared_wavelength_axis,
         align_wavelengths,
         inject_transit,
