@@ -10,3 +10,4 @@ from .test_resampling import *
 from .test_units import *
 from .test_align_wavelengths import *
 from .test_conversions import *
+from .test_summaries import *
