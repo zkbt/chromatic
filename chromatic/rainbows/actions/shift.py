@@ -17,7 +17,7 @@ def shift(self, velocity=5*u.km/u.s):
     lightspeed = con.c.to('km/s') #speed of light in km/s
 
     beta = velocity/lightspeed
-    new_wavelength = new.wavelength * ( (1 - beta) / (1 + beta) )
+    new_wavelength = new.wavelength * np.sqrt( (1 - beta) / (1 + beta) )
     new.wavelike['wavelength'] = new_wavelength
     
     return new
