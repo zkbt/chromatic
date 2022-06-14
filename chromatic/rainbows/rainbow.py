@@ -523,7 +523,10 @@ class Rainbow:
         """
         The 2D array of whether data is OK (row = wavelength, col = time).
         """
-        ok = self.fluxlike.get("ok", np.ones_like(self.flux).astype(bool))
+        ok = self.fluxlike.get("ok", np.ones(self.shape).astype(bool))
+        ok *= self.wavelike.get("ok", np.ones(self.nwave).astype(bool))[:, np.newaxis]
+        ok *= self.timelike.get("ok", np.ones(self.ntime).astype(bool))[np.newaxis, :]
+
         if self.flux is not None:
             ok *= np.isfinite(self.flux)
         return ok

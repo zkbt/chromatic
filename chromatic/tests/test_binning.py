@@ -215,23 +215,6 @@ def test_binning_to_one():
             assert bt.ntime == 1
 
 
-def test_bin_with_not_ok_data():
-    for ok_fraction in [0, 0.01, 0.5, 0.99, 1]:
-        a = SimulatedRainbow(dt=2 * u.minute, dw=0.2 * u.micron).inject_transit()
-        a.ok = np.random.uniform(size=a.shape) < ok_fraction
-
-        if ok_fraction == 0:
-            with pytest.raises(RuntimeError):
-                should_fal = a.bin(dw=0.7 * u.micron, dt=20 * u.minute, ok_threshold=1)
-            continue
-
-        cautious = a.bin(dw=0.7 * u.micron, dt=20 * u.minute, ok_threshold=1)
-        carefree = a.bin(dw=0.7 * u.micron, dt=20 * u.minute, ok_threshold=0)
-        assert np.all((cautious.ok == 1) | (cautious.ok == 0))
-        if np.any(a.ok == 0):
-            assert np.any((carefree.ok != 1) & (carefree.ok != 0))
-
-
 def test_integrated_wrappers():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
