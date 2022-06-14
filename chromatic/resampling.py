@@ -38,6 +38,11 @@ def calculate_bin_leftright(x):
     # left = x - xbinsize / 2.0
     # right = x + xbinsize / 2.0
 
+    # weird corner case!
+    if len(x) == 1:
+        left, right = np.sort([0, 2 * x[0]])
+        return np.array([left]), np.array([right])
+
     inner_edges = 0.5 * np.diff(x) + x[:-1]
     first_edge = x[0] - (inner_edges[0] - x[0])
     last_edge = x[-1] + (x[-1] - inner_edges[-1])
@@ -579,7 +584,6 @@ def bintogrid(
             ok *= np.isfinite(weights)
 
         if np.any(ok):
-            # TO-DO: check this nan handling on input arrays is OK?
             numerator = resample_while_conserving_flux(
                 xin=x_without_unit[ok],
                 yin=(y_without_unit * weights)[ok],
