@@ -119,14 +119,27 @@ def imshow(
         tlower, tupper = -0.5, self.ntime - 0.5
         tlabel = "Time Index"
 
+    def get_2D(k):
+        """
+        A small helper to get a 2D quantity. This is a bit of
+        a kludge to help with weird cases of duplicate keys
+        (for example where 'wavelength' might appear in both
+        `wavelike` and `fluxlike`).
+        """
+        z = self.get(k)
+        if np.shape(z) == self.shape:
+            return z
+        else:
+            return self.fluxlike.get(k, None)
+
     if xaxis.lower()[0] == "t":
         self._imshow_extent = [tlower, tupper, wupper, wlower]
         xlabel, ylabel = tlabel, wlabel
-        z = self.get(quantity)
+        z = get_2D(quantity)
     elif xaxis.lower()[0] == "w":
         self._imshow_extent = [wlower, wupper, tupper, tlower]
         xlabel, ylabel = wlabel, tlabel
-        z = self.get(quantity).T
+        z = get_2D(quantity).T
     else:
         warnings.warn(
             "Please specify either `xaxis='time'` or `xaxis='wavelength'` for `.plot()`"

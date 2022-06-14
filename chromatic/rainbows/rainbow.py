@@ -427,23 +427,25 @@ class Rainbow:
             must be within 1% of each other for the wavelength
             scale to be called linear.
         """
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
 
-        # give up if there's no wavelength array
-        if self.wavelength is None:
-            return "?"
+            # give up if there's no wavelength array
+            if self.wavelength is None:
+                return "?"
 
-        # calculate difference arrays
-        w = self.wavelength.value
-        dw = np.diff(w)
-        dlogw = np.diff(np.log(w))
+            # calculate difference arrays
+            w = self.wavelength.value
+            dw = np.diff(w)
+            dlogw = np.diff(np.log(w))
 
-        # test the three options
-        if np.allclose(dw, np.median(dw), rtol=relative_tolerance):
-            self.metadata["wscale"] = "linear"
-        elif np.allclose(dlogw, np.median(dlogw), rtol=relative_tolerance):
-            self.metadata["wscale"] = "log"
-        else:
-            self.metadata["wscale"] = "?"
+            # test the three options
+            if np.allclose(dw, np.median(dw), rtol=relative_tolerance):
+                self.metadata["wscale"] = "linear"
+            elif np.allclose(dlogw, np.median(dlogw), rtol=relative_tolerance):
+                self.metadata["wscale"] = "log"
+            else:
+                self.metadata["wscale"] = "?"
 
     def _guess_tscale(self, relative_tolerance=0.01):
         """
@@ -458,26 +460,28 @@ class Rainbow:
             the times effectively uniform, or for us to treat
             them more carefully as an irregular or gappy grid.
         """
-
-        # give up if there's no time array
-        if self.time is None:
-            return "?"
-
-        # calculate difference arrays
-        t = self.time.value
-        dt = np.diff(t)
         with warnings.catch_warnings():
-            # (don't complain about negative time)
             warnings.simplefilter("ignore")
-            dlogt = np.diff(np.log(t))
 
-        # test the three options
-        if np.allclose(dt, np.median(dt), rtol=relative_tolerance):
-            self.metadata["tscale"] = "linear"
-        elif np.allclose(dlogt, np.median(dlogt), rtol=relative_tolerance):
-            self.metadata["tscale"] = "log"
-        else:
-            self.metadata["tscale"] = "?"
+            # give up if there's no time array
+            if self.time is None:
+                return "?"
+
+            # calculate difference arrays
+            t = self.time.value
+            dt = np.diff(t)
+            with warnings.catch_warnings():
+                # (don't complain about negative time)
+                warnings.simplefilter("ignore")
+                dlogt = np.diff(np.log(t))
+
+            # test the three options
+            if np.allclose(dt, np.median(dt), rtol=relative_tolerance):
+                self.metadata["tscale"] = "linear"
+            elif np.allclose(dlogt, np.median(dlogt), rtol=relative_tolerance):
+                self.metadata["tscale"] = "log"
+            else:
+                self.metadata["tscale"] = "?"
 
     @property
     def name(self):
@@ -519,7 +523,13 @@ class Rainbow:
         """
         The 2D array of whether data is OK (row = wavelength, col = time).
         """
-        return self.fluxlike.get("ok", np.ones_like(self.flux).astype(bool))
+        ok = self.fluxlike.get("ok", np.ones(self.shape).astype(bool))
+        ok *= self.wavelike.get("ok", np.ones(self.nwave).astype(bool))[:, np.newaxis]
+        ok *= self.timelike.get("ok", np.ones(self.ntime).astype(bool))[np.newaxis, :]
+
+        if self.flux is not None:
+            ok *= np.isfinite(self.flux)
+        return ok
 
     @property
     def _time_label(self):
@@ -654,26 +664,6 @@ class Rainbow:
         """
         return np.prod(self.shape)
 
-    def is_ok(self):
-        """
-        Create a flux-like array indicating which data are OK,
-        meaning they are both finite and not marked somewhere
-        ask being bad.
-
-        Returns
-        -------
-        ok : boolean array
-            Fluxlike array of Trues and Falses indicating
-            which data entries are OK.
-        """
-
-        ok = np.isfinite(self.flux)
-        try:
-            ok *= self.fluxlike["ok"]
-        except KeyError:
-            pass
-        return ok
-
     def _validate_core_dictionaries(self):
         """
         Do some simple checks to make sure this Rainbow
@@ -725,6 +715,9 @@ class Rainbow:
                     """
                     warnings.warn(message)
 
+        if "ok" in self.fluxlike:
+            is_nan = np.isnan(self.fluxlike["ok"])
+            self.fluxlike["ok"][is_nan] = 0
         self._sort()
 
     def _make_sure_wavelength_edges_are_defined(self):
