@@ -7,3 +7,4 @@ from .interactive import *
 from .plot_spectra import *
 from .plot import *
 from .utilities import *
+from .pcolormesh import *

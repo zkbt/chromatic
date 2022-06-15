@@ -15,7 +15,8 @@ def imshow(
     **kw,
 ):
     """
-    imshow flux as a function of time (x = time, y = wavelength, color = flux).
+    Paint a 2D image of flux as a function of time and wavelength,
+    using `plt.imshow` where pixels will have constant size.
 
     Parameters
     ----------
