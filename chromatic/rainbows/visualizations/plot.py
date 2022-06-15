@@ -1,104 +1,31 @@
-from ...imports import *
+from .plot_lightcurves import *
+from .plot_spectra import *
 
 __all__ = ["plot"]
 
 
-def plot(
-    self,
-    ax=None,
-    spacing=None,
-    w_unit="micron",
-    t_unit="hour",
-    cmap=None,
-    vmin=None,
-    vmax=None,
-    plotkw={},
-    textkw={},
-):
+def plot(self, xaxis="time", **kw):
     """
-    Plot flux as sequence of offset light curves.
+    Plot flux either as a sequence of offset lightcurves (default)
+    or as a sequence of offset spectra.
 
     Parameters
     ----------
-    ax : matplotlib.axes.Axes
-        The axes into which to make this plot.
-    spacing : None, float
-        The spacing between light curves.
-        (Might still change how this works.)
-        None uses half the standard dev of entire flux data.
-    w_unit : str, astropy.unit.Unit
-        The unit for plotting wavelengths.
-    t_unit : str, astropy.unit.Unit
-        The unit for plotting times.
-    cmap : str, matplotlib.colors.Colormap
-        The color map to use for expressing wavelength.
-    vmin : astropy.units.Quantity
-        The minimum value to use for the wavelength colormap.
-    vmax : astropy.units.Quantity
-        The maximum value to use for the wavelength colormap.
-    plotkw : dict
-        A dictionary of keywords passed to `plt.plot`
-    textkw : dict
-        A dictionary of keywords passed to `plt.text`
+    xaxis : string
+        What should be plotted on the x-axis of the plot?
+        'time' will plot a different light curve for each wavelength
+        'wavelength' will plot a different spectrum for each timepoint
+    **kw : dict
+        All other keywords will be passed along to either
+        `.plot_lightcurves` or `.plot_spectra` as appropriate.
+        Please see the docstrings for either of those functions
+        to figure out what keyword arguments you might want to
+        provide here.
     """
 
-    # make sure that the wavelength-based colormap is defined
-    self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
-
-    w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
-
-    min_time = np.nanmin(self.time)
-
-    # make sure ax is set up
-    if ax is None:
-        ax = plt.subplot()
-    plt.sca(ax)
-
-    # figure out the spacing to use
-    if spacing is None:
-        try:
-            spacing = ax._most_recent_chromatic_plot_spacing
-        except AttributeError:
-            spacing = 3 * np.nanstd(self.flux)
-    ax._most_recent_chromatic_plot_spacing = spacing
-
-    # TO-DO: check if this Rainbow has been normalized
-    '''warnings.warn(
-        """
-    It's not clear if/how this object has been normalized.
-    Be aware that the baseline flux levels may therefore
-    be a little bit funny in .plot()."""
-    )'''
-    with quantity_support():
-
-        #  loop through wavelengths
-        for i, w in enumerate(self.wavelength):
-
-            # grab the light curve for this particular wavelength
-            lc = self.flux[i, :]
-
-            if np.any(np.isfinite(lc)):
-
-                # add an offset to this light curve
-                plot_flux = -i * spacing + lc
-
-                # get the color for this light curve
-                color = self.get_wavelength_color(w)
-
-                # plot the data points (with offsets)
-                this_plotkw = dict(marker="o", linestyle="-", color=color)
-                this_plotkw.update(**plotkw)
-                plt.plot(self.time.to(t_unit), plot_flux, **this_plotkw)
-
-                # add text labels next to each light curve
-                this_textkw = dict(va="bottom", color=color)
-                this_textkw.update(**textkw)
-                plt.annotate(
-                    f"{w.to(w_unit).value:.2f} {w_unit.to_string('latex_inline')}",
-                    (min_time, np.median(plot_flux) - 0.5 * spacing),
-                    **this_textkw,
-                )
-
-        # add text labels to the plot
-        plt.xlabel(f"Time ({t_unit.to_string('latex_inline')})")
-        plt.ylabel("Relative Flux (+ offsets)")
+    if xaxis.lower()[0] == "t":
+        return self.plot_lightcurves(**kw)
+    elif xaxis.lower()[0] == "w":
+        return self.plot_spectra(**kw)
+    else:
+        warnings.warn("Please specify either 'time' or 'wavelength' for `.plot()`")

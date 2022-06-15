@@ -3,8 +3,8 @@ from .setup_tests import *
 
 
 def test_multi():
-    a = SimulatedRainbow(signal_to_noise=400).inject_transit()
-    b = SimulatedRainbow(signal_to_noise=800).inject_transit()
+    a = SimulatedRainbow().inject_transit().inject_noise(signal_to_noise=400)
+    b = SimulatedRainbow().inject_transit().inject_noise(signal_to_noise=800)
 
     m = MultiRainbow([a, b])
     m.bin(R=5).plot(spacing=0.02)
@@ -25,3 +25,14 @@ def test_multi():
     m.normalize()
     m.align_wavelengths().wavelength
     m[:, :]
+    plt.close("all")
+
+
+def test_compare_wrappers():
+    rainbows = [SimulatedRainbow(R=10 ** np.random.uniform(0.1, 2)) for _ in range(3)]
+
+    a = compare_rainbows(rainbows)
+    b = rainbows[0].compare(rainbows)
+
+    assert a.names == b.names
+    assert a.rainbows == b.rainbows

@@ -6,21 +6,21 @@ __all__ = ["plot_quantities"]
 def plot_quantities(
     self,
     quantities=None,
-    data_like="time",
+    xaxis="time",
     maxcol=1,
     panel_size=(6, 2),
     x_axis="index",
     **kw,
 ):
     """
-    Plot {data_like}-like quantities as a function of {data_like} index
-    or any other {data_like} quantity (such as "time" or "wavelength").
+    Plot {xaxis}-like quantities as a function of {xaxis} index
+    or any other {xaxis} quantity (such as "time" or "wavelength").
 
     Parameters
     ----------
     quantities : list like
         The X-like quantity to plot.
-    data_like : string
+    xaxis : string
         Whether the quantities are alike to 'time' or 'wave'. Default is 'time'. (Optional)
     maxcol : int
         The maximum number of columns to show (Optional).
@@ -31,9 +31,9 @@ def plot_quantities(
 
     """
     # decide which dictionary to plot
-    if data_like not in ["time", "wave", "wavelength"]:
-        raise Exception("Unknown data_like. Choose from [time, wave]")
-    elif data_like == "time":
+    if xaxis not in ["time", "wave", "wavelength"]:
+        raise Exception("Unknown xaxis. Choose from [time, wave]")
+    elif xaxis == "time":
         like_dict = self.timelike
     else:
         like_dict = self.wavelike
@@ -69,7 +69,7 @@ def plot_quantities(
     # set x_axis variable
     if x_axis.lower() == "index":
         xaxis = np.arange(0, len(like_dict[list(like_dict.keys())[0]]))
-        xlab = f"{data_like} Index"
+        xlab = f"{xaxis} Index"
     else:
         if x_axis in like_dict.keys():
             xaxis = like_dict[x_axis]

@@ -10,11 +10,8 @@ def get_spectrum(self):
     Parameters
     ----------
 
-
     Returns
     -------
-    s : np.array (wavelike)
+    spectrum : np.array (wavelike)
     """
-
-    # FIXME, think about error weighting/masking
-    return np.nanmedian(self.flux, axis=self.timeaxis)
+    return self.get_spectrum_as_rainbow().flux[:, 0]

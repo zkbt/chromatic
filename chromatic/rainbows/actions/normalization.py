@@ -23,9 +23,12 @@ def normalize(self, axis="wavelength", percentile=50):
 
     Returns
     -------
-    normalized : MultiRainbow
-        The normalized MultiRainbow.
+    normalized : Rainbow
+        The normalized Rainbow.
     """
+
+    # create a history entry for this action (before other variables are defined)
+    h = self._create_history_entry("normalize", locals())
 
     # TODO, think about more careful treatment of uncertainties + good/bad data
     new = self._create_copy()
@@ -53,4 +56,8 @@ def normalize(self, axis="wavelength", percentile=50):
             except ValueError:
                 pass
 
+    # append the history entry to the new Rainbow
+    new._record_history_entry(h)
+
+    # return the new Rainbow
     return new

@@ -22,7 +22,7 @@ For Developer Installation instructions, see the [documentation](https://zkbt.gi
 For an ultra-quick start try
 ```python
 from chromatic import *
-r = SimulatedRainbow().inject_transit()
+r = SimulatedRainbow().inject_transit().inject_noise()
 r.normalize().bin(dw=0.5*u.micron, dt=15*u.minute).imshow()
 ```
 and then see the 🌈[documentation](https://zkbt.github.io/chromatic/)🌈  for more.

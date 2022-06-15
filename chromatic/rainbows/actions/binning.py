@@ -1,7 +1,13 @@
 from ...imports import *
 from ...resampling import *
 
-__all__ = ["bin", "bin_in_time", "bin_in_wavelength"]
+__all__ = [
+    "bin",
+    "bin_in_time",
+    "bin_in_wavelength",
+    "get_lightcurve_as_rainbow",
+    "get_spectrum_as_rainbow",
+]
 
 
 def bin(
@@ -15,7 +21,7 @@ def bin(
     wavelength=None,
     wavelength_edges=None,
     nwavelengths=None,
-    starting_wavelengths="1D",
+    ok_threshold=1,
     trim=True,
 ):
     """
@@ -80,6 +86,23 @@ def bin(
         Binning will start from the 0th element of the
         starting wavelengths; if you want to start from
         a different index, trim before binning.
+    ok_threshold : float
+        The numbers in the `.ok` attribute express "how OK?" each
+        data point is, ranging from 0 (not OK) to 1 (super OK).
+        In most cases, `.ok` will be binary, but there may be times
+        where it's intermediate (for example, if a bin was created
+        from some data that were not OK and some that were).
+        The `ok_threshold` parameter allows you to specify what
+        level of OK-ness for a point to go into the binning.
+        Reasonable options may include:
+            ok_threshold = 1
+                  Only data points that are perfectly OK
+                  will go into the binning.
+            ok_threshold = 1e-10
+                  All data points that aren't definitely not OK
+                  will go into the binning.
+            ok_threshold = 0
+                  All data points will be included in the bin.
     trim : bool
         Should any wavelengths or columns that end up
         as entirely nan be trimmed out of the result?
@@ -90,9 +113,15 @@ def bin(
     binned : Rainbow
         The binned Rainbow.
     """
+
     # bin first in time
     binned_in_time = self.bin_in_time(
-        dt=dt, time=time, time_edges=time_edges, ntimes=ntimes, trim=trim
+        dt=dt,
+        time=time,
+        time_edges=time_edges,
+        ntimes=ntimes,
+        ok_threshold=ok_threshold,
+        trim=trim,
     )
 
     # then bin in wavelength
@@ -102,7 +131,7 @@ def bin(
         wavelength=wavelength,
         wavelength_edges=wavelength_edges,
         nwavelengths=nwavelengths,
-        starting_wavelengths=starting_wavelengths,
+        ok_threshold=ok_threshold,
         trim=trim,
     )
 
@@ -110,7 +139,9 @@ def bin(
     return binned
 
 
-def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=True):
+def bin_in_time(
+    self, dt=None, time=None, time_edges=None, ntimes=None, ok_threshold=1, trim=True
+):
     """
     Bin in time.
 
@@ -142,6 +173,23 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
         Binning will start from the 0th element of the
         starting times; if you want to start from
         a different index, trim before binning.
+    ok_threshold : float
+        The numbers in the `.ok` attribute express "how OK?" each
+        data point is, ranging from 0 (not OK) to 1 (super OK).
+        In most cases, `.ok` will be binary, but there may be times
+        where it's intermediate (for example, if a bin was created
+        from some data that were not OK and some that were).
+        The `ok_threshold` parameter allows you to specify what
+        level of OK-ness for a point to go into the binning.
+        Reasonable options may include:
+            ok_threshold = 1
+                  Only data points that are perfectly OK
+                  will go into the binning.
+            ok_threshold = 1e-10
+                  All data points that aren't definitely not OK
+                  will go into the binning.
+            ok_threshold = 0
+                  All data points will be included in the bin.
     trim : bool
         Should any wavelengths or columns that end up
         as entirely nan be trimmed out of the result?
@@ -152,6 +200,9 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
     binned : Rainbow
         The binned Rainbow.
     """
+
+    # create a history entry for this action (before other variables are defined)
+    h = self._create_history_entry("bin_in_time", locals())
 
     # if no bin information is provided, don't bin
     if np.all([x is None for x in [dt, time, time_edges, ntimes]]):
@@ -195,7 +246,7 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
     # TODO (add more careful treatment of uncertainty + DQ)
     # TODO (think about cleverer bintogrid for 2D arrays?)
     new.fluxlike = {}
-    ok = self.is_ok()
+    ok = self.ok
     for k in self.fluxlike:
 
         '''
@@ -209,15 +260,13 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
 
         # loop through wavelengths
         for w in range(new.nwave):
-
-            # FIXME - not being used yet?
-            ok_times = ok[w, :]
-
-            # set what uncertainties should be used for binning
+            # mask out "bad" wavelengths
+            time_is_bad = ok[w, :] < ok_threshold
             if self.uncertainty is None:
-                uncertainty_for_binning = None
+                uncertainty_for_binning = np.ones(self.ntime).astype(bool)
             else:
-                uncertainty_for_binning = self.uncertainty[w, :]
+                uncertainty_for_binning = self.uncertainty[w, :] * 1
+            uncertainty_for_binning[time_is_bad] = np.inf
 
             # bin the quantities for this wavelength
             binned = bintogrid(
@@ -241,12 +290,31 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
                 # note: all quantities are weighted the same as flux (probably inversevariance)
                 new.fluxlike[k][w, :] = binned["y"]
 
+    if (new.nwave == 0) or (new.ntime == 0):
+        message = f"""
+        You tried to bin {self} to {new}.
+
+        After accounting for `ok_threshold > {ok_threshold}`,
+        all new bins would end up with no usable data points.
+        Please (a) make sure your input `Rainbow` has at least
+        one wavelength and time, (b) check `.ok` accurately expresses
+        which data you think are usable, (c) change the `ok_threshold`
+        keyword for `.bin` to a smaller value, and/or (d) try larger bins.
+        """
+        warnings.warn(message)
+        raise RuntimeError("No good data to bin! (see above)")
+
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
 
-    # figure out the scale, after binning
+    # figure out the scales, after binning
     new._guess_wscale()
+    new._guess_tscale()
 
+    # append the history entry to the new Rainbow
+    new._record_history_entry(h)
+
+    # return the new Rainbow (with trimming if necessary)
     if trim:
         return new.trim_nan_times()
     else:
@@ -260,8 +328,9 @@ def bin_in_wavelength(
     wavelength=None,
     wavelength_edges=None,
     nwavelengths=None,
-    starting_wavelengths="1D",
+    ok_threshold=1,
     trim=True,
+    starting_wavelengths="1D",
 ):
     """
     Bin in wavelength.
@@ -296,16 +365,43 @@ def bin_in_wavelength(
         Binning will start from the 0th element of the
         starting wavelengths; if you want to start from
         a different index, trim before binning.
+    ok_threshold : float
+        The numbers in the `.ok` attribute express "how OK?" each
+        data point is, ranging from 0 (not OK) to 1 (super OK).
+        In most cases, `.ok` will be binary, but there may be times
+        where it's intermediate (for example, if a bin was created
+        from some data that were not OK and some that were).
+        The `ok_threshold` parameter allows you to specify what
+        level of OK-ness for a point to go into the binning.
+        Reasonable options may include:
+            ok_threshold = 1
+                  Only data points that are perfectly OK
+                  will go into the binning.
+            ok_threshold = 1e-10
+                  All data points that aren't definitely not OK
+                  will go into the binning.
+            ok_threshold = 0
+                  All data points will be included in the bin.
     trim : bool
         Should any wavelengths or columns that end up
         as entirely nan be trimmed out of the result?
         (default = True)
-
+    starting_wavelengths : str
+        What wavelengths should be used as the starting
+        value from which we will be binning? Options include:
+        '1D' = (default) the shared 1D wavelengths for all times
+               stored in `.wavelike['wavelength']`
+        '2D' = (used only by `align_wavelengths`) the per-time 2D array
+               stored in `.fluxlike['wavelength']`
+        [Most users probably don't need to change this from default.]
     Returns
     -------
     binned : Rainbow
         The binned Rainbow.
     """
+
+    # create a history entry for this action (before other variables are defined)
+    h = self._create_history_entry("bin_in_wavelength", locals())
 
     # if no bin information is provided, don't bin
     if (
@@ -348,7 +444,7 @@ def bin_in_wavelength(
     new.wavelike = {}
     for k in self.wavelike:
         binned = binning_function(
-            x=self.wavelength, y=self.wavelike[k], unc=None, **binkw
+            x=self.wavelike["wavelength"], y=self.wavelike[k], unc=None, **binkw
         )
         new.wavelike[k] = binned["y"]
     new.wavelike["wavelength"] = binned["x"]
@@ -361,37 +457,27 @@ def bin_in_wavelength(
     new.fluxlike = {}
 
     # get a fluxlike array of what's OK to include in the bins
-    ok = self.is_ok()
+    ok = self.ok
     for k in self.fluxlike:
-
-        '''
-        if k == "uncertainty":
-            warnings.warn(
-                """
-            Uncertainties and/or data quality flags might
-            not be handled absolutely perfectly yet...
-            """
-            )'''
 
         for t in range(new.ntime):
 
-            # FIXME - not being used yet?
-            ok_wavelengths = ok[:, t]
-
-            # set what uncertainties should be used for binning
+            # mask out "bad" wavelengths
+            wavelength_is_bad = ok[:, t] < ok_threshold
             if self.uncertainty is None:
-                uncertainty_for_binning = None
+                uncertainty_for_binning = np.ones(self.nwave).astype(bool)
             else:
-                uncertainty_for_binning = self.uncertainty[:, t]
+                uncertainty_for_binning = self.uncertainty[:, t] * 1
+            uncertainty_for_binning[wavelength_is_bad] = np.inf
 
             if starting_wavelengths.upper() == "1D":
-                w = self.wavelength[:]
+                w = self.wavelike["wavelength"][:]
             elif starting_wavelengths.upper() == "2D":
                 w = self.fluxlike["wavelength"][:, t]
             # bin the quantities for this time
             binned = binning_function(
                 x=w,
-                y=self.fluxlike[k][:, t],
+                y=self.fluxlike[k][:, t] * 1,
                 unc=uncertainty_for_binning,
                 **binkw,
             )
@@ -410,13 +496,70 @@ def bin_in_wavelength(
                 # note: all quantities are weighted the same as flux (probably inversevariance)
                 new.fluxlike[k][:, t] = binned["y"]
 
+    if (new.nwave == 0) or (new.ntime == 0):
+        message = f"""
+        You tried to bin {self} to {new}.
+
+        After accounting for `ok_threshold > {ok_threshold}`,
+        all new bins would end up with no usable data points.
+        Please (a) make sure your input `Rainbow` has at least
+        one wavelength and time, (b) check `.ok` accurately expresses
+        which data you think are usable, (c) change the `ok_threshold`
+        keyword for `.bin` to a smaller value, and/or (d) try larger bins.
+        """
+        warnings.warn(message)
+        raise RuntimeError("No good data to bin! (see above)")
+
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
 
-    # figure out the scale, after binning
+    # figure out the scales, after binning
     new._guess_wscale()
-    # new.metadata["wscale"] = wscale
+    new._guess_tscale()
+
+    # append the history entry to the new Rainbow
+    new._record_history_entry(h)
+
+    # return the new Rainbow (with trimming if necessary)
     if trim:
         return new.trim_nan_wavelengths()
     else:
         return new
+
+
+def get_lightcurve_as_rainbow(self):
+    """
+    Produce a wavelength-integrated light curve.
+
+    Returns
+    -------
+    lc : Rainbow
+        A Rainbow object with just one wavelength.
+    """
+    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        new = self.bin(nwavelengths=self.nwave)
+
+    new._record_history_entry(h)
+    return new
+
+
+def get_spectrum_as_rainbow(self):
+    """
+    Produce a time-integrated spectrum.
+
+    Returns
+    -------
+    lc : Rainbow
+        A Rainbow object with just one time.
+    """
+    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        new = self.bin(ntimes=self.ntime)
+
+    new._record_history_entry(h)
+    return new

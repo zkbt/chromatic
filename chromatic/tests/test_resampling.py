@@ -112,3 +112,4 @@ def test_bintogrid(N_original=23):
                 e = bintogrid(x, y, unc=u, nx=nx, visualize=True)
                 plt.title(f"bin by {nx} bins, {label}")
                 save_binning_example_figure()
+    plt.close("all")

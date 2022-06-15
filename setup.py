@@ -82,11 +82,11 @@ setup(
     install_requires=[
         "numpy",
         "scipy",
-        "matplotlib>=3.0",
+        "matplotlib>=3.5",
         "astropy>=4.0",
         "pandas",
         "tqdm",
-        "batman-package",
+        "batman-package>=2.4.9",
         "altair",
     ],
     # what version of Python is required?

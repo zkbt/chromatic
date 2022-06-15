@@ -1,5 +1,7 @@
 from ..imports import *
 
+__all__ = ["MultiRainbow", "compare_rainbows"]
+
 
 class MultiRainbow:
     """
@@ -10,27 +12,55 @@ class MultiRainbow:
     same dataset.
     """
 
-    def __init__(self, list_of_rainbows, names=None):
+    def __init__(self, rainbows, names=None):
         """
         Initialize from a list of Rainbows.
 
         Parameters
         ----------
-        list_of_rainbows : list
-            A list containing 1 or more Rainbow objects.
+        rainbows : list
+            A list containing two or more Rainbow objects.
         names : list
-            A list of names with which to label the Rainbows.
+            A list of names for the Rainbows. These will overwrite
+            the names provided in the `.metadata['name']` entry
+            of each input Rainbow.
         """
 
-        # store the Rainbow objects
-        self.rainbows = list_of_rainbows
+        if not isinstance(rainbows, list):
+            raise RuntimeError("Please provide a list of 🌈s.")
+        if len(rainbows) < 2:
+            raise RuntimeError("Please provide more than one 🌈.")
 
-        # the list of names associated with those objects
-        self.names = names
+        # decouple these rainbow from their inputs
+        self.rainbows = [x._create_copy() for x in rainbows]
+
+        # keep track of the names
+        self.names = names or [(x.name or i) for i, x in enumerate(rainbows)]
+        if len(np.unique(self.names)) < len(self.names):
+            message = """
+            The input names {self.names}
+            are not unique. Proceed with caution, or provide
+            each 🌈 with a unique name. You can do so either by
+            giving each individual 🌈 a name with `rainbow.name='?!?!?!'`
+            or by supplying a list of unique names to the `names=`
+            keyword argument when starting your comparison.
+            """
+            warnings.warn(message)
 
         # make sure the names and rainbows match up
-        if self.names is not None:
-            assert len(self.names) == len(self.rainbows)
+        assert len(self.names) == len(self.rainbows)
+
+        # pull units from first rainbow
+        self.w_unit = u.Unit(self.list_of_rainbows[0].wavelength.unit)
+        self.t_unit = u.Unit(self.list_of_rainbows[0].time.unit)
+
+    @property
+    def list_of_rainbows(self):
+        return self.rainbows
+
+    @property
+    def dict_of_rainbows(self):
+        return {k: v for k, v in zip(self.names, self.rainbows)}
 
     def __repr__(self):
         """
@@ -45,7 +75,7 @@ class MultiRainbow:
         """
         return len(self.rainbows)
 
-    def _setup_panels(self, rows=1, figsize=None):
+    def _setup_panels(self, rows=1, figsize=None, **kw):
         """
         Set up a grid of panels to plot into.
 
@@ -74,6 +104,7 @@ class MultiRainbow:
             sharex=True,
             sharey=True,
             figsize=figsize,
+            constrained_layout=True,
         )
 
         # give titles to the plot panels
@@ -101,18 +132,15 @@ class MultiRainbow:
             Should we make a plot of the d[wavelength]/d[bin], for diagnostics?
         """
 
-        # pick a unit to make sure everything's consistent
-        w_unit = u.micron
-
         # create a list of interpolating functions for the datasets' dw
         dw_interpolators = [
             interp1d(
-                r.wavelength.to(w_unit).value,
-                np.gradient(r.wavelength.to(w_unit).value),
+                r.wavelength.to_value(self.w_unit),
+                np.gradient(r.wavelength.to_value(self.w_unit)),
                 fill_value=np.inf,
                 bounds_error=False,
             )
-            for r in self.rainbows
+            for r in self.list_of_rainbows
         ]
 
         def smallest_dw(w):
@@ -133,7 +161,9 @@ class MultiRainbow:
 
         # compile w and dw, weighted by how many appear in each dataset
         w_represented = np.sort(
-            np.hstack([r.wavelength.to(w_unit).value for r in self.rainbows])
+            np.hstack(
+                [r.wavelength.to_value(self.w_unit) for r in self.list_of_rainbows]
+            )
         )
         dw_represented = smallest_dw(w_represented)
 
@@ -170,7 +200,7 @@ class MultiRainbow:
         if plot:
 
             # plot the individual datasets
-            for r in self.rainbows:
+            for r in self.list_of_rainbows:
                 plt.plot(
                     r.wavelength, np.gradient(r.wavelength), marker="o", alpha=0.25
                 )
@@ -206,7 +236,7 @@ class MultiRainbow:
             plt.title(f"{slope:.3} -> {wscale}!")
             plt.ylabel("d[wavelength]/d[bin]")
 
-        return new_wavelengths * w_unit
+        return new_wavelengths * self.w_unit
 
     def _check_if_wavelengths_are_aligned(self):
         """
@@ -217,16 +247,19 @@ class MultiRainbow:
         aligned : bool
             Are the wavelengths the same across all?
         """
+
+        first_rainbow = self.list_of_rainbows[0]
+
         # check if they're already aligned
         wavelengths_are_same_size = np.all(
-            [np.all(r.nwave == self.rainbows[0].nwave) for r in self.rainbows]
+            [np.all(r.nwave == first_rainbow.nwave) for r in self.list_of_rainbows]
         )
 
         if wavelengths_are_same_size:
             wavelengths_are_already_aligned = np.all(
                 [
-                    np.all(r.wavelength == self.rainbows[0].wavelength)
-                    for r in self.rainbows
+                    np.all(r.wavelength == first_rainbow.wavelength)
+                    for r in self.list_of_rainbows
                 ]
             )
         else:
@@ -241,16 +274,22 @@ class MultiRainbow:
         Returns
         -------
         aligned : bool
-            Are the times the same across all?
+            Are the times the same across all Rainbows?
         """
         # check if they're already aligned
         times_are_same_size = np.all(
-            [np.all(r.ntime == self.rainbows[0].ntime) for r in self.rainbows]
+            [
+                np.all(r.ntime == self.list_of_rainbows[0].ntime)
+                for r in self.list_of_rainbows
+            ]
         )
 
         if times_are_same_size:
             times_are_already_aligned = np.all(
-                [np.all(r.time == self.rainbows[0].wavelength) for r in self.rainbows]
+                [
+                    np.all(r.time == self.list_of_rainbows[0].wavelength)
+                    for r in self.list_of_rainbows
+                ]
             )
         else:
             times_are_already_aligned = False
@@ -259,15 +298,21 @@ class MultiRainbow:
 
     @property
     def wavelength(self):
+        """
+        The shared wavelength axis.
+        """
         if self._check_if_wavelengths_are_aligned():
-            return self.rainbows[0].wavelength
+            return self.list_of_rainbows[0].wavelength
         else:
             raise RuntimeError(f"🌈 {self} has more than one wavelength array.")
 
     @property
     def time(self):
+        """
+        The shared time axis.
+        """
         if self._check_if_times_are_aligned():
-            return self.rainbows[0].time
+            return self.list_of_rainbows[0].time
         else:
             raise RuntimeError(f"🌈 {self} has more than one time array.")
 
@@ -276,13 +321,23 @@ class MultiRainbow:
         Make a new MultiRainbow where wavelengths have
         been aligned across all the Rainbows, making
         a guesst for whether
+
+        Parameters
+        ----------
+        kw : dict
+            Extra keyword arguments will be passed to
+            `._guess_good_uniform_wavelength_grid`
         """
 
+        # if the wavelengths are already aligned, don't do anything!
         if self._check_if_wavelengths_are_aligned():
             return self
         else:
+            # come up with a decent guess for a shared wavelength grid
             w = self._guess_good_uniform_wavelength_grid(**kw)
-            return self.bin(wavelength=w)
+
+            # bin to that shared grid, and don't trim nans at the edges
+            return self.bin(wavelength=w, trim=False)
 
     def __getitem__(self, key):
         """
@@ -305,110 +360,69 @@ class MultiRainbow:
         key : tuple
             The (wavelength, time) slices, indices, or masks.
         """
-        new_rainbows = [r.__getitem__(key) for r in self.rainbows]
+        new_rainbows = [r.__getitem__(key) for r in self.list_of_rainbows]
         return MultiRainbow(new_rainbows, names=self.names)
 
     def normalize(self, **kwargs):
         """
         Normalize by dividing through by the median spectrum and/or lightcurve.
 
-        Parameters
-        ----------
-        wavelength : bool
-            Should we divide by the median spectrum?
-
-        time : bool
-            Should we divide by the median light curve?
+        (see `Rainbow.normalize` for input options)
 
         Returns
         -------
         normalized : MultiRainbow
             The normalized MultiRainbow.
         """
-        new_rainbows = [r.normalize(**kwargs) for r in self.rainbows]
+        new_rainbows = [r.normalize(**kwargs) for r in self.list_of_rainbows]
         return MultiRainbow(new_rainbows, names=self.names)
 
     def bin(self, **kwargs):
         """
         Bin the rainbow in wavelength and/or time.
 
-        The time-setting order of precendence is
-        [`time`, `dt`], meaning that if `time` is set,
-        any values given for `dt` will be ignored.
-        The wavelength-setting order of precendence is
-        [`wavelength`, `dw`, `R`], meaning that if `wavelength`
-        is set any values of `dw` or `R` will be ignored, and
-        if `dw` is set any value of `R` will be ignored.
-
-        Parameters
-        ----------
-        dt : astropy.units.Quantity
-            The d(time) bin size for creating a grid
-            that is uniform in linear space.
-        time : array of astropy.units.Quantity
-            An array of times, if you just want to give
-            it an entirely custom array.
-        R : float
-            The spectral resolution for creating a grid
-            that is uniform in logarithmic space.
-        dw : astropy.units.Quantity
-            The d(wavelength) bin size for creating a grid
-            that is uniform in linear space.
-        wavelength : array of astropy.units.Quantity
-            An array of wavelengths, if you just want to give
-            it an entirely custom array.
+        (see `Rainbow.bin` for input options)
 
         Returns
         -------
         binned : MultiRainbow
             The binned MultiRainbow.
         """
-        new_rainbows = [r.bin(**kwargs) for r in self.rainbows]
+        new_rainbows = [r.bin(**kwargs) for r in self.list_of_rainbows]
         return MultiRainbow(new_rainbows, names=self.names)
 
     def plot(self, **kwargs):
         """
         Plot flux as sequence of offset light curves.
 
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes
-            The axes into which to make this plot.
-        spacing : None, float
-            The spacing between light curves.
-            (Might still change how this works.)
-            None uses half the standard dev of entire flux data.
-        w_unit : str, astropy.unit.Unit
-            The unit for plotting wavelengths.
-        t_unit : str, astropy.unit.Unit
-            The unit for plotting times.
-        cmap : str, matplotlib.colors.Colormap
-            The color map to use for expressing wavelength.
-        vmin : astropy.units.Quantity
-            The minimum value to use for the wavelength colormap.
-        vmax : astropy.units.Quantity
-            The maximum value to use for the wavelength colormap.
-        plotkw : dict
-            A dictionary of keywords passed to `plt.plot`
-        textkw : dict
-            A dictionary of keywords passed to `plt.text`
+        (see `Rainbow.plot` for input options)
         """
 
         # set up a grid of panels
         self._setup_panels()
 
         # make all the individual plots
-        for r, a in zip(self.rainbows, self.axes):
+        for r, a in zip(self.list_of_rainbows, self.axes):
             r.plot(ax=a, **kwargs)
 
-    def imshow(self, vmin=None, vmax=None, **kwargs):
+    def imshow(
+        self, vmin=None, vmax=None, rows=1, figsize=None, colorbar=True, **kwargs
+    ):
         """
         imshow flux as a function of time (x = time, y = wavelength, color = flux).
 
         Parameters
         ----------
-        ax : matplotlib.axes.Axes
-            The axes into which to make this plot.
+        vmin : float
+            The bottom of the color scale.
+        vmax : float
+            The top of the color scale.
+        rows : int
+            Over how many rows should the panels be distributed?
+        figsize : tuple
+            The (width, height) of the total figure.
+        colorbar : bool
+            Should we include a colorbar?
         quantity : str
             The fluxlike quantity to imshow.
             (Must be a key of `rainbow.fluxlike`).
@@ -416,26 +430,45 @@ class MultiRainbow:
             The unit for plotting wavelengths.
         t_unit : str, astropy.unit.Unit
             The unit for plotting times.
-        colorbar : bool
-            Should we include a colorbar?
         aspect : str
             What aspect ratio should be used for the imshow?
+        kwargs : dict
+            Most other keyword arguments will be passed on into
+            `plt.imshow`. If there's an `plt.imshow` keyword you
+            want to set, try it!
         """
 
         # set up a grid of panels
-        self._setup_panels()
+        self._setup_panels(rows=rows, figsize=figsize)
 
-        # figure out a good shared color limits
+        # figure out a good shared color limits (unless already supplied)
         vmin = vmin or np.nanmin(
-            [np.nanmin(u.Quantity(r.flux).value) for r in self.rainbows]
+            [np.nanmin(u.Quantity(r.flux).value) for r in self.list_of_rainbows]
         )
         vmax = vmax or np.nanmax(
-            [np.nanmax(u.Quantity(r.flux).value) for r in self.rainbows]
+            [np.nanmax(u.Quantity(r.flux).value) for r in self.list_of_rainbows]
         )
 
         # make all the individual imshows
-        for r, a in zip(self.rainbows, self.axes):
-            r.imshow(ax=a, vmin=vmin, vmax=vmax, **kwargs)
+        for r, a, i in zip(self.list_of_rainbows, self.axes, range(self.nrainbows)):
+            r.imshow(ax=a, vmin=vmin, vmax=vmax, colorbar=False, **kwargs)
+            if i == 0:
+                xlabel, ylabel = a.get_xlabel(), a.get_ylabel()
+            a.set_xlabel("")
+            a.set_ylabel("")
+
+        self.figure.supxlabel(xlabel)
+        self.figure.supylabel(ylabel)
+
+        # add a colorbar, but steal from all the axes
+        if colorbar:
+            plt.colorbar(ax=self.axes)
+
+        # set the ylimits to span everything
+        plt.ylim(
+            np.nanmax([x._imshow_extent[2] for x in self.list_of_rainbows]),
+            np.nanmin([x._imshow_extent[3] for x in self.list_of_rainbows]),
+        )
 
     def animate_lightcurves(
         self,
@@ -455,8 +488,6 @@ class MultiRainbow:
             Currently supports only .gif files.
         fps : float
             frames/second of animation
-        ax : matplotlib.axes.Axes
-            The axes into which this animated plot should go.
         xlim : tuple
             Custom xlimits for the plot
         ylim : tuple
@@ -473,13 +504,16 @@ class MultiRainbow:
             A dictionary of keywords to be passed to `plt.text`
         """
 
-        assert np.all([r.nwave == self.rainbows[0].nwave for r in self.rainbows])
+        # make sure there's the same number of wavelengths for all rainbows
+        assert np.all(
+            [r.nwave == self.list_of_rainbows[0].nwave for r in self.list_of_rainbows]
+        )
 
         # set up a grid of panels
         self._setup_panels()
 
         # setup all the individual plots
-        for r, a in zip(self.rainbows, self.axes):
+        for r, a in zip(self.list_of_rainbows, self.axes):
             r._setup_animate_lightcurves(ax=a, **kwargs)
 
         # the figure should be the same for all panels
@@ -496,7 +530,7 @@ class MultiRainbow:
                 An integer that will advance with each frame.
             """
             artists = []
-            for r in self.rainbows:
+            for r in self.list_of_rainbows:
                 r._animate_lightcurves_components["update"](frame)
                 for k in ["text", "scatter"]:
                     artists.append(r._animate_lightcurves_components[k])
@@ -528,8 +562,6 @@ class MultiRainbow:
             Currently supports only .gif files.
         fps : float
             frames/second of animation
-        ax : matplotlib.axes.Axes
-            The axes into which this animated plot should go.
         xlim : tuple
             Custom xlimits for the plot
         ylim : tuple
@@ -546,13 +578,15 @@ class MultiRainbow:
             A dictionary of keywords to be passed to `plt.text`
         """
 
-        assert np.all([r.ntime == self.rainbows[0].ntime for r in self.rainbows])
+        assert np.all(
+            [r.ntime == self.list_of_rainbows[0].ntime for r in self.list_of_rainbows]
+        )
 
         # set up a grid of panels
         self._setup_panels()
 
         # setup all the individual plots
-        for r, a in zip(self.rainbows, self.axes):
+        for r, a in zip(self.list_of_rainbows, self.axes):
             r._setup_animate_spectra(ax=a, **kwargs)
 
         # the figure should be the same for all panels
@@ -569,7 +603,7 @@ class MultiRainbow:
                 An integer that will advance with each frame.
             """
             artists = []
-            for r in self.rainbows:
+            for r in self.list_of_rainbows:
                 r._animate_spectra_components["update"](frame)
                 for k in ["text", "scatter"]:
                     artists.append(r._animate_spectra_components[k])
@@ -586,3 +620,23 @@ class MultiRainbow:
             filename, fps=fps, dpi=dpi, savefig_kwargs=dict(facecolor="white")
         )
         plt.close()
+
+
+def compare_rainbows(*args, **kwargs):
+    """
+    Compare a group of Rainbows to each other.
+
+    Parameters
+    ----------
+    rainbows : list
+        A list containing two or more Rainbow objects.
+
+    Returns
+    -------
+    multirainbow : MultiRainbow
+        A MultiRainbow object that contains all of the rainbows to
+        be compared. This object can do many of the same actions or
+        visualizations as a normal Rainbow, but it will (attempt to)
+        automatically apply them to every Rainbow.
+    """
+    return MultiRainbow(*args, **kwargs)

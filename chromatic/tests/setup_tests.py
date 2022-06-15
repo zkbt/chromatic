@@ -1,4 +1,5 @@
 import os, pytest
+import matplotlib.pyplot as plt
 
 test_directory = "examples/"
 
