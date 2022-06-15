@@ -192,3 +192,21 @@ def test_both_types_of_plot():
 def test_add_labels_to_panels():
     fi, ax = plt.subplots(3, 3)
     _add_panel_labels(ax, preset="inside", color="blue")
+
+
+def test_pcolormesh():
+    s = (
+        SimulatedRainbow(R=10, dt=10 * u.minute)
+        .inject_transit()
+        .inject_noise(signal_to_noise=1000)
+    )
+    fi, ax = plt.subplots(2, 2, constrained_layout=True, figsize=(8, 5))
+    s.imshow(ax=ax[0, 0])
+    plt.title("imshow")
+    s.pcolormesh(ax=ax[0, 1])
+    plt.title("pcolormesh")
+    plt.yscale("log")
+    b = s.bin(dw=0.5 * u.micron)
+    b.imshow(ax=ax[1, 0])
+    b.pcolormesh(ax=ax[1, 1])
+    plt.savefig(os.path.join(test_directory, "test-pcolormesh-vs-imshow.png"))
