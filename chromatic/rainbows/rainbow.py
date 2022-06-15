@@ -934,6 +934,7 @@ class Rainbow:
     # import visualizations that can act on Rainbows
     from .visualizations import (
         imshow,
+        pcolormesh,
         plot_lightcurves,
         _setup_animate_lightcurves,
         animate_lightcurves,
