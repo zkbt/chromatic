@@ -179,6 +179,37 @@ def inject_systematics(
     3) Inject the model flux into the `flux` of this Rainbow,
     and store the combined model in `systematics-model` and
     each individual component in `systematic-model-{...}`.
+
+    Parameters
+    ----------
+    amplitude : float
+        The (standard deviation-ish) amplitude of the systematics
+        in units normalized to 1. For example, an amplitude of 0.003
+        will produce systematic trends that tend to range (at 1 sigma)
+        from 0.997 to 1.003.
+    wavelike : list of strings
+        A list of wave-like cotrending quantities to serve as ingredients
+        to a linear combination systematics model. Existing quantities
+        will be pulled from the appropriate core dictionary; fake
+        data will be created for quantities that don't already exist,
+        from a cartoony Gaussian process model.
+    timelike : list of strings
+        A list of time-like cotrending quantities to serve as ingredients
+        to a linear combination systematics model. Existing quantities
+        will be pulled from the appropriate core dictionary; fake
+        data will be created for quantities that don't already exist,
+        from a cartoony Gaussian process model.
+    fluxlike : list of strings
+        A list of flux-like cotrending quantities to serve as ingredients
+        to a linear combination systematics model. Existing quantities
+        will be pulled from the appropriate core dictionary; fake
+        data will be created for quantities that don't already exist,
+        from a cartoony Gaussian process model.
+
+    Returns
+    -------
+    rainbow : Rainbow
+        A new Rainbow object with the systematics injected.
     """
 
     # create a history entry for this action (before other variables are defined)
