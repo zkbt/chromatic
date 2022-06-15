@@ -27,7 +27,9 @@ def create_simulation_with_wobbly_wavelengths(
         return f
 
     # create
-    r = SimulatedRainbow(signal_to_noise=signal_to_noise, dw=dw, wlim=wlim, **kw)
+    r = SimulatedRainbow(dw=dw, wlim=wlim, **kw).inject_noise(
+        signal_to_noise=signal_to_noise
+    )
     wobbly_wavelengths = r.wavelength[:, np.newaxis] * np.random.normal(
         1, fractional_shift, r.ntime
     )

@@ -13,7 +13,7 @@ def test_shift():
 
     for v in [0, -1e4, 1e4] * u.km / u.s:
         print(f"Testing for v={v}")
-        unshifted = SimulatedRainbow(wavelength=w, star_flux=f)
+        unshifted = SimulatedRainbow(wavelength=w, star_flux=f).inject_noise()
         shifted = unshifted.shift(v)
         shifted_and_then_shifted_back = shifted.shift(-v)
 

@@ -3,7 +3,7 @@ from .setup_tests import *
 
 
 def test_ok_rows_and_columns():
-    s = SimulatedRainbow()
+    s = SimulatedRainbow().inject_noise()
     s.wavelike["ok"] = np.arange(s.nwave) > 10
     s.timelike["ok"] = np.arange(s.ntime) > 5
     s.fluxlike["ok"] = np.ones(s.shape)
@@ -15,7 +15,11 @@ def test_ok_rows_and_columns():
 
 def test_bin_with_not_ok_data():
     for ok_fraction in [0, 0.01, 0.5, 0.99, 1]:
-        a = SimulatedRainbow(dt=2 * u.minute, dw=0.2 * u.micron).inject_transit()
+        a = (
+            SimulatedRainbow(dt=2 * u.minute, dw=0.2 * u.micron)
+            .inject_transit()
+            .inject_noise()
+        )
         a.ok = np.random.uniform(size=a.shape) < ok_fraction
 
         if ok_fraction == 0:

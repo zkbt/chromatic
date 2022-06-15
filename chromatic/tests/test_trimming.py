@@ -3,7 +3,7 @@ from .setup_tests import *
 
 
 def test_trim():
-    r = SimulatedRainbow()
+    r = SimulatedRainbow().inject_noise()
     r.fluxlike["flux"][:3, :] = np.nan
     r.fluxlike["flux"][:, -4:] = np.nan
     original_shape = r.shape

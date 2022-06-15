@@ -5,7 +5,7 @@ closekw = dict(rtol=1e-10)
 
 def test_to_df():
 
-    r = SimulatedRainbow(signal_to_noise=10, dt=1 * u.minute, R=50)
+    r = SimulatedRainbow(dt=1 * u.minute, R=50).inject_noise(signal_to_noise=10)
 
     r_df = r.to_df()
 
@@ -32,7 +32,7 @@ def test_to_df():
 
 
 def test_to_nparray():
-    r = SimulatedRainbow(signal_to_noise=100, dt=1 * u.minute, R=50)
+    r = SimulatedRainbow(dt=1 * u.minute, R=50).inject_noise(signal_to_noise=100)
 
     rflux, rfluxu, rtime, rwavel = r.to_nparray()
 
