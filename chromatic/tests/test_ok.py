@@ -24,11 +24,15 @@ def test_bin_with_not_ok_data():
 
         if ok_fraction == 0:
             with pytest.raises(RuntimeError):
-                should_fal = a.bin(dw=0.7 * u.micron, dt=20 * u.minute, ok_threshold=1)
+                should_fail = a.bin(
+                    dw=0.7 * u.micron, dt=20 * u.minute, minimum_acceptable_ok=1
+                )
             continue
 
-        cautious = a.bin(dw=0.7 * u.micron, dt=20 * u.minute, ok_threshold=1)
-        carefree = a.bin(dw=0.7 * u.micron, dt=20 * u.minute, ok_threshold=0)
+        cautious = a.bin(dw=0.7 * u.micron, dt=20 * u.minute, minimum_acceptable_ok=1)
+        carefree = a.bin(
+            dw=0.7 * u.micron, dt=20 * u.minute, minimum_acceptable_ok=0, trim=False
+        )
         assert np.all((cautious.ok == 1) | (cautious.ok == 0))
         if np.any(a.ok == 0):
             assert np.any((carefree.ok != 1) & (carefree.ok != 0))

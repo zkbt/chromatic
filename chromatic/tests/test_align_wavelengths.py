@@ -80,8 +80,8 @@ def test_align_wavelengths_with_not_ok_data(visualize=False):
             dt=20 * u.minute,
         )
         r.fluxlike["ok"] = np.random.uniform(size=r.shape) < ok_fraction
-        cautious = r.align_wavelengths(ok_threshold=1)
-        carefree = r.align_wavelengths(ok_threshold=0)
+        cautious = r.align_wavelengths(minimum_acceptable_ok=1)
+        carefree = r.align_wavelengths(minimum_acceptable_ok=0)
         if visualize:
             cautious.imshow_quantities()
             plt.suptitle(ok_fraction)

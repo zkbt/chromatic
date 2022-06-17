@@ -100,22 +100,22 @@ def _create_shared_wavelength_axis(
     return shared_w
 
 
-def align_wavelengths(self, ok_threshold=1, **kw):
+def align_wavelengths(self, minimum_acceptable_ok=1, minimum_points_per_bin=0, **kw):
     """
     Use 2D wavelength information to align onto a single 1D wavelength array.
 
     Parameters
     ----------
-    ok_threshold : float
+    minimum_acceptable_ok : float
         The numbers in the `.ok` attribute express "how OK?" each
         data point is, ranging from 0 (not OK) to 1 (super OK).
         In most cases, `.ok` will be binary, but there may be times
         where it's intermediate (for example, if a bin was created
         from some data that were not OK and some that were).
-        The `ok_threshold` parameter allows you to specify what
+        The `minimum_acceptable_ok` parameter allows you to specify what
         level of OK-ness for a point to go into the binning.
         Reasonable options may include:
-            ok_threshold = 1
+            minimum_acceptable_ok = 1
                   Only data points that are perfectly OK
                   will go into the binning. All other points
                   will effectively be interpolated over. Flux
@@ -123,11 +123,11 @@ def align_wavelengths(self, ok_threshold=1, **kw):
                   but it's very possible to create correlated
                   bins next to each other if many of your ingoing
                   data points are not perfectly OK.
-            ok_threshold = 1
+            minimum_acceptable_ok = 1
                   All data points that aren't definitely not OK
                   will go into the binning. The OK-ness of points
                   will propagate onward for future binning.
-            ok_threshold < 0
+            minimum_acceptable_ok < 0
                   All data points will be included in the bin.
                   The OK-ness will propagate onward.
     wscale : str
@@ -158,8 +158,9 @@ def align_wavelengths(self, ok_threshold=1, **kw):
     # bin the rainbow onto that new grid, starting from 2D wavelengths
     shifted = self.bin_in_wavelength(
         wavelength=shared_wavelengths,
-        ok_threshold=ok_threshold,
+        minimum_acceptable_ok=minimum_acceptable_ok,
         starting_wavelengths="2D",
+        minimum_points_per_bin=minimum_points_per_bin,
     )
 
     # append the history entry to the new Rainbow
