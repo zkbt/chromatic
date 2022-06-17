@@ -54,7 +54,7 @@ def test_plot_quantities():
 
     for k in ["time", "wavelength"]:
         for x in [k, "index"]:
-            r.plot_quantities(xaxis=k, x_axis=x)
+            r.plot_quantities(xaxis=k, what_is_x=x)
             plt.savefig(
                 os.path.join(
                     test_directory,
