@@ -919,6 +919,7 @@ class Rainbow:
         _create_fake_fluxlike_quantity,
         to_nparray,
         to_df,
+        remove_astrophysical_signals,
     )
 
     # import summary statistics for each wavelength

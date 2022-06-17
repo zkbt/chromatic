@@ -9,3 +9,4 @@ from .inject_systematics import *
 from .inject_noise import *
 from .fold import *
 from .compare import *
+from .remove_astrophysical_signals import *
