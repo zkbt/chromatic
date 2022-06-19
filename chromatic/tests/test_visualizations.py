@@ -82,6 +82,26 @@ def test_animate():
     )
 
 
+def test_animate_other_quantites():
+    k = "some-imaginary-fluxlike-quantity"
+    s = (
+        SimulatedRainbow(R=5, dt=20 * u.minute)
+        .inject_transit()
+        .inject_systematics(amplitude=0.001, fluxlike=[k])
+        .inject_noise(signal_to_noise=1000)
+    )
+    s.animate_spectra(
+        os.path.join(test_directory, "test-animate-quantities-beside-flux-spectra.gif"),
+        quantity=k,
+    )
+    s.animate_lightcurves(
+        os.path.join(
+            test_directory, "test-animate-quantities-beside-flux-lightcurves.gif"
+        ),
+        quantity=k,
+    )
+
+
 def test_wavelength_cmap():
 
     r = SimulatedRainbow(R=10).inject_noise()
