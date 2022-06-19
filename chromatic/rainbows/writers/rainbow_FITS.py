@@ -25,11 +25,18 @@ def to_rainbow_FITS(rainbow, filepath, overwrite=True):
 
     # create a header for the metadata
     header = fits.Header()
+    header["comment"] = "Data are stored in three main extensions"
+    header["comment"] = " [1]=['FLUXLIKE'] contains (nwave, ntime)-shaped arrays"
+    header["comment"] = " [2]=['WAVELIKE'] contains (nwave)-shaped arrays"
+    header["comment"] = " [3]=['TIMELIKE'] contains (ntime)-shaped arrays"
+    header["comment"] = "The primary extension header contains some metadata."
+
     for k in rainbow.metadata:
         try:
             header[k] = rainbow.metadata[k]
         except ValueError:
             warnings.warn(f"metadata item '{k}' cannot be saved to FITS header")
+
     primary_hdu = fits.PrimaryHDU(header=header)
 
     # create extensions for the three other core dictionaries

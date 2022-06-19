@@ -342,7 +342,7 @@ class Rainbow:
 
         # store the flux and uncertainty
         self.fluxlike["flux"] = flux
-        self.fluxlike["uncertainty"] = uncertainty
+        self.fluxlike["uncertainty"] = uncertainty or np.ones_like(flux) * np.nan
 
         # sort other arrays by shape
         for k, v in kw.items():
