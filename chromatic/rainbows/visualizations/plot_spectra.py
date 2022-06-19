@@ -14,6 +14,7 @@ def plot_spectra(
     vmin=None,
     vmax=None,
     errorbar=False,
+    minimum_acceptable_ok=1,
     scatterkw={},
     errorbarkw={},
     plotkw={},
@@ -43,6 +44,9 @@ def plot_spectra(
         The maximum value to use for the wavelength colormap.
     errorbar : boolean
         Should we plot errorbars?
+    minimum_acceptable_ok : float
+        The smallest value of `ok` that will still be included.
+        (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
     scatterkw : dict
         A dictionary of keywords passed to `plt.scatter`
         so you can have more detailed control over the text
@@ -92,7 +96,7 @@ def plot_spectra(
 
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
-    min_wave = np.nanmin(self.wavelength)
+    min_wave = np.nanmin(self.wavelength.to_value(w_unit))
 
     # make sure ax is set up
     if ax is None:
@@ -119,12 +123,16 @@ def plot_spectra(
         #  loop through times
         for i, t in enumerate(self.time):
             # grab the spectrum for this particular time
-            quan = u.Quantity(self.fluxlike[quantity][:, i]).value
-            fluxerr = self.fluxlike["uncertainty"][:, i]
-            if np.any(np.isfinite(quan)):
+            w, y, sigma = self.get_ok_data_for_time(
+                i, minimum_acceptable_ok=minimum_acceptable_ok
+            )
+            if np.any(np.isfinite(y)):
+
+                plot_x = w.to_value(w_unit)
 
                 # add an offset to this spectrum
-                plot_quan = -i * spacing + quan
+                plot_y = -i * spacing + u.Quantity(y).value
+                plot_sigma = u.Quantity(sigma).value
 
                 default_color = "black"
 
@@ -136,7 +144,7 @@ def plot_spectra(
                 this_scatterkw = dict(
                     marker="o",
                     linestyle="-",
-                    c=self.wavelength.to_value(w_unit),
+                    c=plot_x,
                     cmap=self.cmap,
                     norm=self.norm,
                 )
@@ -150,20 +158,20 @@ def plot_spectra(
 
                 if errorbar:
                     plt.errorbar(
-                        self.wavelength.to(w_unit),
-                        plot_quan,
-                        yerr=fluxerr,
+                        plot_x,
+                        plot_y,
+                        yerr=plot_sigma,
                         **this_errorbarkw,
                     )
-                plt.plot(self.wavelength.to(w_unit), plot_quan, **this_plotkw)
-                plt.scatter(self.wavelength.to(w_unit), plot_quan, **this_scatterkw)
+                plt.plot(plot_x, plot_y, **this_plotkw)
+                plt.scatter(plot_x, plot_y, **this_scatterkw)
 
                 # add text labels next to each spectrum
                 this_textkw = dict(va="bottom", color=default_color)
                 this_textkw.update(**textkw)
                 plt.annotate(
-                    f"{t.to(t_unit).value:.2f} {t_unit.to_string('latex_inline')}",
-                    (min_wave, np.median(plot_quan) - 0.5 * spacing),
+                    f"{t.to_value(t_unit):.2f} {t_unit.to_string('latex_inline')}",
+                    (min_wave, np.median(plot_y) - 0.5 * spacing),
                     **this_textkw,
                 )
 

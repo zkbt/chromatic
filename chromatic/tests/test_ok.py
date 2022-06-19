@@ -36,3 +36,20 @@ def test_bin_with_not_ok_data():
         assert np.all((cautious.ok == 1) | (cautious.ok == 0))
         if np.any(a.ok == 0):
             assert np.any((carefree.ok != 1) & (carefree.ok != 0))
+
+
+def test_get_ok_data_helpers(quantity="flux"):
+    s = SimulatedRainbow(dw=0.5 * u.micron, dt=20 * u.minute).inject_noise()
+    s.ok = np.random.uniform(0, 1, s.shape) > 0.5
+    s.imshow()
+
+    fi, ax = plt.subplots(2, 2, sharex="col", sharey=True, constrained_layout=True)
+    for r, e in enumerate([False, True]):
+        ax[r, 0].set_title(f"express_badness_with_uncertainty={e}")
+
+        for c, f in enumerate([s.get_ok_data_for_wavelength, s.get_ok_data_for_time]):
+            for i in range(3):
+                x, y, sigma = f(
+                    i, quantity=quantity, express_badness_with_uncertainty=e
+                )
+                ax[r, c].scatter(x, y - i * 0.2, c=np.isfinite(sigma))

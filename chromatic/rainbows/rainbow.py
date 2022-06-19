@@ -959,3 +959,5 @@ class Rainbow:
         _create_history_entry,
         history,
     )
+
+    from .helpers import get_ok_data_for_wavelength, get_ok_data_for_time
