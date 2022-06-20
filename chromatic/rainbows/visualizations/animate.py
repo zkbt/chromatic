@@ -146,7 +146,7 @@ def _setup_animate_lightcurves(
             """
 
             # pull out the x and y values to plot
-            x, y, _ = self.get_ok_data_for_wavelength(frame, quantity=quantity)
+            x, y, _ = self.get_ok_data_for_wavelength(frame, y=quantity)
             # x = self.time
             # y = self.flux[frame]
             c = self.wavelength[frame].to("micron").value * np.ones(self.ntime)
@@ -332,7 +332,7 @@ def _setup_animate_spectra(
             """
 
             # pull out the x and y values to plot
-            x, y, _ = self.get_ok_data_for_time(frame, quantity=quantity)
+            x, y, _ = self.get_ok_data_for_time(frame, y=quantity)
             # x = self.wavelength
             # y = self.flux[:, frame]
             c = self.wavelength.to("micron").value

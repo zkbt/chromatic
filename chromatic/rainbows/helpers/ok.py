@@ -1,12 +1,85 @@
 from ...imports import *
 
-__all__ = ["get_ok_data_for_wavelength", "get_ok_data_for_time"]
+__all__ = [
+    "get_for_wavelength",
+    "get_for_time",
+    "get_ok_data_for_wavelength",
+    "get_ok_data_for_time",
+]
+
+
+def get_for_wavelength(self, i, quantity="flux"):
+    """
+    Get 'quantity' associated with wavelength 'i'.
+
+    Parameters
+    ----------
+    i : int
+        The wavelength index to retrieve.
+    quantity : string
+        The quantity to retrieve. If it is flux-like,
+        row 'i' will be returned. If it is time-like,
+        the array itself will be returned.
+
+    Returns
+    -------
+    quantity : np.array, u.Quantity
+        The 1D array of 'quantity' corresponding to wavelength 'i'.
+    """
+    z = self.get(quantity)
+    if np.shape(z) == self.shape:
+        return z[i, :]
+    elif len(z) == self.ntime:
+        return z
+    else:
+        raise RuntimeError(
+            f"""
+        You tried to retrieve wavelength {i} from '{quantity}',
+        but this quantity is neither flux-like nor time-like.
+        It's not possible to return a time-like array. Sorry!
+        """
+        )
+
+
+def get_for_time(self, i, quantity="flux"):
+    """
+    Get 'quantity' associated with time 'i'.
+
+    Parameters
+    ----------
+    i : int
+        The time index to retrieve.
+    quantity : string
+        The quantity to retrieve. If it is flux-like,
+        column 'i' will be returned. If it is wave-like,
+        the array itself will be returned.
+
+    Returns
+    -------
+    quantity : np.array, u.Quantity
+        The 1D array of 'quantity' corresponding to time 'i'.
+    """
+    z = self.get(quantity)
+    if np.shape(z) == self.shape:
+        return z[:, i]
+    elif len(z) == self.nwave:
+        return z
+    else:
+        raise RuntimeError(
+            f"""
+        You tried to retrieve time {i} from '{quantity}',
+        but this quantity is neither flux-like nor wave-like.
+        It's not possible to return a wave-like array. Sorry!
+        """
+        )
 
 
 def get_ok_data_for_wavelength(
     self,
     i,
-    quantity="flux",
+    x="time",
+    y="flux",
+    sigma="uncertainty",
     minimum_acceptable_ok=1,
     express_badness_with_uncertainty=False,
 ):
@@ -19,8 +92,12 @@ def get_ok_data_for_wavelength(
     ----------
     i : int
         The wavelength index to retrieve.
-    quantity : string
-        Which fluxlike quantity should be retrieved? (default = 'flux')
+    x : string
+        What quantity should be retrieved as 'x'? (default = 'time')
+    y : string
+        What quantity should be retrieved as 'y'? (default = 'flux')
+    sigma : string
+        What quantity should be retrieved as 'sigma'? (default = 'uncertainty')
     minimum_acceptable_ok : float
         The smallest value of `ok` that will still be included.
         (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
@@ -40,28 +117,30 @@ def get_ok_data_for_wavelength(
     """
 
     # get 1D independent variable
-    x = self.time
+    x_values = self.get_for_wavelength(i, x) * 1
 
     # get 1D array of what to keep
     ok = self.ok[i, :] >= minimum_acceptable_ok
 
     # get 1D array of the quantity
-    y = self.get(quantity)[i, :] * 1
+    y_values = self.get_for_wavelength(i, y) * 1
 
     # get 1D array of uncertainty
-    sigma = self.fluxlike["uncertainty"][i, :] * 1
+    sigma_values = self.get_for_wavelength(i, sigma) * 1
 
     if express_badness_with_uncertainty:
-        sigma[ok == False] = np.inf
-        return x, y, sigma
+        sigma_values[ok == False] = np.inf
+        return x_values, y_values, sigma_values
     else:
-        return x[ok], y[ok], sigma[ok]
+        return x_values[ok], y_values[ok], sigma_values[ok]
 
 
 def get_ok_data_for_time(
     self,
     i,
-    quantity="flux",
+    x="wavelength",
+    y="flux",
+    sigma="uncertainty",
     minimum_acceptable_ok=1,
     express_badness_with_uncertainty=False,
 ):
@@ -74,8 +153,12 @@ def get_ok_data_for_time(
     ----------
     i : int
         The time index to retrieve.
-    quantity : string
-        Which fluxlike quantity should be retrieved? (default = 'flux')
+    x : string
+        What quantity should be retrieved as 'x'? (default = 'time')
+    y : string
+        What quantity should be retrieved as 'y'? (default = 'flux')
+    sigma : string
+        What quantity should be retrieved as 'sigma'? (default = 'uncertainty')
     minimum_acceptable_ok : float
         The smallest value of `ok` that will still be included.
         (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
@@ -95,19 +178,19 @@ def get_ok_data_for_time(
     """
 
     # get 1D independent variable
-    x = self.wavelength
+    x_values = self.get_for_time(i, x) * 1
 
     # get 1D array of what to keep
     ok = self.ok[:, i] >= minimum_acceptable_ok
 
     # get 1D array of the quantity
-    y = self.get(quantity)[:, i] * 1
+    y_values = self.get_for_time(i, y) * 1
 
     # get 1D array of uncertainty
-    sigma = self.fluxlike["uncertainty"][:, i] * 1
+    sigma_values = self.get_for_time(i, sigma) * 1
 
     if express_badness_with_uncertainty:
-        sigma[ok == False] = np.inf
-        return x, y, sigma
+        sigma_values[ok == False] = np.inf
+        return x_values, y_values, sigma_values
     else:
-        return x[ok], y[ok], sigma[ok]
+        return x_values[ok], y_values[ok], sigma_values[ok]
