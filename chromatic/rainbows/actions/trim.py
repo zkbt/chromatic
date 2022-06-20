@@ -144,9 +144,15 @@ def trim(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
         level of OK-ness for a point to not get trimmed.
     """
 
-    trimmed = self.trim_times(when_to_give_up=when_to_give_up, just_edges=just_edges)
+    trimmed = self.trim_times(
+        when_to_give_up=when_to_give_up,
+        just_edges=just_edges,
+        minimum_acceptable_ok=minimum_acceptable_ok,
+    )
     trimmed = trimmed.trim_wavelengths(
-        when_to_give_up=when_to_give_up, just_edges=just_edges
+        when_to_give_up=when_to_give_up,
+        just_edges=just_edges,
+        minimum_acceptable_ok=minimum_acceptable_ok,
     )
 
     return trimmed

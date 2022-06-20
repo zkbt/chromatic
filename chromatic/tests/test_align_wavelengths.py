@@ -88,7 +88,5 @@ def test_align_wavelengths_with_not_ok_data(visualize=False):
             carefree.imshow_quantities()
             plt.suptitle(ok_fraction)
 
-        assert np.all((cautious.ok == 1) | (cautious.ok == 0))
-
         if np.any(r.ok == 0):
             assert np.any((carefree.ok != 1) & (carefree.ok != 0))
