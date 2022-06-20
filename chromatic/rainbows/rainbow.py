@@ -227,7 +227,7 @@ class Rainbow:
             flux uncertainties for this Rainbow object. The
             available `fluxlike` columns are:
                 {self.fluxlike.keys()}
-            A long-term solution might be to fix the `from_x1dints`
+            A long-term solution might be to fix the `from_?!?!?!?`
             reader, but a short-term solution would be to pick one
             of the columns listed above and say something like
 
@@ -239,9 +239,9 @@ class Rainbow:
             return
 
         # kludge to replace zero uncertainties
-        if np.all(self.uncertainty == 0):
-            warnings.warn("\nUncertainties were all 0, replacing them with 1!")
-            self.fluxlike["uncertainty"] = np.ones_like(self.flux)
+        # if np.all(self.uncertainty == 0):
+        #    warnings.warn("\nUncertainties were all 0, replacing them with 1!")
+        #        self.fluxlike["uncertainty"] = np.ones_like(self.flux)
 
     def save(self, filepath="test.rainbow.npy", format=None, **kw):
         """
@@ -342,7 +342,7 @@ class Rainbow:
 
         # store the flux and uncertainty
         self.fluxlike["flux"] = flux
-        self.fluxlike["uncertainty"] = uncertainty
+        self.fluxlike["uncertainty"] = uncertainty or np.ones_like(flux) * np.nan
 
         # sort other arrays by shape
         for k, v in kw.items():
@@ -523,13 +523,21 @@ class Rainbow:
         """
         The 2D array of whether data is OK (row = wavelength, col = time).
         """
+
+        # assemble from three possible arrays
         ok = self.fluxlike.get("ok", np.ones(self.shape).astype(bool))
         ok *= self.wavelike.get("ok", np.ones(self.nwave).astype(bool))[:, np.newaxis]
         ok *= self.timelike.get("ok", np.ones(self.ntime).astype(bool))[np.newaxis, :]
 
+        # make sure flux is finite
         if self.flux is not None:
             ok *= np.isfinite(self.flux)
-        return ok
+
+        # weird kludge to deal with rounding errors (particularly in two-step .bin)
+        if ok.dtype == bool:
+            return ok
+        else:
+            return np.round(ok, decimals=12)
 
     @property
     def _time_label(self):
@@ -716,7 +724,7 @@ class Rainbow:
                     warnings.warn(message)
 
         if "ok" in self.fluxlike:
-            is_nan = np.isnan(self.fluxlike["ok"])
+            is_nan = np.isnan(self.fluxlike["flux"])
             self.fluxlike["ok"][is_nan] = 0
         self._sort()
 
@@ -902,8 +910,8 @@ class Rainbow:
         bin_in_time,
         bin_in_wavelength,
         trim,
-        trim_nan_times,
-        trim_nan_wavelengths,
+        trim_times,
+        trim_wavelengths,
         shift,
         _create_shared_wavelength_axis,
         align_wavelengths,
@@ -958,4 +966,11 @@ class Rainbow:
         _remove_last_history_entry,
         _create_history_entry,
         history,
+    )
+
+    from .helpers import (
+        get_for_wavelength,
+        get_for_time,
+        get_ok_data_for_wavelength,
+        get_ok_data_for_time,
     )

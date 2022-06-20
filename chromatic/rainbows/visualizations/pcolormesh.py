@@ -12,6 +12,9 @@ def pcolormesh(
     w_unit="micron",
     t_unit="day",
     colorbar=True,
+    mask_ok=True,
+    color_ok="tomato",
+    alpha_ok=0.8,
     **kw,
 ):
     """
@@ -31,6 +34,12 @@ def pcolormesh(
         The unit for plotting times.
     colorbar : bool
         Should we include a colorbar?
+    mask_ok : bool
+        Should we mark which data are not OK?
+    color_ok : str
+        The color to be used for masking data points that are not OK.
+    alpha_ok : float
+        The transparency to be used for masking data points that are not OK.
     kw : dict
         All other keywords will be passed on to `plt.pcolormesh`,
         so you can have more detailed control over the plot
@@ -79,10 +88,12 @@ def pcolormesh(
         x, y = t_edges, w_edges
         xlabel, ylabel = tlabel, wlabel
         z = get_2D(quantity)
+        ok = get_2D("ok")
     elif xaxis.lower()[0] == "w":
         x, y = w_edges, t_edges
         xlabel, ylabel = wlabel, tlabel
         z = get_2D(quantity).T
+        ok = get_2D("ok").T
     else:
         warnings.warn(
             "Please specify either `xaxis='time'` or `xaxis='wavelength'` for `.plot()`"
@@ -93,6 +104,25 @@ def pcolormesh(
     pcolormesh_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
+        if mask_ok:
+            okpcolormesh_kw = dict(**pcolormesh_kw)
+            okpcolormesh_kw.update(
+                cmap=one2another(
+                    bottom=color_ok,
+                    top=color_ok,
+                    alpha_bottom=alpha_ok,
+                    alpha_top=0,
+                ),
+                zorder=10,
+                vmin=0,
+                vmax=1,
+            )
+            plt.pcolormesh(
+                x,
+                y,
+                ok,
+                **okpcolormesh_kw,
+            )
         plt.pcolormesh(
             x,
             y,
