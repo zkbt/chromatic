@@ -339,7 +339,8 @@ def bin_in_time(
                 uncertainty_for_binning = np.ones(self.ntime).astype(bool)
             else:
                 uncertainty_for_binning = self.uncertainty[w, :] * 1
-            uncertainty_for_binning[time_is_bad] = np.inf
+            if k != "ok":
+                uncertainty_for_binning[time_is_bad] = np.inf
 
             # bin the quantities for this wavelength
             binned = bintogrid(
@@ -397,7 +398,7 @@ def bin_in_time(
 
     # return the new Rainbow (with trimming if necessary)
     if trim:
-        return new.trim_times()
+        return new.trim_times(minimum_acceptable_ok=minimum_acceptable_ok)
     else:
         return new
 
@@ -558,11 +559,13 @@ def bin_in_wavelength(
 
             # mask out "bad" wavelengths
             wavelength_is_bad = ok[:, t] < minimum_acceptable_ok
+
             if self.uncertainty is None:
                 uncertainty_for_binning = np.ones(self.nwave).astype(bool)
             else:
                 uncertainty_for_binning = self.uncertainty[:, t] * 1
-            uncertainty_for_binning[wavelength_is_bad] = np.inf
+            if k != "ok":
+                uncertainty_for_binning[wavelength_is_bad] = np.inf
 
             if starting_wavelengths.upper() == "1D":
                 w = self.wavelike["wavelength"][:]
@@ -624,7 +627,7 @@ def bin_in_wavelength(
 
     # return the new Rainbow (with trimming if necessary)
     if trim:
-        return new.trim_wavelengths()
+        return new.trim_wavelengths(minimum_acceptable_ok=minimum_acceptable_ok)
     else:
         return new
 
