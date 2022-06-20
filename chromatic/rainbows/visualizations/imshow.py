@@ -143,12 +143,12 @@ def imshow(
             return self.fluxlike.get(k, None)
 
     if xaxis.lower()[0] == "t":
-        self._imshow_extent = [tlower, tupper, wupper, wlower]
+        self.metadata["_imshow_extent"] = [tlower, tupper, wupper, wlower]
         xlabel, ylabel = tlabel, wlabel
         z = get_2D(quantity)
         ok = get_2D("ok")
     elif xaxis.lower()[0] == "w":
-        self._imshow_extent = [wlower, wupper, tupper, tlower]
+        self.metadata["_imshow_extent"] = [wlower, wupper, tupper, tlower]
         xlabel, ylabel = wlabel, tlabel
         z = get_2D(quantity).T
         ok = get_2D("ok").T
@@ -179,14 +179,14 @@ def imshow(
             )
             plt.imshow(
                 ok,
-                extent=self._imshow_extent,
+                extent=self.metadata["_imshow_extent"],
                 aspect=aspect,
                 origin="upper",
                 **okimshow_kw,
             )
         plt.imshow(
             z,
-            extent=self._imshow_extent,
+            extent=self.metadata["_imshow_extent"],
             aspect=aspect,
             origin="upper",
             **imshow_kw,
