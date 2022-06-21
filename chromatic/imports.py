@@ -32,6 +32,7 @@ from astropy.visualization import quantity_support, simple_norm
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
 from scipy.interpolate import interp1d
+from scipy.stats import median_abs_deviation
 
 # For modelling transits.
 import batman

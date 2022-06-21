@@ -93,7 +93,6 @@ class SimulatedRainbow(RainbowWithModel):
 
         # save the basic inputs that aren't stored elsewhere
         self.metadata["name"] = name
-        self.metadata["signal_to_noise"] = signal_to_noise
 
         # If the flux of the star is not given,
         # assume a continuum-normlized flux where fx=1 at all wavelengths.
@@ -113,6 +112,10 @@ class SimulatedRainbow(RainbowWithModel):
         # Set uncertainty.
         self.fluxlike["flux"] = model * 1
         self.fluxlike["model"] = model * 1
+        self.fluxlike["uncertainty"] = np.zeros(self.shape)
+
+        # make sure everything is defined and sorted
+        self._validate_core_dictionaries()
 
         if signal_to_noise is not None:
             message = f"""
@@ -129,9 +132,6 @@ class SimulatedRainbow(RainbowWithModel):
             new = self.inject_noise()
             for k in ["flux", "uncertainty", "model"]:
                 self.fluxlike[k] = new.fluxlike[k]
-
-        # make sure everything is defined and sorted
-        self._validate_core_dictionaries()
 
         # append the history entry to the new Rainbow
         self._record_history_entry(h)

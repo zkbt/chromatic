@@ -12,6 +12,9 @@ def imshow(
     t_unit="day",
     colorbar=True,
     aspect="auto",
+    mask_ok=True,
+    color_ok="tomato",
+    alpha_ok=0.8,
     **kw,
 ):
     """
@@ -33,6 +36,12 @@ def imshow(
         Should we include a colorbar?
     aspect : str
         What aspect ratio should be used for the imshow?
+    mask_ok : bool
+        Should we mark which data are not OK?
+    color_ok : str
+        The color to be used for masking data points that are not OK.
+    alpha_ok : float
+        The transparency to be used for masking data points that are not OK.
     kw : dict
         All other keywords will be passed on to `plt.imshow`,
         so you can have more detailed control over the plot
@@ -134,13 +143,15 @@ def imshow(
             return self.fluxlike.get(k, None)
 
     if xaxis.lower()[0] == "t":
-        self._imshow_extent = [tlower, tupper, wupper, wlower]
+        self.metadata["_imshow_extent"] = [tlower, tupper, wupper, wlower]
         xlabel, ylabel = tlabel, wlabel
         z = get_2D(quantity)
+        ok = get_2D("ok")
     elif xaxis.lower()[0] == "w":
-        self._imshow_extent = [wlower, wupper, tupper, tlower]
+        self.metadata["_imshow_extent"] = [wlower, wupper, tupper, tlower]
         xlabel, ylabel = wlabel, tlabel
         z = get_2D(quantity).T
+        ok = get_2D("ok").T
     else:
         warnings.warn(
             "Please specify either `xaxis='time'` or `xaxis='wavelength'` for `.plot()`"
@@ -151,9 +162,31 @@ def imshow(
     imshow_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
+
+        # create an overlaying mask of which data are OK or not
+        if mask_ok:
+            okimshow_kw = dict(**imshow_kw)
+            okimshow_kw.update(
+                cmap=one2another(
+                    bottom=color_ok,
+                    top=color_ok,
+                    alpha_bottom=alpha_ok,
+                    alpha_top=0,
+                ),
+                zorder=10,
+                vmin=0,
+                vmax=1,
+            )
+            plt.imshow(
+                ok,
+                extent=self.metadata["_imshow_extent"],
+                aspect=aspect,
+                origin="upper",
+                **okimshow_kw,
+            )
         plt.imshow(
             z,
-            extent=self._imshow_extent,
+            extent=self.metadata["_imshow_extent"],
             aspect=aspect,
             origin="upper",
             **imshow_kw,
@@ -165,4 +198,5 @@ def imshow(
                 ax=ax,
                 label=u.Quantity(z).unit.to_string("latex_inline"),
             )
+
     return ax

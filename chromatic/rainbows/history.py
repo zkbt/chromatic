@@ -127,7 +127,8 @@ def history(self, format="string"):
     for h in self.metadata["history"]:
         d["names"].append(h["name"])
         d["arguments"].append(
-            ", ".join(
+            "\n   "
+            + ",\n   ".join(
                 [f"{k}={represent_as_copypasteable(v)}" for k, v in h["inputs"].items()]
             )
         )
@@ -138,6 +139,6 @@ def history(self, format="string"):
         return table
     elif format == "string":
         calls = [f"{row['names']}({row['arguments']})" for row in table]
-        return ".".join(calls)
+        return "(\n" + "\n.".join(calls) + "\n)"
     else:
         raise ValueError(f"`format='{format}'` not available")

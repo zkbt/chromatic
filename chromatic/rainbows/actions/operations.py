@@ -250,7 +250,8 @@ def __eq__(self, other):
 
     # loop through the core dictionaries
     for d in self._core_dictionaries:
-
+        if d == "metadata":
+            continue
         # pull out each core dictionary from both
         d1, d2 = vars(self)[d], vars(other)[d]
         same *= d1.keys() == d2.keys()
