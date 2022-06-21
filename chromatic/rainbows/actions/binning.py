@@ -335,7 +335,7 @@ def bin_in_time(
         for w in range(new.nwave):
             # mask out "bad" wavelengths
             time_is_bad = ok[w, :] < minimum_acceptable_ok
-            if self.uncertainty is None:
+            if (self.uncertainty is None) or np.all(self.uncertainty == 0):
                 uncertainty_for_binning = np.ones(self.ntime).astype(bool)
             else:
                 uncertainty_for_binning = self.uncertainty[w, :] * 1
@@ -560,7 +560,7 @@ def bin_in_wavelength(
             # mask out "bad" wavelengths
             wavelength_is_bad = ok[:, t] < minimum_acceptable_ok
 
-            if self.uncertainty is None:
+            if (self.uncertainty is None) or np.all(self.uncertainty == 0):
                 uncertainty_for_binning = np.ones(self.nwave).astype(bool)
             else:
                 uncertainty_for_binning = self.uncertainty[:, t] * 1
@@ -645,7 +645,7 @@ def get_lightcurve_as_rainbow(self):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        new = self.bin(nwavelengths=self.nwave)
+        new = self.bin(nwavelengths=self.nwave, trim=False)
 
     new._record_history_entry(h)
     return new
@@ -664,7 +664,7 @@ def get_spectrum_as_rainbow(self):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        new = self.bin(ntimes=self.ntime)
+        new = self.bin(ntimes=self.ntime, trim=False)
 
     new._record_history_entry(h)
     return new

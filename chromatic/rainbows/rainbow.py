@@ -911,6 +911,7 @@ class Rainbow:
     # import other actions that return other Rainbows
     from .actions import (
         normalize,
+        _is_probably_normalized,
         bin,
         bin_in_time,
         bin_in_wavelength,
