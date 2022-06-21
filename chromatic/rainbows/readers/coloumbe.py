@@ -65,7 +65,7 @@ def from_coloumbe(rainbow, filepath, order=1):
                 # pull out a wavelength grid (assuming it'll stay constant)
                 wavelength_unit = u.Unit(hdu[e].columns["wavelength"].unit)
                 rainbow.wavelike["wavelength"] = (
-                    hdu[e].data["wavelength"] * wavelength_unit
+                    hdu[e].data["wavelength"] * wavelength_unit * 1
                 )
 
                 # set up the fluxlike quantities
@@ -86,14 +86,14 @@ def from_coloumbe(rainbow, filepath, order=1):
                         column_units[c] = 1
 
                     # populate the fluxlike dictionary with the empty array
-                    rainbow.fluxlike[c] = this_quantity
+                    rainbow.fluxlike[c] = this_quantity * 1
 
             for column in hdu[e].columns:
 
                 # get a lower case name for the unit
                 c = column.name.lower()
                 rainbow.fluxlike[c][:, integration_counter - 1] = (
-                    hdu[e].data[c] * column_units[c]
+                    hdu[e].data[c] * column_units[c] * 1
                 )
 
             # increment the running integration total

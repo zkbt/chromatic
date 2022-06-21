@@ -83,7 +83,7 @@ def from_atoca(rainbow, filepath, order=1):
         if i_file == 0:
             # Create time axis
             times, nints = get_time_axis(hdu_list["PRIMARY"].header)
-            rainbow.timelike["time"] = times
+            rainbow.timelike["time"] = times * 1
 
         # Loop over all extensions.
         for i in range(1, len(hdu_list)):
@@ -117,10 +117,10 @@ def from_atoca(rainbow, filepath, order=1):
             )
         elif quantity == "WAVELENGTH":
             rainbow.wavelike["wavelength"] = (
-                np.nanmedian(quantities[quantity], axis=0) * u.micron
+                np.nanmedian(quantities[quantity], axis=0) * u.micron * 1
             )
         else:
-            rainbow.fluxlike[quantity] = quantities[quantity].T
+            rainbow.fluxlike[quantity] = quantities[quantity].T * 1
 
     # Warn user if the number of unpacked integrations doesn't match the
     # expected amount.

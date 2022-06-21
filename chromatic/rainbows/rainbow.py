@@ -364,11 +364,11 @@ class Rainbow:
             The quantity to sort.
         """
         if np.shape(v) == self.shape:
-            self.fluxlike[k] = v
+            self.fluxlike[k] = v * 1
         elif np.shape(v) == (self.nwave,):
-            self.wavelike[k] = v
+            self.wavelike[k] = v * 1
         elif np.shape(v) == (self.ntime,):
-            self.timelike[k] = v
+            self.timelike[k] = v * 1
         else:
             raise ValueError("'{k}' doesn't fit anywhere!")
 
@@ -615,13 +615,13 @@ class Rainbow:
             if key in self._core_dictionaries:
                 raise ValueError("Trying to set a core dictionary.")
             elif key == "wavelength":
-                self.wavelike["wavelength"] = value
+                self.wavelike["wavelength"] = value * 1
                 self._validate_core_dictionaries()
             elif key == "time":
-                self.timelike["time"] = value
+                self.timelike["time"] = value * 1
                 self._validate_core_dictionaries()
             elif key in ["flux", "uncertainty", "ok"]:
-                self.fluxlike[key] = value
+                self.fluxlike[key] = value * 1
                 self._validate_core_dictionaries()
             elif isinstance(value, str):
                 self.metadata[key] = value
@@ -726,6 +726,16 @@ class Rainbow:
         if "ok" in self.fluxlike:
             is_nan = np.isnan(self.fluxlike["flux"])
             self.fluxlike["ok"][is_nan] = 0
+
+        # make sure no arrays are accidentally pointed to each other
+        # (if they are, sorting will get really messed up!)
+        for d in ["fluxlike", "wavelike", "timelike"]:
+            core_dictionary = self.get(d)
+            for k1, v1 in core_dictionary.items():
+                for k2, v2 in core_dictionary.items():
+                    if k1 != k2:
+                        assert v1 is not v2
+
         self._sort()
 
     def _make_sure_wavelength_edges_are_defined(self):
