@@ -152,16 +152,26 @@ def align_wavelengths(self, minimum_acceptable_ok=1, minimum_points_per_bin=0, *
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("align_wavelengths", locals())
 
-    # create a shared wavelength array
-    shared_wavelengths = self._create_shared_wavelength_axis(**kw)
+    if "wavelength" not in self.fluxlike:
+        warnings.warn(
+            f"""
+        No 2D wavelength information was found, so
+        it's assumed wavelengths don't need to be aligned.
+        Wavelength alignment is being skipped!
+        """
+        )
+        shifted = self._create_copy()
+    else:
+        # create a shared wavelength array
+        shared_wavelengths = self._create_shared_wavelength_axis(**kw)
 
-    # bin the rainbow onto that new grid, starting from 2D wavelengths
-    shifted = self.bin_in_wavelength(
-        wavelength=shared_wavelengths,
-        minimum_acceptable_ok=minimum_acceptable_ok,
-        starting_wavelengths="2D",
-        minimum_points_per_bin=minimum_points_per_bin,
-    )
+        # bin the rainbow onto that new grid, starting from 2D wavelengths
+        shifted = self.bin_in_wavelength(
+            wavelength=shared_wavelengths,
+            minimum_acceptable_ok=minimum_acceptable_ok,
+            starting_wavelengths="2D",
+            minimum_points_per_bin=minimum_points_per_bin,
+        )
 
     # append the history entry to the new Rainbow
     shifted._record_history_entry(h)

@@ -30,7 +30,7 @@ def normalize(self, axis="wavelength", percentile=50):
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("normalize", locals())
 
-    # TODO, think about more careful treatment of uncertainties + good/bad data
+    # create an empty copy
     new = self._create_copy()
 
     # (ignore nan warnings)
