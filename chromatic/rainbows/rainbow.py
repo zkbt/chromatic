@@ -958,7 +958,7 @@ class Rainbow:
         plot_quantities,
         imshow_interact,
         plot_spectra,
-        plot_comapre_uncertainties,
+        plot_compare_uncertainties,
         plot,
     )
 
