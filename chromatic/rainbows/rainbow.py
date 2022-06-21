@@ -785,6 +785,8 @@ class Rainbow:
         """
 
         i_wavelength, i_time = key
+        # create a history entry for this action (before other variables are defined)
+        h = self._create_history_entry("__getitem__", locals())
 
         # create a copy
         new = self._create_copy()
@@ -809,6 +811,9 @@ class Rainbow:
         new._validate_core_dictionaries()
         new._guess_wscale()
         new._guess_tscale()
+
+        # append the history entry to the new Rainbow
+        new._record_history_entry(h)
 
         return new
 
@@ -906,6 +911,7 @@ class Rainbow:
     # import other actions that return other Rainbows
     from .actions import (
         normalize,
+        _is_probably_normalized,
         bin,
         bin_in_time,
         bin_in_wavelength,
@@ -925,8 +931,6 @@ class Rainbow:
         _create_fake_wavelike_quantity,
         _create_fake_timelike_quantity,
         _create_fake_fluxlike_quantity,
-        to_nparray,
-        to_df,
     )
 
     # import summary statistics for each wavelength
@@ -960,18 +964,16 @@ class Rainbow:
         plot,
     )
 
-    # import history abilities
-    from .history import (
-        _setup_history,
-        _record_history_entry,
-        _remove_last_history_entry,
-        _create_history_entry,
-        history,
-    )
-
     from .helpers import (
         get_for_wavelength,
         get_for_time,
         get_ok_data_for_wavelength,
         get_ok_data_for_time,
+        to_nparray,
+        to_df,
+        _setup_history,
+        _record_history_entry,
+        _remove_last_history_entry,
+        _create_history_entry,
+        history,
     )
