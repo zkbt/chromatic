@@ -104,6 +104,15 @@ def _setup_animate_lightcurves(
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
+    if (quantity == "flux") and (self._is_probably_normalized() == False):
+        warnings.warn(
+            f"""
+        It's not 100% obvious that {self} has been normalized.
+        If you're expecting your animation to wobble near 1,
+        please try normalizing before animating, perhaps with
+        the `.normalize()` action. If not, please ignore this!
+        """
+        )
 
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
 
@@ -283,6 +292,15 @@ def _setup_animate_spectra(
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
 
+    if (quantity == "flux") and (self._is_probably_normalized() == False):
+        warnings.warn(
+            f"""
+        It's not 100% obvious that {self} has been normalized.
+        If you're expecting your animation to wobble near 1,
+        please try normalizing before animating, perhaps with
+        the `.normalize()` action. If not, please ignore this!
+        """
+        )
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
 
     with quantity_support():
@@ -399,6 +417,7 @@ def animate_spectra(
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
+
     self._setup_animate_spectra(**kwargs)
 
     # make and save the animation
