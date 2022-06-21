@@ -82,16 +82,16 @@ def from_feinstein(rainbow, filepath):
 
     wavelength, spectra, err = np.load(filepath, allow_pickle=True)
 
-    rainbow.wavelike["wavelength"] = wavelength * u.micron
+    rainbow.wavelike["wavelength"] = wavelength * u.micron * 1
 
     # populate a 1D array of times (with astropy units of time)
     times = np.arange(spectra.shape[0]) * u.minute
     warnings.warn("The times are totally made up!")
-    rainbow.timelike["time"] = times
+    rainbow.timelike["time"] = times * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes
     flux = np.zeros((len(wavelength), len(times)))
     uncertainty = np.zeros_like(flux)
 
-    rainbow.fluxlike["flux"] = spectra.T
-    rainbow.fluxlike["uncertainty"] = err.T
+    rainbow.fluxlike["flux"] = spectra.T * 1
+    rainbow.fluxlike["uncertainty"] = err.T * 1

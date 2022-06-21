@@ -70,19 +70,19 @@ def from_nres(rainbow, filepath, order=52):
             rainbow.timelike["time"] = np.zeros(ntimes) * u.day
 
         # populate a 1D array of times (with astropy units of time)
-        rainbow.timelike["time"][i] = date_bjd * u.day
+        rainbow.timelike["time"][i] = date_bjd * u.day * 1
 
         # populate a 2D (row = wavelength, col = time, value = wavelength)
-        rainbow.fluxlike["wavelength"][:, i] = wavelengths
+        rainbow.fluxlike["wavelength"][:, i] = wavelengths * 1
 
         # populate a 2D (row = wavelength, col = time) array of fluxes
-        rainbow.fluxlike["flux"][:, i] = fluxes
+        rainbow.fluxlike["flux"][:, i] = fluxes * 1
 
         # populate a 2D (row = wavelength, col = time) array of uncertainties
-        rainbow.fluxlike["uncertainty"][:, i] = errors
+        rainbow.fluxlike["uncertainty"][:, i] = errors * 1
 
         # populate a 2D (row = wavelength, col = time) array of ok
-        rainbow.fluxlike["ok"][:, i] = ok
+        rainbow.fluxlike["ok"][:, i] = ok * 1
 
     # populate a 1D array of wavelengths (with astropy units of length)
     rainbow.wavelike["wavelength"] = np.nanmedian(

@@ -44,4 +44,4 @@ def from_rainbow_FITS(rainbow, filepath):
     for e in ["fluxlike", "wavelike", "timelike"]:
         table = Table.read(hdu_list[e])
         for k in table.colnames:
-            vars(rainbow)[e][k] = table[k].quantity
+            vars(rainbow)[e][k] = table[k].quantity * 1
