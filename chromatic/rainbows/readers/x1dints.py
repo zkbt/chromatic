@@ -175,9 +175,9 @@ def from_x1dints(rainbow, filepath):
 
     # try to pull in the errors
     try:
-        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["flux_error"]
+        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["flux_error"]*1
     except KeyError:
-        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["error"]
+        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["error"]*1
 
     if rainbow.uncertainty is None:
         message = f"""
