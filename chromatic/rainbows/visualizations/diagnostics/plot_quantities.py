@@ -6,34 +6,34 @@ __all__ = ["plot_quantities"]
 def plot_quantities(
     self,
     quantities=None,
-    data_like="time",
+    xaxis="time",
     maxcol=1,
     panel_size=(6, 2),
-    x_axis="index",
+    what_is_x="index",
     **kw,
 ):
     """
-    Plot {data_like}-like quantities as a function of {data_like} index
-    or any other {data_like} quantity (such as "time" or "wavelength").
+    Plot {xaxis}-like quantities as a function of {xaxis} index
+    or any other {xaxis} quantity (such as "time" or "wavelength").
 
     Parameters
     ----------
     quantities : list like
-        The X-like quantity to plot.
-    data_like : string
+        The {xaxis}-like quantity to plot.
+    xaxis : string
         Whether the quantities are alike to 'time' or 'wave'. Default is 'time'. (Optional)
     maxcol : int
         The maximum number of columns to show (Optional).
     panel_size : tuple
         The size in inches dedicated to each panel, default is (6,2). (Optional)
-    x_axis : string
-        The quantity to plot on the x_axis, default is index. (Optional)
+    what_is_x : string
+        The quantity to plot on the what_is_x, default is index. (Optional)
 
     """
     # decide which dictionary to plot
-    if data_like not in ["time", "wave", "wavelength"]:
-        raise Exception("Unknown data_like. Choose from [time, wave]")
-    elif data_like == "time":
+    if xaxis not in ["time", "wave", "wavelength"]:
+        raise Exception("Unknown xaxis. Choose from [time, wave]")
+    elif xaxis == "time":
         like_dict = self.timelike
     else:
         like_dict = self.wavelike
@@ -66,23 +66,23 @@ def plot_quantities(
     else:
         ax = [axes]
 
-    # set x_axis variable
-    if x_axis.lower() == "index":
-        xaxis = np.arange(0, len(like_dict[list(like_dict.keys())[0]]))
-        xlab = f"{data_like} Index"
+    # set what_is_x variable
+    if what_is_x.lower() == "index":
+        x_values = np.arange(0, len(like_dict[list(like_dict.keys())[0]]))
+        xlab = f"{xaxis} Index"
     else:
-        if x_axis in like_dict.keys():
-            xaxis = like_dict[x_axis]
-            xlab = x_axis
+        if what_is_x in like_dict.keys():
+            x_values = like_dict[what_is_x]
+            xlab = what_is_x
         else:
-            raise Exception("Desired x_axis quantity is not in given dictionary")
+            raise Exception("Desired `what_is_x` quantity is not in given dictionary")
 
     # display each quantity
     for k, key in enumerate(allkeys):
         # make the plot (or an empty box)
         if key in like_dict.keys():
             ax[k].plot(
-                xaxis, like_dict[key], color=plt.cm.viridis(k / len(allkeys)), **kw
+                x_values, like_dict[key], color=plt.cm.viridis(k / len(allkeys)), **kw
             )
             ax[k].set_xlabel(xlab)
             ax[k].set_ylabel(

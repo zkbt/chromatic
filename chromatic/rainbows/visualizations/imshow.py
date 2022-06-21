@@ -7,14 +7,19 @@ def imshow(
     self,
     ax=None,
     quantity="flux",
+    xaxis="time",
     w_unit="micron",
     t_unit="day",
     colorbar=True,
     aspect="auto",
+    mask_ok=True,
+    color_ok="tomato",
+    alpha_ok=0.8,
     **kw,
 ):
     """
-    imshow flux as a function of time (x = time, y = wavelength, color = flux).
+    Paint a 2D image of flux as a function of time and wavelength,
+    using `plt.imshow` where pixels will have constant size.
 
     Parameters
     ----------
@@ -31,6 +36,12 @@ def imshow(
         Should we include a colorbar?
     aspect : str
         What aspect ratio should be used for the imshow?
+    mask_ok : bool
+        Should we mark which data are not OK?
+    color_ok : str
+        The color to be used for masking data points that are not OK.
+    alpha_ok : float
+        The transparency to be used for masking data points that are not OK.
     kw : dict
         All other keywords will be passed on to `plt.imshow`,
         so you can have more detailed control over the plot
@@ -44,6 +55,7 @@ def imshow(
     if ax is None:
         ax = plt.subplot()
 
+    # get units
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
     # make sure some wavelength and time edges are defined
@@ -57,11 +69,11 @@ def imshow(
     except AttributeError:
         wmin, wmax = None, None
     if (self.wscale == "linear") and (wmin is not None) and (wmax is not None):
-        bottom, top = wmax, wmin
-        ylabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"
+        wlower, wupper = wmin, wmax
+        wlabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"
     elif self.wscale == "log" and (wmin is not None) and (wmax is not None):
-        bottom, top = np.log10(wmax), np.log10(wmin)
-        ylabel = (
+        wlower, wupper = np.log10(wmin), np.log10(wmax)
+        wlabel = (
             r"log$_{10}$" + f"[{self._wave_label}/({w_unit.to_string('latex_inline')})]"
         )
     else:
@@ -81,8 +93,8 @@ def imshow(
         `rainbow.bin(dw=...)` (for linear wavelengths)
         """
         warnings.warn(message)
-        bottom, top = self.nwave - 0.5, -0.5
-        ylabel = "Wavelength Index"
+        wlower, wupper = -0.5, self.nwave - 0.5
+        wlabel = "Wavelength Index"
 
     # set up the time extent
     try:
@@ -91,11 +103,11 @@ def imshow(
     except AttributeError:
         tmin, tmax = None, None
     if (self.tscale == "linear") and (tmin is not None) and (tmax is not None):
-        right, left = tmax, tmin
-        xlabel = f"{self._time_label} ({t_unit.to_string('latex_inline')})"
+        tlower, tupper = tmin, tmax
+        tlabel = f"{self._time_label} ({t_unit.to_string('latex_inline')})"
     elif self.tscale == "log" and (tmin is not None) and (tmax is not None):
-        right, left = np.log10(tmax), np.log10(tmin)
-        xlabel = (
+        tlower, tupper = np.log10(tmin), np.log10(tmax)
+        tlabel = (
             r"log$_{10}$" + f"[{self._time_label}/({t_unit.to_string('latex_inline')})]"
         )
     else:
@@ -114,19 +126,67 @@ def imshow(
         `rainbow.bin(dt=...)` (for linear times).
         """
         warnings.warn(message)
-        right, left = self.ntime - 0.5, -0.5
-        xlabel = "Time Index"
+        tlower, tupper = -0.5, self.ntime - 0.5
+        tlabel = "Time Index"
 
-    self._imshow_extent = [left, right, bottom, top]
+    def get_2D(k):
+        """
+        A small helper to get a 2D quantity. This is a bit of
+        a kludge to help with weird cases of duplicate keys
+        (for example where 'wavelength' might appear in both
+        `wavelike` and `fluxlike`).
+        """
+        z = self.get(k)
+        if np.shape(z) == self.shape:
+            return z
+        else:
+            return self.fluxlike.get(k, None)
+
+    if xaxis.lower()[0] == "t":
+        self.metadata["_imshow_extent"] = [tlower, tupper, wupper, wlower]
+        xlabel, ylabel = tlabel, wlabel
+        z = get_2D(quantity)
+        ok = get_2D("ok")
+    elif xaxis.lower()[0] == "w":
+        self.metadata["_imshow_extent"] = [wlower, wupper, tupper, tlower]
+        xlabel, ylabel = wlabel, tlabel
+        z = get_2D(quantity).T
+        ok = get_2D("ok").T
+    else:
+        warnings.warn(
+            "Please specify either `xaxis='time'` or `xaxis='wavelength'` for `.plot()`"
+        )
 
     # define some default keywords
     imshow_kw = dict(interpolation="nearest")
     imshow_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
+
+        # create an overlaying mask of which data are OK or not
+        if mask_ok:
+            okimshow_kw = dict(**imshow_kw)
+            okimshow_kw.update(
+                cmap=one2another(
+                    bottom=color_ok,
+                    top=color_ok,
+                    alpha_bottom=alpha_ok,
+                    alpha_top=0,
+                ),
+                zorder=10,
+                vmin=0,
+                vmax=1,
+            )
+            plt.imshow(
+                ok,
+                extent=self.metadata["_imshow_extent"],
+                aspect=aspect,
+                origin="upper",
+                **okimshow_kw,
+            )
         plt.imshow(
-            self.fluxlike[quantity],
-            extent=self._imshow_extent,
+            z,
+            extent=self.metadata["_imshow_extent"],
             aspect=aspect,
             origin="upper",
             **imshow_kw,
@@ -136,8 +196,7 @@ def imshow(
         if colorbar:
             plt.colorbar(
                 ax=ax,
-                label=u.Quantity(self.fluxlike[quantity]).unit.to_string(
-                    "latex_inline"
-                ),
+                label=u.Quantity(z).unit.to_string("latex_inline"),
             )
+
     return ax

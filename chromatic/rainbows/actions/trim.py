@@ -1,25 +1,56 @@
 from ...imports import *
 
 
-def trim_nan_times(self, threshold=1.0):
+def trim_times(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
     """
     Trim times that are all (or mostly) not numbers.
 
     Parameters
     ----------
-    threshold
-        The fraction of wavelengths that must be nan in order for
-        the entire time to be considered bad (default = 1).
+    just_edges : bool
+        Should we only trim the outermost bad time bins?
+            `True` = Just trim off the bad edges and keep
+            interior bad values. Keeping interior data, even if
+            they're all bad, often helps to make for more
+            intuititive imshow plots.
+            `False` = Trim off every bad time, whether it's on
+            the edge or somewhere in the middle of the dataset.
+            The resulting Rainbow will be smaller, but it might
+            be a little tricky to visualize with imshow.
+    when_to_give_up : float
+        The fraction of wavelengths that must be nan or not OK
+        for the entire time to be considered bad (default = 1).
+            `1.0` = trim only if all wavelengths are bad
+            `0.5` = trim if more than 50% of wavelengths are bad
+            `0.0` = trim if any wavelengths are bad
+    minimum_acceptable_ok : float
+        The numbers in the `.ok` attribute express "how OK?" each
+        data point is, ranging from 0 (not OK) to 1 (super OK).
+        In most cases, `.ok` will be binary, but there may be times
+        where it's intermediate (for example, if a bin was created
+        from some data that were not OK and some that were).
+        The `minimum_acceptable_ok` parameter allows you to specify what
+        level of OK-ness for a point to not get trimmed.
     """
 
     # create a history entry for this action (before other variables are defined)
-    h = self._create_history_entry("trim_nan_times", locals())
+    h = self._create_history_entry("trim_times", locals())
 
-    # figure out which times are good enough to keep
-    fraction_of_nans = np.sum(np.isnan(self.flux), axis=self.waveaxis) / self.nwave
-    indices_of_times_to_keep = fraction_of_nans < threshold
+    # figure out which times should be considered bad
+    is_nan = np.isnan(self.flux)
+    isnt_ok = self.ok < minimum_acceptable_ok
+    fraction_bad = np.sum(is_nan | isnt_ok, axis=self.waveaxis) / self.nwave
+    should_be_kept = fraction_bad < when_to_give_up
 
-    new = self[:, indices_of_times_to_keep]
+    # only make cuts on the edges (if desired)
+    if just_edges:
+        isnt_before_first = np.cumsum(should_be_kept) > 0
+        isnt_after_last = (np.cumsum(should_be_kept[::-1]) > 0)[::-1]
+        isnt_edge = isnt_before_first & isnt_after_last
+        should_be_kept = should_be_kept | isnt_edge
+
+    # actually try the Rainbow
+    new = self[:, should_be_kept]
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
@@ -28,25 +59,55 @@ def trim_nan_times(self, threshold=1.0):
     return new
 
 
-def trim_nan_wavelengths(self, threshold=1.0):
+def trim_wavelengths(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
     """
     Trim wavelengths that are all (or mostly) not numbers.
 
     Parameters
     ----------
-    threshold
-        The fraction of times that must be nan in order for
-        the entire wavelength to be considered bad (default = 1).
+    just_edges : bool
+        Should we only trim the outermost bad wavelength bins?
+            `True` = Just trim off the bad edges and keep
+            interior bad values. Keeping interior data, even if
+            they're all bad, often helps to make for more
+            intuititive imshow plots.
+            `False` = Trim off every bad wavelength, whether it's on
+            the edge or somewhere in the middle of the dataset.
+            The resulting Rainbow will be smaller, but it might
+            be a little tricky to visualize with imshow.
+    when_to_give_up : float
+        The fraction of times that must be nan or not OK
+        for the entire wavelength to be considered bad (default = 1).
+            `1.0` = trim only if all times are bad
+            `0.5` = trim if more than 50% of times are bad
+            `0.0` = trim if any times are bad
+    minimum_acceptable_ok : float
+        The numbers in the `.ok` attribute express "how OK?" each
+        data point is, ranging from 0 (not OK) to 1 (super OK).
+        In most cases, `.ok` will be binary, but there may be times
+        where it's intermediate (for example, if a bin was created
+        from some data that were not OK and some that were).
+        The `minimum_acceptable_ok` parameter allows you to specify what
+        level of OK-ness for a point to not get trimmed.
     """
-
     # create a history entry for this action (before other variables are defined)
-    h = self._create_history_entry("trim_nan_wavelengths", locals())
+    h = self._create_history_entry("trim_wavelengths", locals())
 
-    # figure out which times are good enough to keep
-    fraction_of_nans = np.sum(np.isnan(self.flux), axis=self.timeaxis) / self.ntime
-    indices_of_wavelengths_to_keep = fraction_of_nans < threshold
+    # figure out which wavelengths should be considered bad
+    is_nan = np.isnan(self.flux)
+    isnt_ok = self.ok < minimum_acceptable_ok
+    fraction_bad = np.sum(is_nan | isnt_ok, axis=self.timeaxis) / self.ntime
+    should_be_kept = fraction_bad < when_to_give_up
 
-    new = self[indices_of_wavelengths_to_keep, :]
+    # only make cuts on the edges (if desired)
+    if just_edges:
+        isnt_before_first = np.cumsum(should_be_kept) > 0
+        isnt_after_last = (np.cumsum(should_be_kept[::-1]) > 0)[::-1]
+        isnt_edge = isnt_before_first & isnt_after_last
+        should_be_kept = should_be_kept | isnt_edge
+
+    # actually try the Rainbow
+    new = self[should_be_kept, :]
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
@@ -55,19 +116,43 @@ def trim_nan_wavelengths(self, threshold=1.0):
     return new
 
 
-def trim(self, threshold=1.0):
+def trim(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
     """
-    Trim wavelengths or times that are all (or mostly) not numbers.
-
-    Parameters
-    ----------
-    threshold
-        The fraction of a particular time/wavelengths that must be nan
-        in order for the entire wavelength/time to be considered bad
-        (default = 1).
+    just_edges : bool
+        Should we only trim the outermost bad wavelength bins?
+            `True` = Just trim off the bad edges and keep
+            interior bad values. Keeping interior data, even if
+            they're all bad, often helps to make for more
+            intuititive imshow plots.
+            `False` = Trim off every bad wavelength, whether it's on
+            the edge or somewhere in the middle of the dataset.
+            The resulting Rainbow will be smaller, but it might
+            be a little tricky to visualize with imshow.
+    when_to_give_up : float
+        The fraction of times that must be nan or not OK
+        for the entire wavelength to be considered bad (default = 1).
+            `1.0` = trim only if all times are bad
+            `0.5` = trim if more than 50% of times are bad
+            `0.0` = trim if any times are bad
+    minimum_acceptable_ok : float
+        The numbers in the `.ok` attribute express "how OK?" each
+        data point is, ranging from 0 (not OK) to 1 (super OK).
+        In most cases, `.ok` will be binary, but there may be times
+        where it's intermediate (for example, if a bin was created
+        from some data that were not OK and some that were).
+        The `minimum_acceptable_ok` parameter allows you to specify what
+        level of OK-ness for a point to not get trimmed.
     """
 
-    trimmed = self.trim_nan_times(threshold=threshold)
-    trimmed = trimmed.trim_nan_wavelengths(threshold=threshold)
+    trimmed = self.trim_times(
+        when_to_give_up=when_to_give_up,
+        just_edges=just_edges,
+        minimum_acceptable_ok=minimum_acceptable_ok,
+    )
+    trimmed = trimmed.trim_wavelengths(
+        when_to_give_up=when_to_give_up,
+        just_edges=just_edges,
+        minimum_acceptable_ok=minimum_acceptable_ok,
+    )
 
     return trimmed

@@ -5,7 +5,7 @@ from ..rainbows.history import represent_as_copypasteable
 
 def test_history():
     np.random.seed(0)
-    x = SimulatedRainbow().inject_transit().bin(R=5).normalize()
+    x = SimulatedRainbow().inject_transit().inject_noise().bin(R=5).normalize()
     h = x.history("string")
 
     for k in ["Rainbow", "inject_transit", "bin", "normalize"]:

@@ -4,7 +4,7 @@ from .setup_tests import *
 
 def test_rainbow_npy():
     filename = os.path.join(test_directory, "test.rainbow.npy")
-    a = SimulatedRainbow()
+    a = SimulatedRainbow().inject_noise()
     a.save(filename)
     b = Rainbow(filename)
     assert a == b
@@ -12,7 +12,7 @@ def test_rainbow_npy():
 
 def test_rainbow_FITS():
     filename = os.path.join(test_directory, "test.rainbow.fits")
-    a = SimulatedRainbow()
+    a = SimulatedRainbow().inject_noise()
     a.save(filename, overwrite=True)
     b = Rainbow(filename)
     assert a == b
@@ -20,7 +20,7 @@ def test_rainbow_FITS():
 
 def test_text():
     filename = os.path.join(test_directory, "test.rainbow.txt")
-    a = SimulatedRainbow()
+    a = SimulatedRainbow().inject_noise()
     a.save(filename, overwrite=True)
     b = Rainbow(filename)
     # assert a == b

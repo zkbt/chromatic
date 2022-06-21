@@ -1,10 +1,20 @@
-from .rainbow import *
+from .withmodel import *
 
 
-class SimulatedRainbow(Rainbow):
+class SimulatedRainbow(RainbowWithModel):
+    """
+    `SimulatedRainbow` objects are created from scratch
+    within `chromatic`, with options for various different
+    wavelength grids, time grids, noise sources, and injected
+    models. They can be useful for generating quick simulated
+    dataset for testing analysis and visualization tools.
+
+    This class definition inherits from `RainbowWithModel`,
+    which itself inherits from `Rainbow`.
+    """
+
     def __init__(
         self,
-        signal_to_noise=100,
         tlim=[-2.5, 2.5] * u.hour,
         dt=2 * u.minute,
         time=None,
@@ -14,18 +24,13 @@ class SimulatedRainbow(Rainbow):
         wavelength=None,
         star_flux=None,
         name=None,
+        signal_to_noise=None,
     ):
         """
         Create a simulated rainbow object.
 
         Parameters
         ----------
-
-        signal_to_noise : float
-            The signal-to-noise per wavelength per time.
-            For example, S/N=100 would mean that the
-            uncertainty on the flux for each each
-            wavelength-time data point will be 1%.
 
         tlim : list or array of astropy.units.Quantity
             The pip install -e '.[develop]'[min, max] times for creating the time grid.
@@ -88,12 +93,11 @@ class SimulatedRainbow(Rainbow):
 
         # save the basic inputs that aren't stored elsewhere
         self.metadata["name"] = name
-        self.metadata["signal_to_noise"] = signal_to_noise
 
         # If the flux of the star is not given,
         # assume a continuum-normlized flux where fx=1 at all wavelengths.
         if star_flux is None:
-            self.fluxlike["model"] = np.ones(self.shape)
+            model = np.ones(self.shape)
 
         # If the flux vs wavelength of the star is supplied,
         # include it in the model.
@@ -101,16 +105,33 @@ class SimulatedRainbow(Rainbow):
             # Check to make sure the flux and wavelengths
             # have the same shape.
             if len(star_flux) == len(self.wavelike["wavelength"]):
-                self.fluxlike["model"] = np.transpose([star_flux] * self.shape[1])
+                model = np.transpose([star_flux] * self.shape[1])
+            elif len(star_flux) == 1:
+                model = star_flux * np.ones(self.shape)
 
         # Set uncertainty.
-        self.fluxlike["uncertainty"] = self.fluxlike["model"] / signal_to_noise
-        self.fluxlike["flux"] = np.random.normal(
-            self.fluxlike["model"], self.fluxlike["uncertainty"]
-        )
+        self.fluxlike["flux"] = model * 1
+        self.fluxlike["model"] = model * 1
+        self.fluxlike["uncertainty"] = np.zeros(self.shape)
 
         # make sure everything is defined and sorted
         self._validate_core_dictionaries()
+
+        if signal_to_noise is not None:
+            message = f"""
+            You tried to specify the noise level with
+            `SimulatedRainbow(signal_to_noise={signal_to_noise})`,
+            but that functionality is going away soon.
+            Please replace it right now with
+            `SimulatedRainbow().inject_noise(signal_to_noise={signal_to_noise})`
+            so that your code will continue to work.
+            You're getting away with it this time,
+            but it won't work for much longer!
+            """
+            warnings.warn(message)
+            new = self.inject_noise()
+            for k in ["flux", "uncertainty", "model"]:
+                self.fluxlike[k] = new.fluxlike[k]
 
         # append the history entry to the new Rainbow
         self._record_history_entry(h)

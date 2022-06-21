@@ -38,6 +38,11 @@ def calculate_bin_leftright(x):
     # left = x - xbinsize / 2.0
     # right = x + xbinsize / 2.0
 
+    # weird corner case!
+    if len(x) == 1:
+        left, right = np.sort([0, 2 * x[0]])
+        return np.array([left]), np.array([right])
+
     inner_edges = 0.5 * np.diff(x) + x[:-1]
     first_edge = x[0] - (inner_edges[0] - x[0])
     last_edge = x[-1] + (x[-1] - inner_edges[-1])
@@ -579,7 +584,6 @@ def bintogrid(
             ok *= np.isfinite(weights)
 
         if np.any(ok):
-            # TO-DO: check this nan handling on input arrays is OK?
             numerator = resample_while_conserving_flux(
                 xin=x_without_unit[ok],
                 yin=(y_without_unit * weights)[ok],
@@ -597,10 +601,16 @@ def bintogrid(
             # the standard error on the means, for those bins
             newunc = np.sqrt(1 / denominator["y"])
 
-            # pull out the grid definition (if not already defined)
+            # keep track of the number of original bins going into each new bin
+            number_of_original_bins_per_new_bin = resample_while_conserving_flux(
+                xin=x_without_unit[ok],
+                yin=np.ones_like(y_without_unit)[ok],
+                xout_edges=newx_edges_without_unit,
+            )["y"]
         else:
             newy = np.nan * newx_without_unit
             newunc = np.nan * newx_without_unit
+            number_of_original_bins_per_new_bin = np.zeros_like(newx_without_unit)
 
     # remove any empty bins
     if drop_nans:
@@ -623,8 +633,13 @@ def bintogrid(
     if unc is not None:
         result["uncertainty"] = newunc[ok] * y_unit
 
+    # store how many of the original pixels made it into this new one
+    result["N_unbinned/N_binned"] = number_of_original_bins_per_new_bin[ok]
     if visualize:
-        fi, ax = plt.subplots(1, 1, figsize=(8, 3), dpi=300)
+        fi, ax = plt.subplots(
+            2, 1, figsize=(8, 4), dpi=300, gridspec_kw=dict(height_ratios=[1, 0.2])
+        )
+        plt.sca(ax[0])
         plot_as_boxes(x, y, xleft=x_left, xright=x_right, color="silver", linewidth=1)
         ekw = dict(elinewidth=1, linewidth=0)
         plt.errorbar(x, y, yerr=unc, color="silver", marker="s", **ekw)
@@ -632,12 +647,21 @@ def bintogrid(
             result["x"],
             result["y"],
             yerr=result.get("uncertainty", None),
-            xerr=0.5 * dx_without_unit * x_unit,
+            xerr=0.5 * (result["x_edge_upper"] - result["x_edge_lower"]) * x_unit,
             marker="o",
             color="black",
             zorder=100,
             **ekw,
         )
+        plt.sca(ax[1])
+        plot_as_boxes(
+            result["x"],
+            result["N_unbinned/N_binned"],
+            xleft=result["x_edge_lower"],
+            xright=result["x_edge_upper"],
+        )
+        plt.ylabel("$N_{unbinned}/N_{binned}$")
+        plt.ylim(0, None)
 
     return result
 

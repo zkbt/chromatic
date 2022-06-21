@@ -173,7 +173,7 @@ class Rainbow:
         i_wavelength = np.argsort(self.wavelength)
         i_time = np.argsort(self.time)
 
-        if self.flux.shape != (len(i_wavelength), len(i_time)):
+        if np.shape(self.flux) != (len(i_wavelength), len(i_time)):
             message = """
             Wavelength, time, and flux arrays don't match;
             the `._sort()` step is being skipped.
@@ -227,7 +227,7 @@ class Rainbow:
             flux uncertainties for this Rainbow object. The
             available `fluxlike` columns are:
                 {self.fluxlike.keys()}
-            A long-term solution might be to fix the `from_x1dints`
+            A long-term solution might be to fix the `from_?!?!?!?`
             reader, but a short-term solution would be to pick one
             of the columns listed above and say something like
 
@@ -239,9 +239,9 @@ class Rainbow:
             return
 
         # kludge to replace zero uncertainties
-        if np.all(self.uncertainty == 0):
-            warnings.warn("\nUncertainties were all 0, replacing them with 1!")
-            self.fluxlike["uncertainty"] = np.ones_like(self.flux)
+        # if np.all(self.uncertainty == 0):
+        #    warnings.warn("\nUncertainties were all 0, replacing them with 1!")
+        #        self.fluxlike["uncertainty"] = np.ones_like(self.flux)
 
     def save(self, filepath="test.rainbow.npy", format=None, **kw):
         """
@@ -342,7 +342,7 @@ class Rainbow:
 
         # store the flux and uncertainty
         self.fluxlike["flux"] = flux
-        self.fluxlike["uncertainty"] = uncertainty
+        self.fluxlike["uncertainty"] = uncertainty or np.ones_like(flux) * np.nan
 
         # sort other arrays by shape
         for k, v in kw.items():
@@ -427,23 +427,25 @@ class Rainbow:
             must be within 1% of each other for the wavelength
             scale to be called linear.
         """
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
 
-        # give up if there's no wavelength array
-        if self.wavelength is None:
-            return "?"
+            # give up if there's no wavelength array
+            if self.wavelength is None:
+                return "?"
 
-        # calculate difference arrays
-        w = self.wavelength.value
-        dw = np.diff(w)
-        dlogw = np.diff(np.log(w))
+            # calculate difference arrays
+            w = self.wavelength.value
+            dw = np.diff(w)
+            dlogw = np.diff(np.log(w))
 
-        # test the three options
-        if np.allclose(dw, np.median(dw), rtol=relative_tolerance):
-            self.metadata["wscale"] = "linear"
-        elif np.allclose(dlogw, np.median(dlogw), rtol=relative_tolerance):
-            self.metadata["wscale"] = "log"
-        else:
-            self.metadata["wscale"] = "?"
+            # test the three options
+            if np.allclose(dw, np.median(dw), rtol=relative_tolerance):
+                self.metadata["wscale"] = "linear"
+            elif np.allclose(dlogw, np.median(dlogw), rtol=relative_tolerance):
+                self.metadata["wscale"] = "log"
+            else:
+                self.metadata["wscale"] = "?"
 
     def _guess_tscale(self, relative_tolerance=0.01):
         """
@@ -458,26 +460,28 @@ class Rainbow:
             the times effectively uniform, or for us to treat
             them more carefully as an irregular or gappy grid.
         """
-
-        # give up if there's no time array
-        if self.time is None:
-            return "?"
-
-        # calculate difference arrays
-        t = self.time.value
-        dt = np.diff(t)
         with warnings.catch_warnings():
-            # (don't complain about negative time)
             warnings.simplefilter("ignore")
-            dlogt = np.diff(np.log(t))
 
-        # test the three options
-        if np.allclose(dt, np.median(dt), rtol=relative_tolerance):
-            self.metadata["tscale"] = "linear"
-        elif np.allclose(dlogt, np.median(dlogt), rtol=relative_tolerance):
-            self.metadata["tscale"] = "log"
-        else:
-            self.metadata["tscale"] = "?"
+            # give up if there's no time array
+            if self.time is None:
+                return "?"
+
+            # calculate difference arrays
+            t = self.time.value
+            dt = np.diff(t)
+            with warnings.catch_warnings():
+                # (don't complain about negative time)
+                warnings.simplefilter("ignore")
+                dlogt = np.diff(np.log(t))
+
+            # test the three options
+            if np.allclose(dt, np.median(dt), rtol=relative_tolerance):
+                self.metadata["tscale"] = "linear"
+            elif np.allclose(dlogt, np.median(dlogt), rtol=relative_tolerance):
+                self.metadata["tscale"] = "log"
+            else:
+                self.metadata["tscale"] = "?"
 
     @property
     def name(self):
@@ -519,7 +523,21 @@ class Rainbow:
         """
         The 2D array of whether data is OK (row = wavelength, col = time).
         """
-        return self.fluxlike.get("ok", np.ones_like(self.flux).astype(bool))
+
+        # assemble from three possible arrays
+        ok = self.fluxlike.get("ok", np.ones(self.shape).astype(bool))
+        ok *= self.wavelike.get("ok", np.ones(self.nwave).astype(bool))[:, np.newaxis]
+        ok *= self.timelike.get("ok", np.ones(self.ntime).astype(bool))[np.newaxis, :]
+
+        # make sure flux is finite
+        if self.flux is not None:
+            ok *= np.isfinite(self.flux)
+
+        # weird kludge to deal with rounding errors (particularly in two-step .bin)
+        if ok.dtype == bool:
+            return ok
+        else:
+            return np.round(ok, decimals=12)
 
     @property
     def _time_label(self):
@@ -554,6 +572,26 @@ class Rainbow:
                     pass
         message = f"🌈.{key} does not exist for this Rainbow"
         raise AttributeError(message)
+
+    def get(self, key, default=None):
+        """
+        Retrieve an attribute by its string name.
+        (This is a friendlier wrapper for `getattr()`).
+
+        `r.get('flux')` is identical to `r.flux`
+
+        This is different from indexing directly into
+        a core dictionary (for example, `r.fluxlike['flux']`),
+        because it can also be used to get the results of
+        properties that do calculations on the fly (for example,
+        `r.residuals` in the `RainbowWithModel` class).
+
+        This will default to None if the attribute can't be found.
+        """
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            return None
 
     def __setattr__(self, key, value):
         """
@@ -634,26 +672,6 @@ class Rainbow:
         """
         return np.prod(self.shape)
 
-    def is_ok(self):
-        """
-        Create a flux-like array indicating which data are OK,
-        meaning they are both finite and not marked somewhere
-        ask being bad.
-
-        Returns
-        -------
-        ok : boolean array
-            Fluxlike array of Trues and Falses indicating
-            which data entries are OK.
-        """
-
-        ok = np.isfinite(self.flux)
-        try:
-            ok *= self.fluxlike["ok"]
-        except KeyError:
-            pass
-        return ok
-
     def _validate_core_dictionaries(self):
         """
         Do some simple checks to make sure this Rainbow
@@ -678,14 +696,14 @@ class Rainbow:
             )
 
         # does the flux have the right shape?
-        if self.shape != self.flux.shape:
+        if self.shape != np.shape(self.flux):
             message = f"""
             Something doesn't line up!
-            The flux array has a shape of {self.flux.shape}.
+            The flux array has a shape of {np.shape(self.flux)}.
             The wavelength array has {self.nwave} wavelengths.
             The time array has {self.ntime} times.
             """
-            if self.shape == self.flux.shape[::-1]:
+            if self.shape == np.shape(self.flux)[::-1]:
                 warnings.warn(
                     f"""{message}
                     Any chance your flux array is transposed?
@@ -697,14 +715,17 @@ class Rainbow:
         for n in ["uncertainty", "ok"]:
             x = getattr(self, n)
             if x is not None:
-                if x.shape != self.flux.shape:
+                if x.shape != np.shape(self.flux):
                     message = f"""
                     Watch out! The '{n}' array has
                     a shape of {x.shape}, which doesn't match the
-                    flux array's shape of {self.flux.shape}.
+                    flux array's shape of {np.shape(self.flux)}.
                     """
                     warnings.warn(message)
 
+        if "ok" in self.fluxlike:
+            is_nan = np.isnan(self.fluxlike["flux"])
+            self.fluxlike["ok"][is_nan] = 0
         self._sort()
 
     def _make_sure_wavelength_edges_are_defined(self):
@@ -841,6 +862,44 @@ class Rainbow:
                 )
                 print(item)
 
+    def attach_model(self, model, **kw):
+        """
+        Attach a fluxlike model to this Rainbow,
+        storing it as `self.fluxlike['model']`
+
+        After running this once, it's OK (and faster) to simply
+        update the `.model` attribute of the result.
+
+        Parameters
+        ----------
+        model : np.array, u.Quantity
+            An array of model values, with the same shape as 'flux'
+        kw : dict
+            All other keywords will be interpreted as items
+            that can be added to a Rainbow. You might use this
+            to attach intermediate model steps or quantities
+            (for example, 'planet_model' or 'systematics_model').
+        """
+        # make sure the shape is reasonable
+        assert np.shape(model) == np.shape(self.flux)
+
+        # add the model to the fluxlike array
+        inputs = self._create_copy()._get_core_dictionaries()
+        inputs["fluxlike"]["model"] = model
+
+        # import here (rather than globally) to avoid recursion?
+        from .withmodel import RainbowWithModel
+
+        # create new object
+        new = RainbowWithModel(**inputs)
+
+        # add other inputs to the model
+        for k, v in kw.items():
+            new.__setattr__(k, v)
+
+        # return the RainboWithModel
+        return new
+
     # import the basic operations for Rainbows
     from .actions.operations import __add__, __sub__, __mul__, __truediv__, __eq__
 
@@ -851,15 +910,21 @@ class Rainbow:
         bin_in_time,
         bin_in_wavelength,
         trim,
-        trim_nan_times,
-        trim_nan_wavelengths,
+        trim_times,
+        trim_wavelengths,
+        shift,
         _create_shared_wavelength_axis,
         align_wavelengths,
         inject_transit,
+        inject_systematics,
+        inject_noise,
         fold,
         compare,
         get_lightcurve_as_rainbow,
         get_spectrum_as_rainbow,
+        _create_fake_wavelike_quantity,
+        _create_fake_timelike_quantity,
+        _create_fake_fluxlike_quantity,
         to_nparray,
         to_df,
     )
@@ -869,7 +934,7 @@ class Rainbow:
         get_spectrum,
         get_spectral_resolution,
         get_typical_uncertainty,
-	get_measured_scatter,
+        get_measured_scatter,
     )
 
     # import summary statistics for each wavelength
@@ -878,7 +943,8 @@ class Rainbow:
     # import visualizations that can act on Rainbows
     from .visualizations import (
         imshow,
-        plot,
+        pcolormesh,
+        plot_lightcurves,
         _setup_animate_lightcurves,
         animate_lightcurves,
         _setup_animate_spectra,
@@ -890,6 +956,8 @@ class Rainbow:
         imshow_quantities,
         plot_quantities,
         imshow_interact,
+        plot_spectra,
+        plot,
     )
 
     # import history abilities
@@ -899,4 +967,11 @@ class Rainbow:
         _remove_last_history_entry,
         _create_history_entry,
         history,
+    )
+
+    from .helpers import (
+        get_for_wavelength,
+        get_for_time,
+        get_ok_data_for_wavelength,
+        get_ok_data_for_time,
     )
