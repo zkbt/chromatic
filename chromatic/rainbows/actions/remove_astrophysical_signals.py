@@ -1,7 +1,7 @@
 from ...imports import *
 
 
-def remove_astrophysical_signals(self, method = "gradient"):
+def remove_astrophysical_signals(self, method = "gradient", model = None):
     """
     Remove astrophysical signal by creating new "removed_astrophysical_signal" fluxlike quantity using the "method" argument.
 
@@ -24,30 +24,15 @@ def remove_astrophysical_signals(self, method = "gradient"):
     new = self._create_copy()
 
     if method == "gradient":
-        new.fluxlike["removed_astrophysical_signals"] = np.sqrt(2)*np.gradient(new.flux,axis=0)
-
-    # (ignore nan warnings)
-#    with warnings.catch_warnings():
-#        warnings.simplefilter("ignore")
-#
-#        if axis.lower()[0] == "w":
-#            normalization = np.nanpercentile(new.flux, percentile, axis=self.timeaxis)
-#            new.fluxlike["flux"] = new.flux / normalization[:, np.newaxis]
-#            try:
-#                new.fluxlike["uncertainty"] = (
-#                    self.uncertainty / normalization[:, np.newaxis]
-#                )
-#            except ValueError:
-#                pass
-#        elif axis.lower()[0] == "t":
-#            normalization = np.nanpercentile(self.flux, percentile, axis=self.waveaxis)
-#            new.fluxlike["flux"] = new.flux / normalization[np.newaxis, :]
-#            try:
-#                new.fluxlike["uncertainty"] = (
-#                    self.uncertainty / normalization[np.newaxis, :]
-#                )
-#            except ValueError:
-#                pass
+        new.flux = np.sqrt(2)*np.gradient(new.flux,axis=0)
+#    if method == "highpass_filter"
+#        scipy.signal.butter()
+#    if method == "smooth boxcar"
+#        1d or 3d
+#       scipy.signal.convolve
+#       lighkurve.LightCurve.flatten()
+#    if method == "custom":
+#        new.flux = new.flux/model
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
