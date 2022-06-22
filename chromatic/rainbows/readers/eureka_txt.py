@@ -1,6 +1,6 @@
 from ...imports import *
 
-__all__ = ["from_eureka"]
+__all__ = ["from_eureka_txt"]
 
 
 def eureadka_txt(filename):
@@ -53,7 +53,7 @@ def eureadka_txt(filename):
     return wavelike, timelike, fluxlike
 
 
-def from_eureka(rainbow, filename, **kwargs):
+def from_eureka_txt(rainbow, filename, **kwargs):
     """
     Populate a Rainbow from a eureka pipeline S3 output.
 
