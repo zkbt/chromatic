@@ -6,7 +6,7 @@ import matplotlib.colors as col
 import matplotlib.cm as cm
 import matplotlib.gridspec as gs
 
-import copy, pkg_resources, os, glob, fnmatch, pickle
+import copy, pkg_resources, os, glob, pickle
 from tqdm import tqdm
 
 import warnings, textwrap
@@ -32,6 +32,7 @@ from astropy.visualization import quantity_support, simple_norm
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
 from scipy.interpolate import interp1d
+from scipy.stats import median_abs_deviation
 
 # For modelling transits.
 import batman

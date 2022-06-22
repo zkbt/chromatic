@@ -16,6 +16,9 @@ def shift(self, velocity=0 * u.km / u.s):
         with units of velocity (for example, u.km/u.s)
     """
 
+    # create a history entry for this action (before other variables are defined)
+    h = self._create_history_entry("shift", locals())
+
     # create a new copy of this rainbow
     new = self._create_copy()
 
@@ -28,6 +31,9 @@ def shift(self, velocity=0 * u.km / u.s):
     # apply wavelength shift
     new_wavelength = new.wavelength * np.sqrt((1 + beta) / (1 - beta))
     new.wavelike["wavelength"] = new_wavelength
+
+    # append the history entry to the new Rainbow
+    new._record_history_entry(h)
 
     # return the new object
     return new

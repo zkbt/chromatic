@@ -227,7 +227,7 @@ class Rainbow:
             flux uncertainties for this Rainbow object. The
             available `fluxlike` columns are:
                 {self.fluxlike.keys()}
-            A long-term solution might be to fix the `from_x1dints`
+            A long-term solution might be to fix the `from_?!?!?!?`
             reader, but a short-term solution would be to pick one
             of the columns listed above and say something like
 
@@ -239,9 +239,9 @@ class Rainbow:
             return
 
         # kludge to replace zero uncertainties
-        if np.all(self.uncertainty == 0):
-            warnings.warn("\nUncertainties were all 0, replacing them with 1!")
-            self.fluxlike["uncertainty"] = np.ones_like(self.flux)
+        # if np.all(self.uncertainty == 0):
+        #    warnings.warn("\nUncertainties were all 0, replacing them with 1!")
+        #        self.fluxlike["uncertainty"] = np.ones_like(self.flux)
 
     def save(self, filepath="test.rainbow.npy", format=None, **kw):
         """
@@ -342,7 +342,7 @@ class Rainbow:
 
         # store the flux and uncertainty
         self.fluxlike["flux"] = flux
-        self.fluxlike["uncertainty"] = uncertainty
+        self.fluxlike["uncertainty"] = uncertainty or np.ones_like(flux) * np.nan
 
         # sort other arrays by shape
         for k, v in kw.items():
@@ -364,11 +364,11 @@ class Rainbow:
             The quantity to sort.
         """
         if np.shape(v) == self.shape:
-            self.fluxlike[k] = v
+            self.fluxlike[k] = v * 1
         elif np.shape(v) == (self.nwave,):
-            self.wavelike[k] = v
+            self.wavelike[k] = v * 1
         elif np.shape(v) == (self.ntime,):
-            self.timelike[k] = v
+            self.timelike[k] = v * 1
         else:
             raise ValueError("'{k}' doesn't fit anywhere!")
 
@@ -523,13 +523,21 @@ class Rainbow:
         """
         The 2D array of whether data is OK (row = wavelength, col = time).
         """
+
+        # assemble from three possible arrays
         ok = self.fluxlike.get("ok", np.ones(self.shape).astype(bool))
         ok *= self.wavelike.get("ok", np.ones(self.nwave).astype(bool))[:, np.newaxis]
         ok *= self.timelike.get("ok", np.ones(self.ntime).astype(bool))[np.newaxis, :]
 
+        # make sure flux is finite
         if self.flux is not None:
             ok *= np.isfinite(self.flux)
-        return ok
+
+        # weird kludge to deal with rounding errors (particularly in two-step .bin)
+        if ok.dtype == bool:
+            return ok
+        else:
+            return np.round(ok, decimals=12)
 
     @property
     def _time_label(self):
@@ -607,13 +615,13 @@ class Rainbow:
             if key in self._core_dictionaries:
                 raise ValueError("Trying to set a core dictionary.")
             elif key == "wavelength":
-                self.wavelike["wavelength"] = value
+                self.wavelike["wavelength"] = value * 1
                 self._validate_core_dictionaries()
             elif key == "time":
-                self.timelike["time"] = value
+                self.timelike["time"] = value * 1
                 self._validate_core_dictionaries()
             elif key in ["flux", "uncertainty", "ok"]:
-                self.fluxlike[key] = value
+                self.fluxlike[key] = value * 1
                 self._validate_core_dictionaries()
             elif isinstance(value, str):
                 self.metadata[key] = value
@@ -716,8 +724,18 @@ class Rainbow:
                     warnings.warn(message)
 
         if "ok" in self.fluxlike:
-            is_nan = np.isnan(self.fluxlike["ok"])
+            is_nan = np.isnan(self.fluxlike["flux"])
             self.fluxlike["ok"][is_nan] = 0
+
+        # make sure no arrays are accidentally pointed to each other
+        # (if they are, sorting will get really messed up!)
+        for d in ["fluxlike", "wavelike", "timelike"]:
+            core_dictionary = self.get(d)
+            for k1, v1 in core_dictionary.items():
+                for k2, v2 in core_dictionary.items():
+                    if k1 != k2:
+                        assert v1 is not v2
+
         self._sort()
 
     def _make_sure_wavelength_edges_are_defined(self):
@@ -777,6 +795,8 @@ class Rainbow:
         """
 
         i_wavelength, i_time = key
+        # create a history entry for this action (before other variables are defined)
+        h = self._create_history_entry("__getitem__", locals())
 
         # create a copy
         new = self._create_copy()
@@ -801,6 +821,9 @@ class Rainbow:
         new._validate_core_dictionaries()
         new._guess_wscale()
         new._guess_tscale()
+
+        # append the history entry to the new Rainbow
+        new._record_history_entry(h)
 
         return new
 
@@ -898,12 +921,13 @@ class Rainbow:
     # import other actions that return other Rainbows
     from .actions import (
         normalize,
+        _is_probably_normalized,
         bin,
         bin_in_time,
         bin_in_wavelength,
         trim,
-        trim_nan_times,
-        trim_nan_wavelengths,
+        trim_times,
+        trim_wavelengths,
         shift,
         _create_shared_wavelength_axis,
         align_wavelengths,
@@ -917,8 +941,6 @@ class Rainbow:
         _create_fake_wavelike_quantity,
         _create_fake_timelike_quantity,
         _create_fake_fluxlike_quantity,
-        to_nparray,
-        to_df,
     )
 
     # import summary statistics for each wavelength
@@ -926,6 +948,7 @@ class Rainbow:
         get_spectrum,
         get_spectral_resolution,
         get_typical_uncertainty,
+        get_measured_scatter,
     )
 
     # import summary statistics for each wavelength
@@ -934,6 +957,7 @@ class Rainbow:
     # import visualizations that can act on Rainbows
     from .visualizations import (
         imshow,
+        pcolormesh,
         plot_lightcurves,
         _setup_animate_lightcurves,
         animate_lightcurves,
@@ -950,8 +974,13 @@ class Rainbow:
         plot,
     )
 
-    # import history abilities
-    from .history import (
+    from .helpers import (
+        get_for_wavelength,
+        get_for_time,
+        get_ok_data_for_wavelength,
+        get_ok_data_for_time,
+        to_nparray,
+        to_df,
         _setup_history,
         _record_history_entry,
         _remove_last_history_entry,

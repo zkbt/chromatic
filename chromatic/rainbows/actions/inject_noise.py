@@ -27,13 +27,16 @@ def inject_noise(self, signal_to_noise=100):
     # create a copy of the existing Rainbow
     new = self._create_copy()
 
+    # store S/N as metadata
+    new.metadata["signal_to_noise"] = signal_to_noise
+
     # get the underlying model (or create one if needed)
-    if "model" in self.fluxlike:
-        model = self.fluxlike["model"]
+    if "model" in new.fluxlike:
+        model = new.fluxlike["model"]
     else:
         # kludge, do we really want to allow this?
         model = self.flux * 1
-        self.fluxlike["model"] = model
+        new.fluxlike["model"] = model
 
     # calculate the uncertainty with a fixed S/N
     uncertainty = model / signal_to_noise

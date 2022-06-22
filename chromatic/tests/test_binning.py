@@ -215,6 +215,32 @@ def test_binning_to_one():
             assert bt.ntime == 1
 
 
+def test_bin_with_minimum_points_per_bin():
+
+    # create a fake rainbow
+    s = SimulatedRainbow().inject_noise()
+
+    # make sure a helpful warning gets raised if we make bins too small
+    with pytest.warns(match="Here are your options"):
+        s.bin(dw=0.01 * u.micron)
+
+    #
+    minimum_points_per_bins = [0, 0.5, 1]
+    fi, ax = plt.subplots(
+        2, len(minimum_points_per_bins), constrained_layout=True, figsize=(10, 6)
+    )
+    for i, trim in enumerate([True, False]):
+        for j, t in enumerate(minimum_points_per_bins):
+            b = s.bin(
+                dw=0.01 * u.micron, dt=0.1 * u.hour, minimum_points_per_bin=t, trim=trim
+            )
+            b.imshow(ax=ax[i, j], colorbar=False)
+            plt.ylim(5, 0.5)
+            plt.title(f"minimum_points_per_bin={t}, trim={trim}")
+
+    plt.savefig(os.path.join(test_directory, "binning-with-minimum_points_per_bin.png"))
+
+
 def test_integrated_wrappers():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

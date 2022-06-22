@@ -54,7 +54,7 @@ def test_plot_quantities():
 
     for k in ["time", "wavelength"]:
         for x in [k, "index"]:
-            r.plot_quantities(xaxis=k, x_axis=x)
+            r.plot_quantities(xaxis=k, what_is_x=x)
             plt.savefig(
                 os.path.join(
                     test_directory,
@@ -79,6 +79,26 @@ def test_animate():
     e.animate_spectra(
         filename=os.path.join(test_directory, "animate-spectra-demonstration.gif"),
         scatterkw=scatterkw,
+    )
+
+
+def test_animate_other_quantites():
+    k = "some-imaginary-fluxlike-quantity"
+    s = (
+        SimulatedRainbow(R=5, dt=20 * u.minute)
+        .inject_transit()
+        .inject_systematics(amplitude=0.001, fluxlike=[k])
+        .inject_noise(signal_to_noise=1000)
+    )
+    s.animate_spectra(
+        os.path.join(test_directory, "test-animate-quantities-beside-flux-spectra.gif"),
+        quantity=k,
+    )
+    s.animate_lightcurves(
+        os.path.join(
+            test_directory, "test-animate-quantities-beside-flux-lightcurves.gif"
+        ),
+        quantity=k,
     )
 
 
@@ -159,6 +179,21 @@ def test_imshow_both_orientations():
     plt.savefig(os.path.join(test_directory, "imshow-both-orientations.png"))
 
 
+def test_pcolormesh_both_orientations():
+    s = (
+        SimulatedRainbow(R=5, dt=10 * u.minute)
+        .inject_transit(planet_radius=0.2)
+        .inject_systematics(amplitude=0.005)
+        .inject_noise(signal_to_noise=1000)
+    )
+
+    fi, ax = plt.subplots(2, 2, constrained_layout=True, figsize=(6, 6))
+    for i, k in enumerate(["time", "wavelength"]):
+        s.plot(ax=ax[0, i], xaxis=k)
+        s.pcolormesh(ax=ax[1, i], xaxis=k, colorbar=False)
+    plt.savefig(os.path.join(test_directory, "pcolormesh-both-orientations.png"))
+
+
 def test_both_types_of_plot():
     N, M = 10, 20
     r = (
@@ -192,3 +227,21 @@ def test_both_types_of_plot():
 def test_add_labels_to_panels():
     fi, ax = plt.subplots(3, 3)
     _add_panel_labels(ax, preset="inside", color="blue")
+
+
+def test_pcolormesh():
+    s = (
+        SimulatedRainbow(R=10, dt=10 * u.minute)
+        .inject_transit()
+        .inject_noise(signal_to_noise=1000)
+    )
+    fi, ax = plt.subplots(2, 2, constrained_layout=True, figsize=(8, 5))
+    s.imshow(ax=ax[0, 0])
+    plt.title("imshow")
+    s.pcolormesh(ax=ax[0, 1])
+    plt.title("pcolormesh")
+    plt.yscale("log")
+    b = s.bin(dw=0.5 * u.micron)
+    b.imshow(ax=ax[1, 0])
+    b.pcolormesh(ax=ax[1, 1])
+    plt.savefig(os.path.join(test_directory, "test-pcolormesh-vs-imshow.png"))
