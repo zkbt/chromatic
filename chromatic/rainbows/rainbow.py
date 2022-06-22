@@ -755,6 +755,10 @@ class Rainbow:
                 l, u = calculate_bin_leftright(self.wavelength)
                 self.wavelike["wavelength_lower"] = l
                 self.wavelike["wavelength_upper"] = u
+            else:
+                l, u = calculate_bin_leftright(self.wavelength)
+                self.wavelike["wavelength_lower"] = l
+                self.wavelike["wavelength_upper"] = u
 
     def _make_sure_time_edges_are_defined(self):
         """
