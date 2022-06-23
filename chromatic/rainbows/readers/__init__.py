@@ -75,6 +75,8 @@ def guess_reader(filepath, format=None):
         return from_eureka_S4
     elif fnmatch(f, "*S5_*_Table_Save_*.txt"):
         return from_eureka_S5
+    elif fnmatch(f, "*extract1dstep.fits"):
+        return from_atoca
     elif fnmatch(f, "*.txt") or fnmatch(f, "*.csv"):
         return from_text
     elif fnmatch(f, "*e92-1d.fits") or fnmatch(f, "*e92-1d.fits.fz"):
