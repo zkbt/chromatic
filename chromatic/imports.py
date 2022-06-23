@@ -42,6 +42,9 @@ import pandas as pd
 
 from .units import *
 
+# For remove astrophysical signal
+from scipy.signal import savgol_filter
+
 # define a driectory where we can put any necessary data files
 data_directory = pkg_resources.resource_filename("chromatic", "data")
 
