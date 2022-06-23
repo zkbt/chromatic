@@ -8,4 +8,4 @@ from .plot_spectra import *
 from .plot import *
 from .utilities import *
 from .pcolormesh import *
-from .plot_histograms import *
+from .histogram import *
