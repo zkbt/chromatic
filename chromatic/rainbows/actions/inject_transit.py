@@ -129,6 +129,11 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
     new.flux *= new.planet_model
     new.model = new.fluxlike.get("model", 1) * new.planet_model
 
+    parameters = dict(**defaults)
+    parameters.update(rp=rprs, u=u_arr)
+    new.metadata["transit_parameters"] = parameters
+    new.metadata["transit_version"] = f"batman-package=={batman.__version__}"
+
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
 
