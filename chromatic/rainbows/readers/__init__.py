@@ -16,7 +16,7 @@ from .espinoza import *
 from .dossantos import *
 from .feinstein import *
 from .schlawin import *
-from .coloumbe import *
+from .coulombe import *
 
 
 # construct a dictionary of available readers
@@ -63,7 +63,7 @@ def guess_reader(filepath, format=None):
         return from_x1dints
     # does it look like an Eureka! S3 text file?
     elif fnmatch(f, "*S3_*_Save.dat") or fnmatch(f, "*S3_*_Save.txt"):
-        return from_eureka_SpecData
+        return from_eureka_S3_txt
     # does it look like an Eureka! S3 SpecData hdf5 file?
     elif fnmatch(f, "*S3_*_SpecData.h5"):
         return from_eureka_S3
@@ -75,6 +75,8 @@ def guess_reader(filepath, format=None):
         return from_eureka_S4
     elif fnmatch(f, "*S5_*_Table_Save_*.txt"):
         return from_eureka_S5
+    elif fnmatch(f, "*extract1dstep.fits"):
+        return from_atoca
     elif fnmatch(f, "*.txt") or fnmatch(f, "*.csv"):
         return from_text
     elif fnmatch(f, "*e92-1d.fits") or fnmatch(f, "*e92-1d.fits.fz"):

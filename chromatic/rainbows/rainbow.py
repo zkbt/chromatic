@@ -146,7 +146,7 @@ class Rainbow:
             if metadata is not None:
                 self.metadata.update(**metadata)
         # then try to initialize from a file
-        elif (type(filepath) == str) or (type(filepath) == list):
+        elif isinstance(filepath, str) or isinstance(filepath, list):
             self._initialize_from_file(filepath=filepath, format=format, **kw)
 
         # finally, tidy up by guessing the scales
@@ -752,6 +752,10 @@ class Rainbow:
                 self.wavelike["wavelength_lower"] = np.exp(l) * self.wavelength.unit
                 self.wavelike["wavelength_upper"] = np.exp(u) * self.wavelength.unit
             elif self.metadata.get("wscale", None) == "linear":
+                l, u = calculate_bin_leftright(self.wavelength)
+                self.wavelike["wavelength_lower"] = l
+                self.wavelike["wavelength_upper"] = u
+            else:
                 l, u = calculate_bin_leftright(self.wavelength)
                 self.wavelike["wavelength_lower"] = l
                 self.wavelike["wavelength_upper"] = u
