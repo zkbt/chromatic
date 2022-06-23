@@ -972,6 +972,7 @@ class Rainbow:
         imshow_interact,
         plot_spectra,
         plot,
+        plot_histogram,
     )
 
     from .helpers import (
