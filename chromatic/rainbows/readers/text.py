@@ -45,7 +45,7 @@ def from_text(rainbow, filename, **kwargs):
     if "uncertainty" not in fluxlike:
         for k in ["error", "flux_error", "sigma", "unc"]:
             try:
-                fluxlike["uncertainty"] = fluxlike[k]
+                fluxlike["uncertainty"] = fluxlike[k] * 1
                 break
             except KeyError:
                 pass
