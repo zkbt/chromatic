@@ -87,12 +87,12 @@ def from_dossantos(rainbow, filepath):
 
     # populate a 1D array of wavelengths (with astropy units of length)
     wavelength = spectra[0]["wavelength"] * u.micron
-    rainbow.wavelike["wavelength"] = wavelength
+    rainbow.wavelike["wavelength"] = wavelength * 1
 
     # populate a 1D array of times (with astropy units of time)
     times = np.arange(len(spectra)) * u.minute
     warnings.warn("The times are totally made up!")
-    rainbow.timelike["time"] = times
+    rainbow.timelike["time"] = times * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes
     flux = np.zeros((len(wavelength), len(times)))
@@ -102,5 +102,5 @@ def from_dossantos(rainbow, filepath):
         flux[:, k] = spectra[k]["flux"]
         uncertainty[:, k] = spectra[k]["flux_error"]
 
-    rainbow.fluxlike["flux"] = flux
-    rainbow.fluxlike["uncertainty"] = uncertainty
+    rainbow.fluxlike["flux"] = flux * 1
+    rainbow.fluxlike["uncertainty"] = uncertainty * 1

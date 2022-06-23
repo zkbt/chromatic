@@ -15,7 +15,6 @@ class SimulatedRainbow(RainbowWithModel):
 
     def __init__(
         self,
-        signal_to_noise=100,
         tlim=[-2.5, 2.5] * u.hour,
         dt=2 * u.minute,
         time=None,
@@ -25,18 +24,13 @@ class SimulatedRainbow(RainbowWithModel):
         wavelength=None,
         star_flux=None,
         name=None,
+        signal_to_noise=None,
     ):
         """
         Create a simulated rainbow object.
 
         Parameters
         ----------
-
-        signal_to_noise : float
-            The signal-to-noise per wavelength per time.
-            For example, S/N=100 would mean that the
-            uncertainty on the flux for each each
-            wavelength-time data point will be 1%.
 
         tlim : list or array of astropy.units.Quantity
             The pip install -e '.[develop]'[min, max] times for creating the time grid.
@@ -99,7 +93,6 @@ class SimulatedRainbow(RainbowWithModel):
 
         # save the basic inputs that aren't stored elsewhere
         self.metadata["name"] = name
-        self.metadata["signal_to_noise"] = signal_to_noise
 
         # If the flux of the star is not given,
         # assume a continuum-normlized flux where fx=1 at all wavelengths.
@@ -113,15 +106,32 @@ class SimulatedRainbow(RainbowWithModel):
             # have the same shape.
             if len(star_flux) == len(self.wavelike["wavelength"]):
                 model = np.transpose([star_flux] * self.shape[1])
+            elif len(star_flux) == 1:
+                model = star_flux * np.ones(self.shape)
 
         # Set uncertainty.
-        uncertainty = model / signal_to_noise
-        self.fluxlike["flux"] = np.random.normal(model, uncertainty)
-        self.fluxlike["uncertainty"] = uncertainty
-        self.fluxlike["model"] = model
+        self.fluxlike["flux"] = model * 1
+        self.fluxlike["model"] = model * 1
+        self.fluxlike["uncertainty"] = np.zeros(self.shape)
 
         # make sure everything is defined and sorted
         self._validate_core_dictionaries()
+
+        if signal_to_noise is not None:
+            message = f"""
+            You tried to specify the noise level with
+            `SimulatedRainbow(signal_to_noise={signal_to_noise})`,
+            but that functionality is going away soon.
+            Please replace it right now with
+            `SimulatedRainbow().inject_noise(signal_to_noise={signal_to_noise})`
+            so that your code will continue to work.
+            You're getting away with it this time,
+            but it won't work for much longer!
+            """
+            warnings.warn(message)
+            new = self.inject_noise()
+            for k in ["flux", "uncertainty", "model"]:
+                self.fluxlike[k] = new.fluxlike[k]
 
         # append the history entry to the new Rainbow
         self._record_history_entry(h)

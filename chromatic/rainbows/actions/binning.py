@@ -10,6 +10,50 @@ __all__ = [
 ]
 
 
+def _warn_about_weird_binning(N, dimension, fraction_that_can_be_bad=0.0):
+    """
+    A helper to warn about too many bins containing fewer than one
+    original data point. This is a warning that should generally
+    be raised to someone who is trying to create underpopulated
+    bins and hasn't made an explicit decision about what to do
+    with them.
+
+    Parameters
+    ----------
+    N : np.array
+        The effective number of original bins going into each new bin.
+    minimum_points_per_bin : float
+        The threshold for the number of original bins to not be enough.
+    dimension : string
+        The name of the dimension to warn about = 'wavelength' or 'time'
+    """
+    if len(N) <= 2:
+        return
+
+    N_not_edges = N[1:-1]
+    fraction_that_are_bad = np.sum(N_not_edges < 1) / len(N_not_edges)
+    if fraction_that_are_bad > fraction_that_can_be_bad:
+        message = f"""
+        Of the {len(N_not_edges)} non-edge new {dimension} bins,
+        {fraction_that_are_bad:.1%} of them effectively contain fewer
+        than one original {dimension}.
+
+        Here are your options:
+        1) Rerun you binning with larger {dimension} bin sizes to
+        decrease the chances that they will be partially populated.
+        2) Rerun your binning but change `minimum_points_per_bin=` to a number.
+        This will set a lower limit on the effective number of inputs
+        points required for each bin. Bins that don't meet this limit
+        will be marked as not `ok`, and if `trim=True` (default)
+        these bins will automatically be trimmed away. A threshold
+        of 1 means bins should average together one or more input
+        data; a threshold of 0 will get rid of this warning but
+        allow many bins to come from the same data point, so you
+        should expect weird correlations.
+        """
+        warnings.warn(message)
+
+
 def bin(
     self,
     dt=None,
@@ -21,7 +65,8 @@ def bin(
     wavelength=None,
     wavelength_edges=None,
     nwavelengths=None,
-    starting_wavelengths="1D",
+    minimum_acceptable_ok=1,
+    minimum_points_per_bin=None,
     trim=True,
 ):
     """
@@ -86,6 +131,32 @@ def bin(
         Binning will start from the 0th element of the
         starting wavelengths; if you want to start from
         a different index, trim before binning.
+    minimum_acceptable_ok : float
+        The numbers in the `.ok` attribute express "how OK?" each
+        data point is, ranging from 0 (not OK) to 1 (super OK).
+        In most cases, `.ok` will be binary, but there may be times
+        where it's intermediate (for example, if a bin was created
+        from some data that were not OK and some that were).
+        The `minimum_acceptable_ok` parameter allows you to specify what
+        level of OK-ness for a point to go into the binning.
+        Reasonable options may include:
+            minimum_acceptable_ok = 1
+                  Only data points that are perfectly OK
+                  will go into the binning.
+            minimum_acceptable_ok = 1e-10
+                  All data points that aren't definitely not OK
+                  will go into the binning.
+            minimum_acceptable_ok = 0
+                  All data points will be included in the bin.
+    minimum_points_per_bin : float
+        If you're creating bins that are smaller than those in
+        the original dataset, it's possible to end up with bins
+        that effectively contain fewer than one original datapoint
+        (in the sense that the contribution of one original datapoint
+        might be split across multiple new bins). By default,
+        we allow this behavior with `minimum_points_per_bin=0`, but you can
+        limit your result to only bins that contain one or more
+        original datapoints with `minimum_points_per_bin=1`.
     trim : bool
         Should any wavelengths or columns that end up
         as entirely nan be trimmed out of the result?
@@ -99,7 +170,13 @@ def bin(
 
     # bin first in time
     binned_in_time = self.bin_in_time(
-        dt=dt, time=time, time_edges=time_edges, ntimes=ntimes, trim=trim
+        dt=dt,
+        time=time,
+        time_edges=time_edges,
+        ntimes=ntimes,
+        minimum_acceptable_ok=minimum_acceptable_ok,
+        minimum_points_per_bin=minimum_points_per_bin,
+        trim=trim,
     )
 
     # then bin in wavelength
@@ -109,7 +186,8 @@ def bin(
         wavelength=wavelength,
         wavelength_edges=wavelength_edges,
         nwavelengths=nwavelengths,
-        starting_wavelengths=starting_wavelengths,
+        minimum_acceptable_ok=minimum_acceptable_ok,
+        minimum_points_per_bin=minimum_points_per_bin,
         trim=trim,
     )
 
@@ -117,7 +195,16 @@ def bin(
     return binned
 
 
-def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=True):
+def bin_in_time(
+    self,
+    dt=None,
+    time=None,
+    time_edges=None,
+    ntimes=None,
+    minimum_acceptable_ok=1,
+    minimum_points_per_bin=None,
+    trim=True,
+):
     """
     Bin in time.
 
@@ -149,6 +236,32 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
         Binning will start from the 0th element of the
         starting times; if you want to start from
         a different index, trim before binning.
+    minimum_acceptable_ok : float
+        The numbers in the `.ok` attribute express "how OK?" each
+        data point is, ranging from 0 (not OK) to 1 (super OK).
+        In most cases, `.ok` will be binary, but there may be times
+        where it's intermediate (for example, if a bin was created
+        from some data that were not OK and some that were).
+        The `minimum_acceptable_ok` parameter allows you to specify what
+        level of OK-ness for a point to go into the binning.
+        Reasonable options may include:
+            minimum_acceptable_ok = 1
+                  Only data points that are perfectly OK
+                  will go into the binning.
+            minimum_acceptable_ok = 1e-10
+                  All data points that aren't definitely not OK
+                  will go into the binning.
+            minimum_acceptable_ok = 0
+                  All data points will be included in the bin.
+    minimum_points_per_bin : float
+        If you're creating bins that are smaller than those in
+        the original dataset, it's possible to end up with bins
+        that effectively contain fewer than one original datapoint
+        (in the sense that the contribution of one original datapoint
+        might be split across multiple new bins). By default,
+        we allow this behavior with `minimum_points_per_bin=0`, but you can
+        limit your result to only bins that contain one or more
+        original datapoints with `minimum_points_per_bin=1`.
     trim : bool
         Should any wavelengths or columns that end up
         as entirely nan be trimmed out of the result?
@@ -200,12 +313,13 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
     new.timelike["time"] = binned["x"]
     new.timelike["time_lower"] = binned["x_edge_lower"]
     new.timelike["time_upper"] = binned["x_edge_upper"]
+    new.timelike["unbinned_times_per_binned_time"] = binned["N_unbinned/N_binned"]
 
     # bin the flux-like variables
     # TODO (add more careful treatment of uncertainty + DQ)
     # TODO (think about cleverer bintogrid for 2D arrays?)
     new.fluxlike = {}
-    ok = self.is_ok()
+    ok = self.ok
     for k in self.fluxlike:
 
         '''
@@ -219,15 +333,14 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
 
         # loop through wavelengths
         for w in range(new.nwave):
-
-            # FIXME - not being used yet?
-            ok_times = ok[w, :]
-
-            # set what uncertainties should be used for binning
-            if self.uncertainty is None:
-                uncertainty_for_binning = None
+            # mask out "bad" wavelengths
+            time_is_bad = ok[w, :] < minimum_acceptable_ok
+            if (self.uncertainty is None) or np.all(self.uncertainty == 0):
+                uncertainty_for_binning = np.ones(self.ntime).astype(bool)
             else:
-                uncertainty_for_binning = self.uncertainty[w, :]
+                uncertainty_for_binning = self.uncertainty[w, :] * 1
+            if k != "ok":
+                uncertainty_for_binning[time_is_bad] = np.inf
 
             # bin the quantities for this wavelength
             binned = bintogrid(
@@ -251,6 +364,20 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
                 # note: all quantities are weighted the same as flux (probably inversevariance)
                 new.fluxlike[k][w, :] = binned["y"]
 
+    if (new.nwave == 0) or (new.ntime == 0):
+        message = f"""
+        You tried to bin {self} to {new}.
+
+        After accounting for `minimum_acceptable_ok > {minimum_acceptable_ok}`,
+        all new bins would end up with no usable data points.
+        Please (a) make sure your input `Rainbow` has at least
+        one wavelength and time, (b) check `.ok` accurately expresses
+        which data you think are usable, (c) change the `minimum_acceptable_ok`
+        keyword for `.bin` to a smaller value, and/or (d) try larger bins.
+        """
+        warnings.warn(message)
+        raise RuntimeError("No good data to bin! (see above)")
+
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
 
@@ -261,9 +388,17 @@ def bin_in_time(self, dt=None, time=None, time_edges=None, ntimes=None, trim=Tru
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
 
+    # deal with bins that are smaller than original
+    N = new.timelike["unbinned_times_per_binned_time"]
+    if minimum_points_per_bin is None:
+        _warn_about_weird_binning(N, "time")
+    else:
+        ok = new.timelike.get("ok", np.ones(new.ntime, bool))
+        new.timelike["ok"] = ok * (N >= minimum_points_per_bin)
+
     # return the new Rainbow (with trimming if necessary)
     if trim:
-        return new.trim_nan_times()
+        return new.trim_times(minimum_acceptable_ok=minimum_acceptable_ok)
     else:
         return new
 
@@ -275,8 +410,10 @@ def bin_in_wavelength(
     wavelength=None,
     wavelength_edges=None,
     nwavelengths=None,
-    starting_wavelengths="1D",
+    minimum_acceptable_ok=1,
+    minimum_points_per_bin=None,
     trim=True,
+    starting_wavelengths="1D",
 ):
     """
     Bin in wavelength.
@@ -311,11 +448,44 @@ def bin_in_wavelength(
         Binning will start from the 0th element of the
         starting wavelengths; if you want to start from
         a different index, trim before binning.
+    minimum_acceptable_ok : float
+        The numbers in the `.ok` attribute express "how OK?" each
+        data point is, ranging from 0 (not OK) to 1 (super OK).
+        In most cases, `.ok` will be binary, but there may be times
+        where it's intermediate (for example, if a bin was created
+        from some data that were not OK and some that were).
+        The `minimum_acceptable_ok` parameter allows you to specify what
+        level of OK-ness for a point to go into the binning.
+        Reasonable options may include:
+            minimum_acceptable_ok = 1
+                  Only data points that are perfectly OK
+                  will go into the binning.
+            minimum_acceptable_ok = 1e-10
+                  All data points that aren't definitely not OK
+                  will go into the binning.
+            minimum_acceptable_ok = 0
+                  All data points will be included in the bin.
+    minimum_points_per_bin : float
+        If you're creating bins that are smaller than those in
+        the original dataset, it's possible to end up with bins
+        that effectively contain fewer than one original datapoint
+        (in the sense that the contribution of one original datapoint
+        might be split across multiple new bins). By default,
+        we allow this behavior with `minimum_points_per_bin=0`, but you can
+        limit your result to only bins that contain one or more
+        original datapoints with `minimum_points_per_bin=1`.
     trim : bool
         Should any wavelengths or columns that end up
         as entirely nan be trimmed out of the result?
         (default = True)
-
+    starting_wavelengths : str
+        What wavelengths should be used as the starting
+        value from which we will be binning? Options include:
+        '1D' = (default) the shared 1D wavelengths for all times
+               stored in `.wavelike['wavelength']`
+        '2D' = (used only by `align_wavelengths`) the per-time 2D array
+               stored in `.fluxlike['wavelength']`
+        [Most users probably don't need to change this from default.]
     Returns
     -------
     binned : Rainbow
@@ -366,12 +536,15 @@ def bin_in_wavelength(
     new.wavelike = {}
     for k in self.wavelike:
         binned = binning_function(
-            x=self.wavelength, y=self.wavelike[k], unc=None, **binkw
+            x=self.wavelike["wavelength"], y=self.wavelike[k], unc=None, **binkw
         )
         new.wavelike[k] = binned["y"]
     new.wavelike["wavelength"] = binned["x"]
     new.wavelike["wavelength_lower"] = binned["x_edge_lower"]
     new.wavelike["wavelength_upper"] = binned["x_edge_upper"]
+    new.wavelike["unbinned_wavelengths_per_binned_wavelength"] = binned[
+        "N_unbinned/N_binned"
+    ]
 
     # bin the flux-like variables
     # TODO (add more careful treatment of uncertainty + DQ)
@@ -379,37 +552,29 @@ def bin_in_wavelength(
     new.fluxlike = {}
 
     # get a fluxlike array of what's OK to include in the bins
-    ok = self.is_ok()
+    ok = self.ok
     for k in self.fluxlike:
-
-        '''
-        if k == "uncertainty":
-            warnings.warn(
-                """
-            Uncertainties and/or data quality flags might
-            not be handled absolutely perfectly yet...
-            """
-            )'''
 
         for t in range(new.ntime):
 
-            # FIXME - not being used yet?
-            ok_wavelengths = ok[:, t]
+            # mask out "bad" wavelengths
+            wavelength_is_bad = ok[:, t] < minimum_acceptable_ok
 
-            # set what uncertainties should be used for binning
-            if self.uncertainty is None:
-                uncertainty_for_binning = None
+            if (self.uncertainty is None) or np.all(self.uncertainty == 0):
+                uncertainty_for_binning = np.ones(self.nwave).astype(bool)
             else:
-                uncertainty_for_binning = self.uncertainty[:, t]
+                uncertainty_for_binning = self.uncertainty[:, t] * 1
+            if k != "ok":
+                uncertainty_for_binning[wavelength_is_bad] = np.inf
 
             if starting_wavelengths.upper() == "1D":
-                w = self.wavelength[:]
+                w = self.wavelike["wavelength"][:]
             elif starting_wavelengths.upper() == "2D":
                 w = self.fluxlike["wavelength"][:, t]
             # bin the quantities for this time
             binned = binning_function(
                 x=w,
-                y=self.fluxlike[k][:, t],
+                y=self.fluxlike[k][:, t] * 1,
                 unc=uncertainty_for_binning,
                 **binkw,
             )
@@ -428,6 +593,20 @@ def bin_in_wavelength(
                 # note: all quantities are weighted the same as flux (probably inversevariance)
                 new.fluxlike[k][:, t] = binned["y"]
 
+    if (new.nwave == 0) or (new.ntime == 0):
+        message = f"""
+        You tried to bin {self} to {new}.
+
+        After accounting for `minimum_acceptable_ok > {minimum_acceptable_ok}`,
+        all new bins would end up with no usable data points.
+        Please (a) make sure your input `Rainbow` has at least
+        one wavelength and time, (b) check `.ok` accurately expresses
+        which data you think are usable, (c) change the `minimum_acceptable_ok`
+        keyword for `.bin` to a smaller value, and/or (d) try larger bins.
+        """
+        warnings.warn(message)
+        raise RuntimeError("No good data to bin! (see above)")
+
     # make sure dictionaries are on the up and up
     new._validate_core_dictionaries()
 
@@ -438,9 +617,17 @@ def bin_in_wavelength(
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
 
+    # deal with bins that are smaller than original
+    N = new.wavelike["unbinned_wavelengths_per_binned_wavelength"]
+    if minimum_points_per_bin is None:
+        _warn_about_weird_binning(N, "wavelength")
+    else:
+        ok = new.wavelike.get("ok", np.ones(new.nwave, bool))
+        new.wavelike["ok"] = ok * (N >= minimum_points_per_bin)
+
     # return the new Rainbow (with trimming if necessary)
     if trim:
-        return new.trim_nan_wavelengths()
+        return new.trim_wavelengths(minimum_acceptable_ok=minimum_acceptable_ok)
     else:
         return new
 
@@ -458,7 +645,7 @@ def get_lightcurve_as_rainbow(self):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        new = self.bin(nwavelengths=self.nwave)
+        new = self.bin(nwavelengths=self.nwave, trim=False)
 
     new._record_history_entry(h)
     return new
@@ -477,7 +664,7 @@ def get_spectrum_as_rainbow(self):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        new = self.bin(ntimes=self.ntime)
+        new = self.bin(ntimes=self.ntime, trim=False)
 
     new._record_history_entry(h)
     return new

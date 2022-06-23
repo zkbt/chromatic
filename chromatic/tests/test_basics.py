@@ -33,7 +33,7 @@ def test_rainbow_basics():
 
 def test_essential_properties():
     # create a simulated rainbow
-    r = SimulatedRainbow()
+    r = SimulatedRainbow().inject_noise()
 
     # wavelength
     x = r.wavelength
@@ -62,7 +62,7 @@ def test_essential_properties():
 
 def test_automatic_quantity_sorting():
     # create a simulated rainbow
-    r = SimulatedRainbow()
+    r = SimulatedRainbow().inject_noise()
 
     # does a wavelength-shaped array end up in the right spot?
     r.background = np.random.normal(10, 1, r.nwave)
@@ -82,23 +82,23 @@ def test_automatic_quantity_sorting():
 
 
 def test_shape_warnings():
-    a = SimulatedRainbow()
+    a = SimulatedRainbow().inject_noise()
     with pytest.warns(match="transpose"):
         a.flux = a.flux.T
 
-    b = SimulatedRainbow()
+    b = SimulatedRainbow().inject_noise()
     with pytest.warns(match="shape"):
         b.wavelength = np.arange(b.nwave + 1)
 
-    c = SimulatedRainbow()
+    c = SimulatedRainbow().inject_noise()
     with pytest.warns(match="shape"):
         c.time = np.arange(c.ntime + 1)
 
-    d = SimulatedRainbow()
+    d = SimulatedRainbow().inject_noise()
     with pytest.warns(match="shape"):
         d.uncertainty = np.ones((d.nwave + 1, d.ntime + 1))
 
-    e = SimulatedRainbow()
+    e = SimulatedRainbow().inject_noise()
     with pytest.warns(match="shape"):
         d.ok = np.ones((d.nwave + 1, d.ntime + 1))
 
@@ -106,7 +106,7 @@ def test_shape_warnings():
 def test_sort():
     w = np.linspace(2, 1) * u.micron
     t = np.linspace(1, -1) * u.day
-    r = SimulatedRainbow(wavelength=w, time=t)
+    r = SimulatedRainbow(wavelength=w, time=t).inject_noise()
     print(r.wavelength)
     print(r.time)
     r._validate_core_dictionaries()
@@ -117,12 +117,12 @@ def test_sort():
 
     # test the warnings
     with pytest.warns(match="input times were not monotonically increasing"):
-        r = SimulatedRainbow(time=t)
+        r = SimulatedRainbow(time=t).inject_noise()
         r._validate_core_dictionaries()
         r.original_time_index
 
     with pytest.warns(match="input wavelengths were not monotonically increasing"):
-        r = SimulatedRainbow(wavelength=w)
+        r = SimulatedRainbow(wavelength=w).inject_noise()
         r._validate_core_dictionaries()
         r.original_wave_index
 

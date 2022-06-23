@@ -53,11 +53,13 @@ def _setup_animated_scatter(self, ax=None, scatterkw={}, textkw={}):
 def _setup_animate_lightcurves(
     self,
     ax=None,
+    quantity="flux",
     xlim=[None, None],
     ylim=[None, None],
     cmap=None,
     vmin=None,
     vmax=None,
+    ylabel=None,
     scatterkw={},
     textkw={},
 ):
@@ -74,6 +76,8 @@ def _setup_animate_lightcurves(
         frames/second of animation
     ax : matplotlib.axes.Axes
         The axes into which this animated plot should go.
+    quantity : string
+        Which fluxlike quantity should be retrieved? (default = 'flux')
     xlim : tuple
         Custom xlimits for the plot
     ylim : tuple
@@ -100,6 +104,15 @@ def _setup_animate_lightcurves(
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
+    if (quantity == "flux") and (self._is_probably_normalized() == False):
+        warnings.warn(
+            f"""
+        It's not 100% obvious that {self} has been normalized.
+        If you're expecting your animation to wobble near 1,
+        please try normalizing before animating, perhaps with
+        the `.normalize()` action. If not, please ignore this!
+        """
+        )
 
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
 
@@ -115,14 +128,14 @@ def _setup_animate_lightcurves(
         # set the plot limits
         ax.set_xlim(xlim[0] or np.nanmin(self.time), xlim[1] or np.nanmax(self.time))
         ax.set_ylim(
-            ylim[0] or 0.995 * np.nanmin(self.flux),
-            ylim[1] or 1.005 * np.nanmax(self.flux),
+            ylim[0] or 0.995 * np.nanmin(self.get(quantity)),
+            ylim[1] or 1.005 * np.nanmax(self.get(quantity)),
         )
         # set the axis labels
         ax.set_xlabel(
             f"{self._time_label} ({self.time.unit.to_string('latex_inline')})"
         )
-        ax.set_ylabel(f"Relative Flux")
+        ax.set_ylabel(ylabel or quantity)
 
         # guess a good number of digits to round
         ndigits = np.minimum(
@@ -142,8 +155,9 @@ def _setup_animate_lightcurves(
             """
 
             # pull out the x and y values to plot
-            x = self.time
-            y = self.flux[frame]
+            x, y, _ = self.get_ok_data_for_wavelength(frame, y=quantity)
+            # x = self.time
+            # y = self.flux[frame]
             c = self.wavelength[frame].to("micron").value * np.ones(self.ntime)
 
             # update the label in the corner
@@ -224,11 +238,13 @@ def animate_lightcurves(
 def _setup_animate_spectra(
     self,
     ax=None,
+    quantity="flux",
     xlim=[None, None],
     ylim=[None, None],
     cmap=None,
     vmin=None,
     vmax=None,
+    ylabel=None,
     scatterkw={},
     textkw={},
 ):
@@ -243,6 +259,8 @@ def _setup_animate_spectra(
         Currently supports only .gif files.
     ax : matplotlib.axes.Axes
         The axes into which this animated plot should go.
+    quantity : string
+        Which fluxlike quantity should be retrieved? (default = 'flux')
     fps : float
         frames/second of animation
     figsize : tuple
@@ -274,6 +292,15 @@ def _setup_animate_spectra(
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
 
+    if (quantity == "flux") and (self._is_probably_normalized() == False):
+        warnings.warn(
+            f"""
+        It's not 100% obvious that {self} has been normalized.
+        If you're expecting your animation to wobble near 1,
+        please try normalizing before animating, perhaps with
+        the `.normalize()` action. If not, please ignore this!
+        """
+        )
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
 
     with quantity_support():
@@ -296,14 +323,14 @@ def _setup_animate_spectra(
             xlim[0] or np.nanmin(self.wavelength), xlim[1] or np.nanmax(self.wavelength)
         )
         ax.set_ylim(
-            ylim[0] or 0.995 * np.nanmin(self.flux),
-            ylim[1] or 1.005 * np.nanmax(self.flux),
+            ylim[0] or 0.995 * np.nanmin(self.get(quantity)),
+            ylim[1] or 1.005 * np.nanmax(self.get(quantity)),
         )
         # set the axis labels
         ax.set_xlabel(
             f"{self._wave_label}  ({self.wavelength.unit.to_string('latex_inline')})"
         )
-        ax.set_ylabel(f"Relative Flux")
+        ax.set_ylabel(ylabel or quantity)
 
         # guess a good number of digits to round
         ndigits = np.minimum(
@@ -323,8 +350,9 @@ def _setup_animate_spectra(
             """
 
             # pull out the x and y values to plot
-            x = self.wavelength
-            y = self.flux[:, frame]
+            x, y, _ = self.get_ok_data_for_time(frame, y=quantity)
+            # x = self.wavelength
+            # y = self.flux[:, frame]
             c = self.wavelength.to("micron").value
 
             # update the label in the corner
@@ -389,6 +417,7 @@ def animate_spectra(
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
+
     self._setup_animate_spectra(**kwargs)
 
     # make and save the animation

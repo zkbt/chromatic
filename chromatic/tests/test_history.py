@@ -1,12 +1,12 @@
 from ..rainbows import *
 from .setup_tests import *
-from ..rainbows.history import represent_as_copypasteable
+from ..rainbows.helpers.history import represent_as_copypasteable
 
 
 def test_history():
     np.random.seed(0)
-    x = SimulatedRainbow().inject_transit().bin(R=5).normalize()
-    h = x.history("string")
+    x = SimulatedRainbow().inject_transit().inject_noise().bin(R=5).normalize()
+    h = x.history()
 
     for k in ["Rainbow", "inject_transit", "bin", "normalize"]:
         assert k in h
@@ -14,6 +14,15 @@ def test_history():
     np.random.seed(0)
     new = eval(h)
     assert x == new
+
+
+def test_history_with_slicing_and_addition():
+    a = SimulatedRainbow().inject_transit().normalize()[:10:2, :]
+    b = a * 2
+    c = a + b
+    d = eval(c.history())
+    assert c == d
+    assert d == a * 3
 
 
 def test_represent_as_copypasteable():

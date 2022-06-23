@@ -1,12 +1,13 @@
 cartoon | name | description
+🌈🚧🌊 | align_wavelengths | Align spectra with different wavelength grids onto one shared axis.
 🌈🧺🧱 | bin | Bin to a new wavelength or time grid.
+🌈🧑‍🤝‍🧑🌈 | compare | Connect to other 🌈 objects for easy comparison.
+🌈⏲🎞 | fold | Fold times relative to a particular period and epoch.
+🌈🪐🚞 | inject_transit | Inject a transit signal.
+🌈🎧🎲 | inject_noise| Inject (uncorrelated, simple) random noise.
+🌈🎧🎹 | inject_systematics| Inject (correlated, wobbly) systematic noise.
 🌈🫓😑 | normalize | Normalize by dividing through by a typical spectrum (and/or light curve).
 🌈🍱💇 | trim | Trim away wavelengths or times that contain no good data.
-🌈🚧🌊 | align_wavelengths | Align spectra with different wavelength grids onto one shared axis.
-🌈🪐🚞 | inject_transit | Inject a transit signal into all wavelengths.
-🌈⏲🎞 | fold | Fold times relative to a particular period and epoch.
-🌈🧑‍🤝‍🧑🌈 | compare | Connect to other 🌈 objects for easy comparison.
-🌈🧮📝 | + | Add two Rainbows together.
-🌈🧮📝 | - | Subtract one Rainbows from another.
-🌈🧮📝 | * | Multiply two Rainbows together.
-🌈🧮📝 | / | Divide one Rainbows by another.
+🌈🚇🌊 | shift | Doppler shift wavelengths.
+🌈🧮📝 | +-*/ | Do basic math operations with two Rainbows.
+🌈🗂🔪 | [:,:] | Index, slice, or mask a Rainbow to get a subset.

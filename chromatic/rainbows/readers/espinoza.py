@@ -35,13 +35,13 @@ def from_espinoza(rainbow, filepath):
     wavelengths = np.load(wavelengths_filename)
 
     # populate a 1D array of wavelengths (with astropy units of length)
-    rainbow.wavelike["wavelength"] = wavelengths * u.micron
+    rainbow.wavelike["wavelength"] = wavelengths * u.micron * 1
 
     # populate a 1D array of times (with astropy units of time)
     times = np.arange(spectra.shape[0]) * u.minute
     warnings.warn("The times are totally made up!")
-    rainbow.timelike["time"] = times
+    rainbow.timelike["time"] = times * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes
-    rainbow.fluxlike["flux"] = spectra[:, 0, :].T
-    rainbow.fluxlike["uncertainty"] = spectra[:, 1, :].T
+    rainbow.fluxlike["flux"] = spectra[:, 0, :].T * 1
+    rainbow.fluxlike["uncertainty"] = spectra[:, 1, :].T * 1

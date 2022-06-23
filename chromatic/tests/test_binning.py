@@ -5,7 +5,7 @@ from ..resampling import *
 
 def test_bin_in_time():
 
-    s = SimulatedRainbow(dt=5 * u.minute, signal_to_noise=100)
+    s = SimulatedRainbow(dt=5 * u.minute).inject_noise(signal_to_noise=100)
     b = s.bin_in_time(dt=1 * u.hour)
     assert b.ntime < s.ntime
 
@@ -20,7 +20,7 @@ def test_bin_in_time():
 
 def test_bin_in_wavelength():
 
-    s = SimulatedRainbow(dw=50 * u.nm)
+    s = SimulatedRainbow(dw=50 * u.nm).inject_noise()
     b = s.bin_in_wavelength(dw=500 * u.nm)
     assert b.nwave < s.nwave
 
@@ -41,7 +41,7 @@ def test_bin_in_wavelength():
 
 def test_bin():
 
-    s = SimulatedRainbow(dt=10 * u.minute, R=25)
+    s = SimulatedRainbow(dt=10 * u.minute, R=25).inject_noise()
     b = s.bin(dt=0.5 * u.hour, dw=0.5 * u.micron)
     assert b.nwave < s.nwave
     assert b.ntime < s.ntime
@@ -73,7 +73,7 @@ def test_bin():
 
 
 def test_bin_input_options():
-    r = SimulatedRainbow(dw=0.2 * u.micron)
+    r = SimulatedRainbow(dw=0.2 * u.micron).inject_noise()
 
     a = r.bin(nwavelengths=3)
     centers = a.wavelength
@@ -122,7 +122,7 @@ def test_bin_input_options():
 
 def test_bin_uncertainty_basic(original_resolution=100, binned_resolution=42):
 
-    a = SimulatedRainbow(R=original_resolution, signal_to_noise=100)
+    a = SimulatedRainbow(R=original_resolution).inject_noise()
     b = a.bin(R=binned_resolution)
     original_uncertainty = np.median(a.uncertainty)
     predicted_uncertainty = np.median(a.uncertainty) / np.sqrt(
@@ -147,7 +147,7 @@ def test_bin_uncertainty_basic(original_resolution=100, binned_resolution=42):
 
 
 def test_bin_bad_data(visualize=False):
-    s = SimulatedRainbow(signal_to_noise=100, R=20, dt=5 * u.minute)
+    s = SimulatedRainbow(R=20, dt=5 * u.minute).inject_noise(signal_to_noise=100)
     N = 100
     i, j = np.random.randint(0, s.nwave, N), np.random.randint(0, s.ntime, N)
     s.fluxlike["flux"][i, j] = np.nan
@@ -174,7 +174,7 @@ def test_bin_both():
     bintime = 5
     binwave = 0.1
     w = np.logspace(0, 1) * u.micron
-    r = SimulatedRainbow(signal_to_noise=1000, dt=bintime * u.minute)
+    r = SimulatedRainbow(dt=bintime * u.minute).inject_noise(signal_to_noise=1000)
     b_withouttransit = r.bin(dw=binwave * u.micron, dt=bintime * u.minute)
 
 
@@ -186,7 +186,7 @@ def test_binning_to_one():
         for M in np.random.randint(2, 100, 3):
             w = np.linspace(1, 2, N) * u.micron
             t = np.linspace(-1, 1, M) * u.hour
-            s = SimulatedRainbow(wavelength=w, time=t, signal_to_noise=100)
+            s = SimulatedRainbow(wavelength=w, time=t).inject_noise()
 
             bw = s.bin(nwavelengths=s.nwave)
             print(bw.uncertainty[0, 0], s.uncertainty[0, 0] / np.sqrt(s.nwave))
@@ -215,11 +215,37 @@ def test_binning_to_one():
             assert bt.ntime == 1
 
 
+def test_bin_with_minimum_points_per_bin():
+
+    # create a fake rainbow
+    s = SimulatedRainbow().inject_noise()
+
+    # make sure a helpful warning gets raised if we make bins too small
+    with pytest.warns(match="Here are your options"):
+        s.bin(dw=0.01 * u.micron)
+
+    #
+    minimum_points_per_bins = [0, 0.5, 1]
+    fi, ax = plt.subplots(
+        2, len(minimum_points_per_bins), constrained_layout=True, figsize=(10, 6)
+    )
+    for i, trim in enumerate([True, False]):
+        for j, t in enumerate(minimum_points_per_bins):
+            b = s.bin(
+                dw=0.01 * u.micron, dt=0.1 * u.hour, minimum_points_per_bin=t, trim=trim
+            )
+            b.imshow(ax=ax[i, j], colorbar=False)
+            plt.ylim(5, 0.5)
+            plt.title(f"minimum_points_per_bin={t}, trim={trim}")
+
+    plt.savefig(os.path.join(test_directory, "binning-with-minimum_points_per_bin.png"))
+
+
 def test_integrated_wrappers():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
-        s = SimulatedRainbow().inject_transit()
+        s = SimulatedRainbow().inject_transit().inject_noise()
         s.fluxlike["flux"] += 0.003 * s.wavelength.value[:, np.newaxis]
 
         fi, ax = plt.subplots(1, 3, figsize=(10, 3), constrained_layout=True)

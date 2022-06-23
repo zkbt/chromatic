@@ -11,4 +11,7 @@ from .test_units import *
 from .test_align_wavelengths import *
 from .test_shift import *
 from .test_conversions import *
+from .test_summaries import *
 from .test_withmodel import *
+from .test_ok import *
+from .test_history import *

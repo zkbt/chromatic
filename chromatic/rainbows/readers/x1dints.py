@@ -126,7 +126,7 @@ def from_x1dints(rainbow, filepath):
                 # pull out a wavelength grid (assuming it'll stay constant)
                 wavelength_unit = u.Unit(hdu[e].columns["wavelength"].unit)
                 rainbow.wavelike["wavelength"] = (
-                    hdu[e].data["wavelength"] * wavelength_unit
+                    hdu[e].data["wavelength"] * wavelength_unit * 1
                 )
 
                 # set up the fluxlike quantities
@@ -175,9 +175,9 @@ def from_x1dints(rainbow, filepath):
 
     # try to pull in the errors
     try:
-        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["flux_error"]
+        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["flux_error"] * 1
     except KeyError:
-        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["error"]
+        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["error"] * 1
 
     if rainbow.uncertainty is None:
         message = f"""

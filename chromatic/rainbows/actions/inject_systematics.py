@@ -179,6 +179,37 @@ def inject_systematics(
     3) Inject the model flux into the `flux` of this Rainbow,
     and store the combined model in `systematics-model` and
     each individual component in `systematic-model-{...}`.
+
+    Parameters
+    ----------
+    amplitude : float
+        The (standard deviation-ish) amplitude of the systematics
+        in units normalized to 1. For example, an amplitude of 0.003
+        will produce systematic trends that tend to range (at 1 sigma)
+        from 0.997 to 1.003.
+    wavelike : list of strings
+        A list of wave-like cotrending quantities to serve as ingredients
+        to a linear combination systematics model. Existing quantities
+        will be pulled from the appropriate core dictionary; fake
+        data will be created for quantities that don't already exist,
+        from a cartoony Gaussian process model.
+    timelike : list of strings
+        A list of time-like cotrending quantities to serve as ingredients
+        to a linear combination systematics model. Existing quantities
+        will be pulled from the appropriate core dictionary; fake
+        data will be created for quantities that don't already exist,
+        from a cartoony Gaussian process model.
+    fluxlike : list of strings
+        A list of flux-like cotrending quantities to serve as ingredients
+        to a linear combination systematics model. Existing quantities
+        will be pulled from the appropriate core dictionary; fake
+        data will be created for quantities that don't already exist,
+        from a cartoony Gaussian process model.
+
+    Returns
+    -------
+    rainbow : Rainbow
+        A new Rainbow object with the systematics injected.
     """
 
     # create a history entry for this action (before other variables are defined)
@@ -189,41 +220,79 @@ def inject_systematics(
     new.fluxlike["systematics_model"] = np.ones(self.shape)
 
     def standardize(q):
+        """
+        A quick helper to normalize all inputs to zero mean
+        and unit standard deviation. It
+        """
+        offset = np.nanmean(q)
+        sigma = np.nanstd(q)
+        return u.Quantity((q - offset) / sigma).value, offset, sigma
 
-        return u.Quantity((q - np.nanmean(q)) / np.nanstd(q)).value
-
+    components = {}
     for k in wavelike:
         if k in self.wavelike:
-            x = standardize(self.wavelike[k])
+            x, offset, sigma = standardize(self.wavelike[k])
         else:
             x = new._create_fake_wavelike_quantity()
+            offset, sigma = 0, 1
             new.wavelike[k] = x
         c = np.random.normal(0, amplitude)
         df = c * x[:, np.newaxis] * np.ones(self.shape)
         new.fluxlike[f"systematics_model_from_{k}"] = df
         new.fluxlike["systematics_model"] += df
+        components.update(
+            **{
+                f"linear_{k}": f"c_{k}*({k} - offset_{k})/sigma_{k}",
+                f"c_{k}": c,
+                f"offset_{k}": offset,
+                f"sigma_{k}": sigma,
+            }
+        )
 
     for k in timelike:
         if k in self.timelike:
-            x = standardize(self.timelike[k])
+            x, offset, sigma = standardize(self.timelike[k])
         else:
             x = new._create_fake_timelike_quantity()
+            offset, sigma = 0, 1
             new.timelike[k] = x
         c = np.random.normal(0, amplitude)
         df = c * x[np.newaxis, :] * np.ones(self.shape)
         new.fluxlike[f"systematics_model_from_{k}"] = df
         new.fluxlike["systematics_model"] += df
+        components.update(
+            **{
+                f"linear_{k}": f"c_{k}*({k} - offset_{k})/sigma_{k}",
+                f"c_{k}": c,
+                f"offset_{k}": offset,
+                f"sigma_{k}": sigma,
+            }
+        )
 
     for k in fluxlike:
         if k in self.fluxlike:
-            x = standardize(self.fluxlike[k])
+            x, offset, sigma = standardize(self.fluxlike[k])
         else:
             x = new._create_fake_fluxlike_quantity()
+            offset, sigma = 0, 1
             new.fluxlike[k] = x
         c = np.random.normal(0, amplitude)
         df = c * x * np.ones(self.shape)
         new.fluxlike[f"systematics_model_from_{k}"] = df
         new.fluxlike["systematics_model"] += df
+        components.update(
+            **{
+                f"linear_{k}": f"c_{k}*({k} - offset_{k})/sigma_{k}",
+                f"c_{k}": c,
+                f"offset_{k}": offset,
+                f"sigma_{k}": sigma,
+            }
+        )
+
+    new.metadata["systematics_components"] = components
+    new.metadata["systematics_equation"] = "f = 1\n  + " + "\n  + ".join(
+        [v for k, v in components.items() if k[:7] == "linear_"]
+    )
 
     # modify both the model and flux arrays
     new.flux *= new.systematics_model

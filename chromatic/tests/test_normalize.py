@@ -8,11 +8,13 @@ def test_normalize(plot=False):
     f = np.cos(2 * np.pi * w.value / 3) + 1
 
     snr = 100
-    a = SimulatedRainbow(signal_to_noise=snr, wavelength=w)
-    b = SimulatedRainbow(signal_to_noise=snr, wavelength=w, star_flux=f)
-    c = SimulatedRainbow(
-        signal_to_noise=snr, wavelength=w, star_flux=f
-    ).inject_transit()
+    a = SimulatedRainbow(wavelength=w).inject_noise(signal_to_noise=snr)
+    b = SimulatedRainbow(wavelength=w, star_flux=f).inject_noise(signal_to_noise=snr)
+    c = (
+        SimulatedRainbow(wavelength=w, star_flux=f)
+        .inject_transit()
+        .inject_noise(signal_to_noise=snr)
+    )
 
     for x in [a, b, c]:
         nw = x.normalize(axis="w")
@@ -26,3 +28,15 @@ def test_normalize(plot=False):
             if plot:
                 r.imshow_quantities(maxcol=4)
     plt.close("all")
+
+
+def test_is_probably_normalized():
+    f = [2] * u.W / u.m**2
+    kw = dict(star_flux=f, R=10, dt=10 * u.minute)
+    assert SimulatedRainbow(**kw)._is_probably_normalized() == False
+    assert SimulatedRainbow(**kw).normalize()._is_probably_normalized() == True
+    assert SimulatedRainbow(**kw).inject_noise()._is_probably_normalized() == False
+    assert (
+        SimulatedRainbow(**kw).inject_noise().normalize()._is_probably_normalized()
+        == True
+    )

@@ -1,5 +1,7 @@
 from ...imports import *
 
+__all__ = ["normalize", "_is_probably_normalized"]
+
 
 def normalize(self, axis="wavelength", percentile=50):
     """
@@ -30,7 +32,7 @@ def normalize(self, axis="wavelength", percentile=50):
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("normalize", locals())
 
-    # TODO, think about more careful treatment of uncertainties + good/bad data
+    # create an empty copy
     new = self._create_copy()
 
     # (ignore nan warnings)
@@ -61,3 +63,27 @@ def normalize(self, axis="wavelength", percentile=50):
 
     # return the new Rainbow
     return new
+
+
+def _is_probably_normalized(
+    self,
+):
+    """
+    A helper to guess whether this `Rainbow` has been normalized or not.
+    """
+
+    # was there a normalization step?
+    is_normalized = "normalize" in self.history()
+
+    # are values generally close to 1?
+    spectrum = self.get_spectrum()
+    sigma = np.maximum(
+        u.Quantity(self.get_typical_uncertainty()).value,
+        u.Quantity(self.get_measured_scatter(method="MAD")).value,
+    )
+    try:
+        assert np.any(sigma > 0)
+        is_close = np.nanpercentile(np.abs(spectrum - 1) / sigma, 95) < 5
+    except AssertionError:
+        is_close = np.nanpercentile(np.abs(spectrum - 1), 95) < 0.1
+    return is_normalized or is_close
