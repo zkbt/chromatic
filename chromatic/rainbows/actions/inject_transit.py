@@ -130,10 +130,15 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
     new.model = new.fluxlike.get("model", 1) * new.planet_model
 
     parameters = dict(**defaults)
-    parameters.update(rp=rprs, u=u_arr)
+    parameters.update(rp_unbinned=rprs, u_unbinned=u_arr)
     new.metadata["transit_parameters"] = parameters
     new.metadata["transit_version"] = f"batman-package=={batman.__version__}"
-
+    if np.ndim(u) == 1:
+        new.wavelike["injected-u"] = u_arr
+    else:
+        for i in range(np.shape(u_arr)[1]):
+            new.wavelike[f"injected-transit-u{i+1}"] = u_arr[:, i]
+    new.wavelike["injected-transit-rp"] = rprs
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
 
