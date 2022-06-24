@@ -146,7 +146,7 @@ class Rainbow:
             if metadata is not None:
                 self.metadata.update(**metadata)
         # then try to initialize from a file
-        elif (type(filepath) == str) or (type(filepath) == list):
+        elif isinstance(filepath, str) or isinstance(filepath, list):
             self._initialize_from_file(filepath=filepath, format=format, **kw)
 
         # finally, tidy up by guessing the scales
@@ -364,11 +364,11 @@ class Rainbow:
             The quantity to sort.
         """
         if np.shape(v) == self.shape:
-            self.fluxlike[k] = v
+            self.fluxlike[k] = v * 1
         elif np.shape(v) == (self.nwave,):
-            self.wavelike[k] = v
+            self.wavelike[k] = v * 1
         elif np.shape(v) == (self.ntime,):
-            self.timelike[k] = v
+            self.timelike[k] = v * 1
         else:
             raise ValueError("'{k}' doesn't fit anywhere!")
 
@@ -615,13 +615,13 @@ class Rainbow:
             if key in self._core_dictionaries:
                 raise ValueError("Trying to set a core dictionary.")
             elif key == "wavelength":
-                self.wavelike["wavelength"] = value
+                self.wavelike["wavelength"] = value * 1
                 self._validate_core_dictionaries()
             elif key == "time":
-                self.timelike["time"] = value
+                self.timelike["time"] = value * 1
                 self._validate_core_dictionaries()
             elif key in ["flux", "uncertainty", "ok"]:
-                self.fluxlike[key] = value
+                self.fluxlike[key] = value * 1
                 self._validate_core_dictionaries()
             elif isinstance(value, str):
                 self.metadata[key] = value
@@ -726,6 +726,16 @@ class Rainbow:
         if "ok" in self.fluxlike:
             is_nan = np.isnan(self.fluxlike["flux"])
             self.fluxlike["ok"][is_nan] = 0
+
+        # make sure no arrays are accidentally pointed to each other
+        # (if they are, sorting will get really messed up!)
+        for d in ["fluxlike", "wavelike", "timelike"]:
+            core_dictionary = self.get(d)
+            for k1, v1 in core_dictionary.items():
+                for k2, v2 in core_dictionary.items():
+                    if k1 != k2:
+                        assert v1 is not v2
+
         self._sort()
 
     def _make_sure_wavelength_edges_are_defined(self):
@@ -742,6 +752,10 @@ class Rainbow:
                 self.wavelike["wavelength_lower"] = np.exp(l) * self.wavelength.unit
                 self.wavelike["wavelength_upper"] = np.exp(u) * self.wavelength.unit
             elif self.metadata.get("wscale", None) == "linear":
+                l, u = calculate_bin_leftright(self.wavelength)
+                self.wavelike["wavelength_lower"] = l
+                self.wavelike["wavelength_upper"] = u
+            else:
                 l, u = calculate_bin_leftright(self.wavelength)
                 self.wavelike["wavelength_lower"] = l
                 self.wavelike["wavelength_upper"] = u
@@ -785,9 +799,18 @@ class Rainbow:
         """
 
         i_wavelength, i_time = key
+        # create a history entry for this action (before other variables are defined)
+        h = self._create_history_entry("__getitem__", locals())
 
         # create a copy
         new = self._create_copy()
+
+        # make sure we don't drop down to 1D arrays
+        if isinstance(i_wavelength, int):
+            i_wavelength = [i_wavelength]
+
+        if isinstance(i_time, int):
+            i_time = [i_time]
 
         # do indexing of wavelike
         for w in self.wavelike:
@@ -809,6 +832,9 @@ class Rainbow:
         new._validate_core_dictionaries()
         new._guess_wscale()
         new._guess_tscale()
+
+        # append the history entry to the new Rainbow
+        new._record_history_entry(h)
 
         return new
 
@@ -906,6 +932,7 @@ class Rainbow:
     # import other actions that return other Rainbows
     from .actions import (
         normalize,
+        _is_probably_normalized,
         bin,
         bin_in_time,
         bin_in_wavelength,
@@ -925,8 +952,6 @@ class Rainbow:
         _create_fake_wavelike_quantity,
         _create_fake_timelike_quantity,
         _create_fake_fluxlike_quantity,
-        to_nparray,
-        to_df,
         remove_astrophysical_signals,
     )
 
@@ -962,18 +987,16 @@ class Rainbow:
         plot,
     )
 
-    # import history abilities
-    from .history import (
-        _setup_history,
-        _record_history_entry,
-        _remove_last_history_entry,
-        _create_history_entry,
-        history,
-    )
-
     from .helpers import (
         get_for_wavelength,
         get_for_time,
         get_ok_data_for_wavelength,
         get_ok_data_for_time,
+        to_nparray,
+        to_df,
+        _setup_history,
+        _record_history_entry,
+        _remove_last_history_entry,
+        _create_history_entry,
+        history,
     )

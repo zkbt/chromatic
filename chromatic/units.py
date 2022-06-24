@@ -19,3 +19,7 @@ u.add_enabled_units([electrons_per_group])
 # FIXME: some of these feel super kuldgy; how do we make this
 # interact more smoothly with units already defined in astropy
 # (for example, DN should work, but is always flaky for me...)
+
+u.add_enabled_aliases(
+    {"microns": u.micron, "ELECTRONS": u.electron, "electrons": u.electron}
+)

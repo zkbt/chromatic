@@ -68,6 +68,7 @@ def imshow(
         wmax = self.wavelength_upper[-1].to_value(w_unit)
     except AttributeError:
         wmin, wmax = None, None
+
     if (self.wscale == "linear") and (wmin is not None) and (wmax is not None):
         wlower, wupper = wmin, wmax
         wlabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"

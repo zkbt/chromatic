@@ -1,7 +1,7 @@
 """
 Add ability for Rainbow to keep track of their own history.
 """
-from ..imports import *
+from ...imports import *
 
 __all__ = [
     "_setup_history",
@@ -69,6 +69,12 @@ def represent_as_copypasteable(x):
         return f"u.Quantity({value})*u.Unit('{unit}')"
     elif isinstance(x, np.ndarray):
         return f"np.{repr(x)}"
+    elif isinstance(x, slice):
+        return (
+            f"{x.start}:{x.stop}:{x.step}".replace("None", "")
+            .replace("::", ":")
+            .replace("::", ":")
+        )
     else:
         return repr(x)
 
@@ -99,21 +105,35 @@ def _create_history_entry(self, name, inputs={}):
     for k in to_remove:
         inputs.pop(k, None)
 
-    # create history entry dictionary
-    h = dict(name=name, inputs=inputs)
-    return h
+    # create a dictionary to store function call components
+    if name == "__getitem__":
+        w = represent_as_copypasteable(inputs["i_wavelength"])
+        t = represent_as_copypasteable(inputs["i_time"])
+        call = f"[{w},{t}]"
+    elif name in "+-*/":
+        try:
+            other = f'\n{textwrap.indent(inputs["object"].history(), " ")}'
+        except AttributeError:
+            other = represent_as_copypasteable(inputs["object"])
+        call = f"{name}{other}"
+    else:
+        list_of_arguments = [
+            f"{k}={represent_as_copypasteable(v)}" for k, v in inputs.items()
+        ]
+        arguments_as_string = "\n   " + ",\n   ".join(list_of_arguments)
+
+        if "Rainbow" in name:
+            call = f"{name}({arguments_as_string})"
+        else:
+            call = f".{name}({arguments_as_string})"
+
+    return call
 
 
-def history(self, format="string"):
+def history(self):
     """
     Return a summary of the history of actions that have gone into this object.
 
-    Parameters
-    ----------
-    format : str
-        How should the history be returned? Options include...
-            'string' = a mostly copy-pastable string
-            'table' = an ordered table of each individual entries
 
     Returns
     -------
@@ -122,23 +142,5 @@ def history(self, format="string"):
 
     """
 
-    # create a dictionary to store function call components
-    d = dict(names=[], arguments=[])
-    for h in self.metadata["history"]:
-        d["names"].append(h["name"])
-        d["arguments"].append(
-            "\n   "
-            + ",\n   ".join(
-                [f"{k}={represent_as_copypasteable(v)}" for k, v in h["inputs"].items()]
-            )
-        )
-
-    # create a table of inputs
-    table = Table(d)
-    if format == "table":
-        return table
-    elif format == "string":
-        calls = [f"{row['names']}({row['arguments']})" for row in table]
-        return "(\n" + "\n.".join(calls) + "\n)"
-    else:
-        raise ValueError(f"`format='{format}'` not available")
+    calls = self.metadata["history"]
+    return "(\n" + "\n".join(calls) + "\n)"

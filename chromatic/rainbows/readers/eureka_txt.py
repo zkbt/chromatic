@@ -1,6 +1,6 @@
 from ...imports import *
 
-__all__ = ["from_eureka"]
+__all__ = ["from_eureka_S3_txt"]
 
 
 def eureadka_txt(filename):
@@ -25,12 +25,12 @@ def eureadka_txt(filename):
         except KeyError:
             pass
     timelike = {}
-    timelike["time"] = t * u.day
+    timelike["time"] = t * u.day * 1
 
     # figure out a wavelength array
     w = np.unique(data["wave_1d"])
     wavelike = {}
-    wavelike["wavelength"] = w * u.micron
+    wavelike["wavelength"] = w * u.micron * 1
 
     # populate the fluxlike quantities
     fluxlike = {}
@@ -47,13 +47,13 @@ def eureadka_txt(filename):
             indices_for_this_wavelength = i_wavelength + i_time * len(w)
             fluxlike[k][i_wavelength, i_time] = data[k][indices_for_this_wavelength]
 
-    fluxlike["flux"] = fluxlike["optspec"]
-    fluxlike["uncertainty"] = fluxlike["opterr"]
+    fluxlike["flux"] = fluxlike["optspec"] * 1
+    fluxlike["uncertainty"] = fluxlike["opterr"] * 1
 
     return wavelike, timelike, fluxlike
 
 
-def from_eureka(rainbow, filename, **kwargs):
+def from_eureka_S3_txt(rainbow, filename, **kwargs):
     """
     Populate a Rainbow from a eureka pipeline S3 output.
 

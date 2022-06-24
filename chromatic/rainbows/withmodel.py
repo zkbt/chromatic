@@ -167,3 +167,4 @@ class RainbowWithModel(Rainbow):
 
         if label:
             _add_panel_labels(ax[row_data, :], preset=label, **labelkw)
+        plt.sca(ax[row_data, 0])

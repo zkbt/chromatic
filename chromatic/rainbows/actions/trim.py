@@ -51,6 +51,7 @@ def trim_times(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1
 
     # actually try the Rainbow
     new = self[:, should_be_kept]
+    new._remove_last_history_entry()
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
@@ -108,6 +109,7 @@ def trim_wavelengths(self, just_edges=True, when_to_give_up=1, minimum_acceptabl
 
     # actually try the Rainbow
     new = self[should_be_kept, :]
+    new._remove_last_history_entry()
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)

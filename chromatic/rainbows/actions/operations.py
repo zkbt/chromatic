@@ -23,6 +23,8 @@ def __add__(self, object):
     flux.
     """
 
+    h = self._create_history_entry("+", locals())
+
     # Create new Rainbow() to store results in.
     result = self._create_copy()
 
@@ -59,6 +61,10 @@ def __add__(self, object):
         else:
             print("Invalid shape in addition: " + str(object.shape))
             return
+
+    # append the history entry to the new Rainbow
+    result._record_history_entry(h)
+
     return result
 
 
@@ -83,6 +89,7 @@ def __sub__(self, object):
     rainbow : Rainbow() with the same parameters as self but with subtracted
     flux.
     """
+    h = self._create_history_entry("-", locals())
 
     # Create new Rainbow() to store results in.
     result = self._create_copy()
@@ -119,6 +126,10 @@ def __sub__(self, object):
         else:
             print("Invalid shape in subtraction: " + str(object.shape))
             return
+
+    # append the history entry to the new Rainbow
+    result._record_history_entry(h)
+
     return result
 
 
@@ -143,6 +154,7 @@ def __mul__(self, object):
     rainbow : Rainbow() with the same parameters as self but with multiplied
     flux.
     """
+    h = self._create_history_entry("*", locals())
 
     # Create new Rainbow() to store results in.
     result = self._create_copy()
@@ -179,6 +191,10 @@ def __mul__(self, object):
         else:
             print("Invalid shape in multiplication: " + str(object.shape))
             return
+
+    # append the history entry to the new Rainbow
+    result._record_history_entry(h)
+
     return result
 
 
@@ -203,6 +219,7 @@ def __truediv__(self, object):
     rainbow : Rainbow() with the same parameters as self but with divided
     flux.
     """
+    h = self._create_history_entry("/", locals())
 
     # Create new Rainbow() to store results in.
     result = self._create_copy()
@@ -238,6 +255,10 @@ def __truediv__(self, object):
         else:
             print("Invalid shape in division: " + str(object.shape))
             return
+
+    # append the history entry to the new Rainbow
+    result._record_history_entry(h)
+
     return result
 
 
@@ -265,4 +286,4 @@ def __eq__(self, other):
                 # test that all elements match for both
                 same *= np.all(d1[k] == d2.get(k, None))
 
-    return same
+    return bool(same)

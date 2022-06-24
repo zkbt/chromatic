@@ -25,14 +25,30 @@ def remove_astrophysical_signals(self, method="gradient", model=None, win_length
 
     if method == "gradient":
         new.flux = np.sqrt(2)*np.gradient(new.flux,axis=0)
+
 #    if method == "highpass_filter"
 #        scipy.signal.butter()
-    
-    if method == "savgol":
+
+'''
+    if method == "convolve":
+        for i in range (0,new.nwave):
+            box = np.ones(win_length)/win_length
+            grad = np.convolve(new.flux[i,:], box, mode = "same")
+            new.flux[i,:] = new.flux[i,:]/grad
+'''
+
+    if method == "median_filter":
         if win_length is None:
-            print ("You need `win_length` for this `savgol` method")
+            print ("You need `win_length` for this `median_filter` method")
+        else:
+            medfilt = median_filter(new.flux,size=win_length)
+            new.flux = new.flux/medfilt
+    
+    if method == "savgol_filter":
+        if win_length is None:
+            print ("You need `win_length` for this `savgol_filter` method")
         elif polyorder is None:
-            print ("You need `polyorder` for this `savgol` method")
+            print ("You need `polyorder` for this `savgol_filter` method")
         else:
             for i in range (0,new.nwave):
                 savgolfilter = savgol_filter(new.flux[i,:],window_length=win_length,polyorder=polyorder)

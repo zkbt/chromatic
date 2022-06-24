@@ -6,7 +6,7 @@ import matplotlib.colors as col
 import matplotlib.cm as cm
 import matplotlib.gridspec as gs
 
-import copy, pkg_resources, os, glob, fnmatch, pickle
+import copy, pkg_resources, os, glob, pickle
 from tqdm import tqdm
 
 import warnings, textwrap
@@ -44,6 +44,8 @@ from .units import *
 
 # For remove astrophysical signal
 from scipy.signal import savgol_filter
+from scipy.signal import medfilt,convolve2d
+from scipy.ndimage import median_filter
 
 # define a driectory where we can put any necessary data files
 data_directory = pkg_resources.resource_filename("chromatic", "data")
