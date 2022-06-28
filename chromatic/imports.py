@@ -21,7 +21,7 @@ warnings.formatwarning = custom_formatwarning
 
 # astropy
 from astropy.io import ascii, fits
-from astropy.table import Table
+from astropy.table import Table, QTable
 from astropy.time import Time
 
 # import astropy.units as u
