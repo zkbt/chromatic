@@ -43,7 +43,7 @@ import pandas as pd
 from .units import *
 
 # For remove astrophysical signal
-from scipy.signal import savgol_filter
+from scipy.signal import savgol_filter,butter,filtfilt
 from scipy.signal import medfilt,convolve2d
 from scipy.ndimage import median_filter
 

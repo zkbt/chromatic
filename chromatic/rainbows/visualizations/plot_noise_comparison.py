@@ -83,17 +83,17 @@ def plot_noise_comparison(
     # specify y_plots
     plot_measured_scatter = self.get_measured_scatter()
     plot_typical_uncertainty = self.get_typical_uncertainty()
-    yplots = [self.get_measured_scatter(),self.get_typical_uncertainty()]
+    yplots = [self.get_typical_uncertainty(),self.get_measured_scatter()]
 
     # define colors
     if measured_scatter_color == "auto":
         c = plot_x
         cmap = self.cmap
         norm = self.norm
+        default_line_measured_scatter_color = "red"
     else:
         c = measured_scatter_color
-
-    default_line_measured_scatter_color = "red"
+        default_line_measured_scatter_color = c
 
     plot_colors = [typical_uncertainty_color, default_line_measured_scatter_color]
     scatter_colors = [typical_uncertainty_color, c]
