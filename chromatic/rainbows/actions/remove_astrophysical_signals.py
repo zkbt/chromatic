@@ -10,6 +10,9 @@ def remove_astrophysical_signals(self, method="gradient", model=None, win_length
     method : str
         The method used in the function.
         `gradient` will use the np.gradient to filter out long term signal (fast).
+        `median_filter` is the wrap-up of scipy.signal.median_filter. It can work in 2D data as well (win_length is required in this method).
+        `savgol_filter` is the wrap-up of scipy.signal.savgol_filter. It can only work in 1D data (win_length and polyorder are required).
+        `custom` allow users to pass any fluxlike model to remove astrophysical signals.
 
     Returns
     -------
