@@ -1,5 +1,6 @@
 from ..imports import *
 from ..resampling import bintoR
+from ..version import __version__
 
 from astropy.utils.data import download_file
 
@@ -86,7 +87,7 @@ class PHOENIXLibrary:
         )
         warnings.warn(
             f"""
-        Downloading the shared wavelength grid from
+        Downloading (or finding locally) the shared wavelength grid from
         {self._raw_wavelengths_url}
         """
         )
@@ -104,7 +105,7 @@ class PHOENIXLibrary:
         )
         warnings.warn(
             f"""
-        Downloading the index of files from
+        Downloading (or finding locally) the index of files from
         {self._raw_directory_url}
         """
         )
@@ -120,7 +121,7 @@ class PHOENIXLibrary:
         N = len(self._raw_spectrum_urls)
         warnings.warn(
             f"""
-        Downloading {N} very large files from
+        Downloading (or finding locally) {N} very large files from
         {self._raw_directory_url}
 
         If the files aren't already downloaded,
@@ -232,7 +233,7 @@ class PHOENIXLibrary:
         10000,
         30000,
         100000,
-        "original",
+        # "original",
     ]
 
     def _get_grid_filename(self, R):
@@ -249,6 +250,11 @@ class PHOENIXLibrary:
             self._create_library_grid(R, remake=remake)
 
     def _create_library_grid(self, R, remake=False):
+        try:
+            self._raw_downloaded
+        except AttributeError:
+            self._download_raw_data()
+
         # skip this resolution if already made
         filename = self._get_grid_filename(R)
         if os.path.exists(filename) and (not remake):
@@ -268,9 +274,10 @@ class PHOENIXLibrary:
         shared["grid"] = "PHOENIX-ACES-AGSS-COND-2011"
         shared["url"] = "https://phoenix.astro.physik.uni-goettingen.de/?page_id=15"
         shared["citation"] = "2013A&A…553A…6H"
+        shared["photons"] = self.photons
         shared["R"] = R
         shared["filename"] = os.path.basename(filename)
-        shared["photons"] = self.photons
+        shared["chromatic-version"] = __version__
         unbinned_w = self._load_raw_wavelength()
 
         d = {"metallicity": [], "logg": [], "temperature": [], "spectrum": []}
@@ -374,25 +381,29 @@ class PHOENIXLibrary:
         inputs = dict(temperature=temperature, logg=logg, metallicity=metallicity)
 
         relevant = self.table
-        it = find_indices(temperature, relevant, "temperature", inputs)
-        relevant = relevant.loc["temperature", it]
-        ig = find_indices(logg, relevant, "logg", inputs)
-        relevant = relevant.loc["logg", ig]
         iz = find_indices(metallicity, relevant, "metallicity", inputs)
         relevant = relevant.loc["metallicity", iz]
+        if len(relevant) > 1:
+            it = find_indices(temperature, relevant, "temperature", inputs)
+            relevant = relevant.loc["temperature", it]
+            if len(relevant) > 1:
+                ig = find_indices(logg, relevant, "logg", inputs)
+                relevant = relevant.loc["logg", ig]
 
-        wt = get_interpolation_weights(
-            np.log(temperature), np.log(relevant["temperature"])
-        )
-        wg = get_interpolation_weights(logg, relevant["logg"])
-        wz = get_interpolation_weights(metallicity, relevant["metallicity"])
-
-        weights = wt * wg * wz
-        weight_sum = np.sum(weights)
-        assert np.isclose(weight_sum, 1) or (weight_sum <= 1)
-        weights /= weight_sum
-
-        spectrum = np.sum(weights[:, np.newaxis] * relevant["spectrum"], axis=0)
+        if len(relevant) == 1:
+            weights = 1
+            spectrum = relevant["spectrum"].data
+        else:
+            wz = get_interpolation_weights(metallicity, relevant["metallicity"])
+            wt = get_interpolation_weights(
+                np.log(temperature), np.log(relevant["temperature"])
+            )
+            wg = get_interpolation_weights(logg, relevant["logg"])
+            weights = wt * wg * wz
+            weight_sum = np.sum(weights)
+            assert np.isclose(weight_sum, 1) or (weight_sum <= 1)
+            weights /= weight_sum
+            spectrum = np.sum(weights[:, np.newaxis] * relevant["spectrum"], axis=0)
 
         if visualize:
             fi, ax = plt.subplots(
