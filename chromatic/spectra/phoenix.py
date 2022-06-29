@@ -22,9 +22,9 @@ def get_interpolation_weights(value, ingredients):
     return weights
 
 
-def find_indices(value, table, label, inputs={}):
-    """ """
-    possible = np.unique(table[label]).data
+def find_indices(value, possible):
+    """
+    Find the indices"""
     if value in possible:
         return value
     try:
@@ -448,3 +448,45 @@ class PHOENIXLibrary:
     @property
     def wavelength(self):
         return self.metadata["wavelength"]
+
+    def profile_speeds(self, iterations=5):
+        timings = {}
+        for k in [
+            "R",
+            "load library",
+            "get spectrum at grid point",
+            "get interpolated spectrum",
+        ]:
+            timings[k] = []
+
+        for R in tqdm(self._available_resolutions):
+            for i in range(iterations):
+                timings["R"].append(R)
+
+                # how long does it take to load?
+                start = get_current_seconds()
+                self._load_grid(R)
+                dt = get_current_seconds() - start
+                timings["load library"].append(dt)
+
+                # how long does it take to retrieve a spectrum that exists?
+                start = get_current_seconds()
+                self.get_spectrum(temperature=3000, logg=4.5, metallicity=0.0)
+                dt = get_current_seconds() - start
+                timings["get spectrum at grid point"].append(dt)
+
+                # how long does it take to retrieve a spectrum that needs to be interpolated?
+                start = get_current_seconds()
+                self.get_spectrum(temperature=3456, logg=5.67, metallicity=0.1)
+                dt = get_current_seconds() - start
+                timings["get interpolated spectrum"].append(dt)
+
+        t = Table(timings)
+        plt.figure(figsize=(8, 4), dpi=300)
+        for k in timings.keys():
+            if k != "R":
+                plt.loglog(timings["R"], timings[k], marker="o", label=k, alpha=0.3)
+        plt.legend(bbox_to_anchor=(1, 1), frameon=False)
+        plt.xlabel("R = $\lambda/\Delta\lambda$")
+        plt.ylabel("Time Required")
+        return t
