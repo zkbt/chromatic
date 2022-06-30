@@ -5,63 +5,26 @@ from ..version import __version__
 from astropy.utils.data import download_file
 
 
-def get_interpolation_weights(value, ingredients):
+def get_interpolation_weights(value, bounds):
+    """
+    Get the interpolation weights for `value`
+    relative to the `bounds` below and above.
+    """
 
-    bounds = np.min(ingredients), np.max(ingredients)
-    weights = np.zeros(np.shape(np.atleast_1d(ingredients)))
-    if bounds[0] == bounds[1]:
-        weights[:] = 1
+    # if there's only one value, the weight should be 1
+    if np.size(bounds) == 1:
+        return [1]
     elif np.size(bounds) == 2:
         span = bounds[1] - bounds[0]
-        # below_weight = (bounds[1] - value) / span
-        # upper_weight = (value - bounds[0]) / span
-        is_below = ingredients == bounds[0]
-        is_above = ingredients == bounds[1]
-        weights[is_below] = (bounds[1] - value) / span
-        weights[is_above] = (value - bounds[0]) / span
-    return weights
-
-
-def find_indices(value, table, label, inputs={}):
-    """ """
-    possible = np.unique(table[label]).data
-    if value in possible:
-        return value
-    try:
-        above = possible[possible > value].min()
-    except ValueError:
-        above = None
-    try:
-        below = possible[possible <= value].max()
-    except ValueError:
-        below = None
-
-    if above is None:
-        warnings.warn(
-            f"""
-        {repr(inputs)}
-        is outside limits and will be rounded to {label}={np.max(possible)}.
-        Please rewrite your code to avoid this happening
-        or proceed very, very, very, very cautiously.
-        """
-        )
-        return [below]
-    if below is None:
-        warnings.warn(
-            f"""
-        {repr(inputs)}
-        is outside limits and will be rounded to {label}={np.min(possible)}.
-        Please rewrite your code to avoid this happening
-        or proceed very, very, very, very cautiously.
-        """
-        )
-        return [above]
-    return [below, above]
+        weight_below = (bounds[1] - value) / span
+        weight_above = (value - bounds[0]) / span
+        return weight_below, weight_above
 
 
 class PHOENIXLibrary:
     # downloaded files will be stored in "~/.{_cache_label}"
     _cache_label = "chromatic"
+    keys_for_indexing = ["temperature", "logg", "metallicity"]
 
     def _download_raw_data(self, Z=0.0, cache=True):
         """
@@ -245,11 +208,11 @@ class PHOENIXLibrary:
         filename = f"phoenix-{unit_string}-{R}.npy"
         return os.path.join(self.directory, filename)
 
-    def _create_library_grids(self, remake=False):
+    def _create_grids(self, remake=False):
         for R in self._available_resolutions:
-            self._create_library_grid(R, remake=remake)
+            self._create_grid(R, remake=remake)
 
-    def _create_library_grid(self, R, remake=False):
+    def _create_grid(self, R, remake=False):
         try:
             self._raw_downloaded
         except AttributeError:
@@ -280,9 +243,8 @@ class PHOENIXLibrary:
         shared["chromatic-version"] = __version__
         unbinned_w = self._load_raw_wavelength()
 
-        d = {"metallicity": [], "logg": [], "temperature": [], "spectrum": []}
-
-        for k, v in tqdm(self._raw_downloaded.items()):
+        d = {}
+        for k, v in tqdm(list(self._raw_downloaded.items())):
 
             # load the unbinned spectrum
             unbinned_f = self._load_raw_spectrum(v)
@@ -303,17 +265,22 @@ class PHOENIXLibrary:
                 w, f = binned["x"], binned["y"]
 
             if "wavelength" not in shared:
-                shared["wavelength"] = w
+                shared["wavelength"] = w.value
 
             assert len(f) == len(shared["wavelength"])
 
-            d["metallicity"].append(Z)
-            d["logg"].append(logg)
-            d["temperature"].append(T)
-            d["spectrum"].append(f)
+            key = (T, logg, Z)
+            d[key] = f.value
 
-        table = QTable(d)  # , dtype=[float, float, float, object])
-        np.save(filename, [shared, table])
+        # pull out the unique values of the keys
+        for i, k in enumerate(self.keys_for_indexing):
+            shared[k] = np.unique([x[i] for x in d])
+
+        shared["wavelength_unit"] = w.unit.to_string()
+        shared["spectrum_unit"] = f.unit.to_string()
+
+        # save everything to an easy-to-load file
+        np.save(filename, [shared, d], allow_pickle=True)
         print(f"saved grid to {filename}")
 
     def __init__(self, directory=None, photons=True):
@@ -367,84 +334,152 @@ class PHOENIXLibrary:
         self._load_grid(smallest_sufficient_R)
 
     def _load_grid(self, R):
-        self.metadata, self.table = np.load(
+        self.metadata, self.models = np.load(
             self._get_grid_filename(R), allow_pickle=True
         )[()]
 
-        self.table.add_index("metallicity")
-        self.table.add_index("logg")
-        self.table.add_index("temperature")
+        self.units = {
+            k: u.Unit(self.metadata[f"{k}_unit"]) for k in ["wavelength", "spectrum"]
+        }
+        self.wavelength = self.metadata["wavelength"] * self.units["wavelength"]
+
+    def find_bounds(self, value, key, inputs={}):
+        """
+        Find a mask where `possible` is immediately
+        below or above `value`.
+
+        Parameters
+        ----------
+        value : float
+            The exact values to find.
+        possible : array
+            The possible grid point values to compare to.
+
+        Returns
+        -------
+         :
+        """
+        possible = self.metadata[key]
+
+        # return one index where it's exact
+        if value in possible:
+            return [value]
+
+        # figure out above and below grid points otherwise
+        try:
+            above = np.min(possible[possible > value])
+        except ValueError:
+            above = None
+        try:
+            below = np.max(possible[possible <= value])
+        except ValueError:
+            below = None
+
+        if (above is None) or (below is None):
+            raise ValueError(
+                f"""
+            Your requested coordinate of
+            {repr(inputs)}
+            is outside the limits {np.min(possible)}<={key}<{np.max(possible)}.
+            Please rewrite your code to avoid this happening
+            or proceed very, very, very, very cautiously.
+            """
+            )
+        else:
+            return below, above
 
     def get_spectrum(
         self, temperature=3000, logg=5.0, metallicity=0.0, visualize=False
     ):
+        """
+        Get a spectrum for an arbitrary temperature, logg, metallicity.
+        """
+
+        #
         inputs = dict(temperature=temperature, logg=logg, metallicity=metallicity)
 
-        relevant = self.table
-        iz = find_indices(metallicity, relevant, "metallicity", inputs)
-        relevant = relevant.loc["metallicity", iz]
-        if len(relevant) > 1:
-            it = find_indices(temperature, relevant, "temperature", inputs)
-            relevant = relevant.loc["temperature", it]
-            if len(relevant) > 1:
-                ig = find_indices(logg, relevant, "logg", inputs)
-                relevant = relevant.loc["logg", ig]
+        # figure out the
+        bounding_temperature = self.find_bounds(
+            temperature, key="temperature", inputs=inputs
+        )
+        bounding_logg = self.find_bounds(logg, key="logg", inputs=inputs)
+        bounding_metallicity = self.find_bounds(
+            metallicity, key="metallicity", inputs=inputs
+        )
 
-        if len(relevant) == 1:
-            weights = 1
-            spectrum = relevant["spectrum"].data
+        if visualize:
+            self.plot_available(**inputs)
+
+        N = (
+            np.size(bounding_temperature)
+            * np.size(bounding_logg)
+            * np.size(bounding_metallicity)
+        )
+        if N == 1:
+            weights = [1]
+            key = (bounding_temperature[0], bounding_logg[0], bounding_metallicity[0])
+            spectrum = self.models[key].flatten()
         else:
-            wz = get_interpolation_weights(metallicity, relevant["metallicity"])
-            wt = get_interpolation_weights(
-                np.log(temperature), np.log(relevant["temperature"])
+            logT, bounding_logT = np.log(temperature), np.log(bounding_temperature)
+            weight_temperature = get_interpolation_weights(logT, bounding_logT)
+            weight_logg = get_interpolation_weights(logg, bounding_logg)
+            weight_metallicity = get_interpolation_weights(
+                metallicity, bounding_metallicity
             )
-            wg = get_interpolation_weights(logg, relevant["logg"])
-            weights = wt * wg * wz
+
+            weights = np.zeros(N)
+            spectra = []
+            i = 0
+            for wt, t in zip(weight_temperature, bounding_temperature):
+                for wg, g in zip(weight_logg, bounding_logg):
+                    for wz, z in zip(weight_metallicity, bounding_metallicity):
+                        weights[i] = wt * wg * wz
+                        key = (t, g, z)
+                        this_spectrum = self.models[key]
+                        spectra.append(this_spectrum)
+                        # print(f"{weights[i]} * [{key}]")
+                        i += 1
+
             weight_sum = np.sum(weights)
             assert np.isclose(weight_sum, 1) or (weight_sum <= 1)
             weights /= weight_sum
-            spectrum = np.sum(weights[:, np.newaxis] * relevant["spectrum"], axis=0)
+            spectrum = np.sum(weights[:, np.newaxis] * spectra, axis=0)
 
         if visualize:
-            fi, ax = plt.subplots(
-                1,
-                3,
-                figsize=(10, 2),
-                gridspec_kw=dict(width_ratios=[2, 2, 4]),
-                constrained_layout=True,
-            )
-
-            plt.sca(ax[0])
-            plt.scatter(
-                self.table["temperature"],
-                self.table["metallicity"],
-                marker=".",
-                alpha=0.3,
-            )
-            plt.scatter(temperature, metallicity)
-            plt.xlabel("Temperature (K)")
-            plt.ylabel("[Z/H]")
-
-            plt.sca(ax[1])
-            plt.scatter(
-                self.table["temperature"], self.table["logg"], marker=".", alpha=0.3
-            )
-            plt.scatter(temperature, logg)
-            plt.xlabel("Temperature (K)")
-            plt.ylabel("log(g)")
-
-            plt.sca(ax[2])
-            for w, s in zip(weights, relevant["spectrum"]):
-                plt.plot(self.metadata["wavelength"], s, alpha=w)
+            fi = plt.figure(figsize=(8, 3))
+            for w, s in zip(weights, spectra):
+                plt.plot(self.wavelength, s, alpha=w)
             plt.plot(self.metadata["wavelength"], spectrum, color="black")
             plt.xlabel(
-                f"Wavelength ({self.metadata['wavelength'].unit.to_string('latex_inline')})"
+                f"Wavelength ({self.units['wavelength'].to_string('latex_inline')})"
             )
-            plt.ylabel(f"Model Flux\n({s.unit.to_string('latex_inline')})")
-
+            plt.ylabel(
+                f"Model Flux\n({self.units['spectrum'].to_string('latex_inline')})"
+            )
             plt.suptitle(", ".join([f"{k}={v}" for k, v in inputs.items()]))
-        return spectrum
 
-    @property
-    def wavelength(self):
-        return self.metadata["wavelength"]
+        return spectrum * self.units["spectrum"]
+
+    def plot_available(self, temperature=None, logg=None, metallicity=None):
+
+        N = len(self.keys_for_indexing)
+        fi, ax = plt.subplots(
+            N, N, figsize=(8, 8), sharex="col", sharey="row", constrained_layout=True
+        )
+        labels = dict(
+            temperature="Temperature (K)",
+            logg="$log_{10}[g/(cm/s^2)]$",
+            metallicity="[Z/H] (metallicity)",
+        )
+        gridkw = dict(marker=".", alpha=0.3)
+        for i, ky in enumerate(self.keys_for_indexing):
+            for j, kx in enumerate(self.keys_for_indexing):
+                y = [k[i] for k in self.models]
+                x = [k[j] for k in self.models]
+                plt.sca(ax[i, j])
+                plt.scatter(x, y, **gridkw)
+                plt.scatter(locals()[kx], locals()[ky])
+                # if j == 0:
+                plt.ylabel(labels[ky])
+                # if i == (N - 1):
+                plt.xlabel(labels[kx])
