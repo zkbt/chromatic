@@ -24,7 +24,7 @@ class PHOENIXLibrary:
         100000,
     ]
 
-    def __init__(self, photons=True):
+    def __init__(self, directory=".", photons=True):
         """
         Initialize a PHOENIX model library to provide easy
         access to model stellar spectra at resolutions up
@@ -48,6 +48,12 @@ class PHOENIXLibrary:
         # should we use photon units (e.g. photons/s/m**2/nm)?
         # (if not, we'll use flux per wavelength units like W/m**2/nm)
         self._are_the_units_photons = photons
+
+        # figure out the directory where the models will be stored
+        self._directory_for_new_grids = os.path.join(
+            os.path.join(directory),
+            "chromatic-model-stellar-spectra",
+        )
 
     def _download_grid(self, R, metallicity=0.0, cache=True):
         """
@@ -316,9 +322,9 @@ class PHOENIXLibrary:
             unit_string = "flux"
 
         filename = f"phoenix_{unit_string}_metallicity={metallicity:3.1f}_R={R:.0f}.npy"
-        return os.path.join(self._directory_for_new_grids, filename)
+        return filename
 
-    def _create_grids(self, metallicities=[0.0], remake=False, directory="."):
+    def _create_grids(self, metallicities=[0.0], remake=False):
         """
         Create pre-processed grids for all resolutions.
 
@@ -328,8 +334,6 @@ class PHOENIXLibrary:
             The stellar metallicity.
         remake : bool
             Should we remake the library even if a file exists?
-        directory : str
-            Where should we create this library?
         """
         for metallicity in metallicities:
             for R in self._available_resolutions:
@@ -337,7 +341,6 @@ class PHOENIXLibrary:
                     R,
                     metallicity=metallicity,
                     remake=remake,
-                    directory=directory,
                 )
 
     def _upload_grids(self, destination):
@@ -345,7 +348,7 @@ class PHOENIXLibrary:
         command = f"rsync -v --progress {source} {destination}"
         return os.system(command)
 
-    def _create_grid(self, R, metallicity=0.0, remake=False, directory="."):
+    def _create_grid(self, R, metallicity=0.0, remake=False):
         """
         Create a pre-processed grid for a single resolution.
 
@@ -357,15 +360,7 @@ class PHOENIXLibrary:
             The stellar metallicity.
         remake : bool
             Should we remake the library even if a file exists?
-        directory : str
-            Where should we create this library?
         """
-
-        # figure out the directory where the models will be stored
-        self._directory_for_new_grids = os.path.join(
-            os.path.join(directory),
-            "chromatic-model-stellar-spectra",
-        )
 
         # make sure that directory exists
         try:
@@ -379,13 +374,16 @@ class PHOENIXLibrary:
             self._download_raw_data(metallicity=metallicity)
 
         # skip this resolution if already made
-        filename = self._get_grid_filename(R, metallicity=metallicity)
+        filename = os.path.join(
+            self._directory_for_new_grids,
+            self._get_grid_filename(R, metallicity=metallicity),
+        )
         if os.path.exists(filename) and (not remake):
             print(
                 textwrap.dedent(
                     f"""
                 a grid for R={R}, metallicity={metallicity} exists at
-                {self._get_grid_filename(R)}
+                {filename}
                 so we're not remaking it
                 """
                 )
@@ -473,6 +471,16 @@ class PHOENIXLibrary:
             smallest_sufficient_R = np.max(self._available_resolutions)
         return smallest_sufficient_R
 
+    def get_local_grid(self, R, metallicity=0.0, directory="."):
+        bespoke = os.path.join(
+            self._directory_for_new_grids,
+            self._get_grid_filename(R, metallicity=metallicity),
+        )
+        if os.path.exists(bespoke):
+            return bespoke
+        else:
+            return self._download_grid(R, metallicity=metallicity)
+
     def _load_grid(self, R, metallicity=0.0):
         """
         Load a pre-processed grid for a particular resolution.
@@ -484,9 +492,26 @@ class PHOENIXLibrary:
         metallicity : float
             The stellar metallicity.
         """
-        self.metadata, self.models = np.load(
-            self._get_grid_filename(R, metallicity=metallicity), allow_pickle=True
+        try:
+            assert self.metadata["R"] == R
+            assert metallicity in self.metadata["metallicity"]
+            return
+        except (AttributeError, AssertionError):
+            pass
+
+        metadata, models = np.load(
+            self.get_local_grid(R, metallicity=metallicity), allow_pickle=True
         )[()]
+
+        try:
+            for k in ["R", "photons", "wavelength"]:
+                assert np.all(self.metadata[k] == metadata[k])
+            for k in ["metallicity", "filename", "chromatic-version"]:
+                self.metadata[k] = np.hstack([self.metadata[k], metadata[k]])
+            self.models = self.models | models
+        except (AttributeError, AssertionError):
+            self.metadata = metadata
+            self.models = models
 
         self.units = {
             k: u.Unit(self.metadata[f"{k}_unit"]) for k in ["wavelength", "spectrum"]
@@ -553,14 +578,48 @@ class PHOENIXLibrary:
             weight_above = (value - bounds[0]) / span
             return weight_below, weight_above
 
+    _available_metallicities = [0.0, 1.0]
+
     def get_spectrum(
-        self, temperature=3000, logg=5.0, metallicity=0.0, visualize=False
+        self, temperature=3000, logg=5.0, metallicity=0.0, R=10, visualize=False
     ):
         """
         Get a spectrum for an arbitrary temperature, logg, metallicity.
+
+        Parameters
+        ----------
+        temperature : float
+            Temperature, in K (with no astropy units attached).
+        logg : float
+            Surface gravity log10[g/(cm/s**2)] (with no astropy units attached).
+        metallicity : float
+            Metallicity log10[metals/solar] (with no astropy units attached).
+        R : float
+            Spectroscopic resolution (lambda/dlambda). Currently, this must
+            be in one of [3,10,30,100,300,1000,3000,10000,30000,100000], but
+            check back soon for custom wavelength grids. There is extra
+            overhead associated with switching resolutions, so if you're
+            going to retrieve many spectra, try to group by resolution.
+
+        Returns
+        -------
+        wavelength : u.Quantity
         """
 
-        #
+        # this kludgy business is to try to avoid loading multiple metallicities unless absolutely necessary
+        try:
+            assert self.metadata["R"] == R
+            assert (metallicity >= np.min(self.metadata["metallicity"])) and (
+                metallicity <= np.max(self.metadata["metallicity"])
+            )
+        except (AttributeError, AssertionError):
+            if metallicity in self._available_metallicities:
+                self._load_grid(self._find_smallest_R(R), metallicity=metallicity)
+            else:
+                for m in self._available_metallicities:
+                    self._load_grid(self._find_smallest_R(R), metallicity=m)
+
+        # store the inputs as a convenient dictionary to pass around
         inputs = dict(temperature=temperature, logg=logg, metallicity=metallicity)
 
         # figure out the
@@ -580,6 +639,7 @@ class PHOENIXLibrary:
             * np.size(bounding_logg)
             * np.size(bounding_metallicity)
         )
+        spectra = []
         if N == 1:
             weights = [1]
             key = (bounding_temperature[0], bounding_logg[0], bounding_metallicity[0])
@@ -593,14 +653,26 @@ class PHOENIXLibrary:
             )
 
             weights = np.zeros(N)
-            spectra = []
             i = 0
             for wt, t in zip(weight_temperature, bounding_temperature):
                 for wg, g in zip(weight_logg, bounding_logg):
                     for wz, z in zip(weight_metallicity, bounding_metallicity):
                         weights[i] = wt * wg * wz
                         key = (t, g, z)
-                        this_spectrum = self.models[key]
+                        try:
+                            this_spectrum = self.models[key]
+                        except KeyError:
+                            raise ValueError(
+                                f"""
+                            The grid point coordinate {key} is needed to interpolate to your
+                            requested coordinate {inputs},
+                            but it's not available. This problem is probably caused by
+                            requesting something near the jagged edge of the
+                            grid's availability.
+
+                            Please run `.plot_available()` to see what models are possible.
+                            """
+                            )
                         spectra.append(this_spectrum)
                         # print(f"{weights[i]} * [{key}]")
                         i += 1
