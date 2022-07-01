@@ -10,7 +10,13 @@ def test_remove_trends():
         .inject_noise(signal_to_noise=300)
     )
     fi, ax = plt.subplots(
-        2, 5, figsize=(12, 6), sharey="row", sharex=True, constrained_layout=True
+        2,
+        5,
+        figsize=(12, 6),
+        sharey="row",
+        sharex=True,
+        dpi=300,
+        constrained_layout=True,
     )
     imkw = dict(vmin=0.98, vmax=1.02, xaxis="wavelength", colorbar=False)
     s.imshow(ax=ax[0, 0], **imkw)
