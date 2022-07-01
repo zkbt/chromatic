@@ -258,3 +258,4 @@ def test_plot_noise_comparison():
             s.plot_noise_comparison(ax=ax[r, i])
     ax[0, 0].set_title("No Systematics")
     ax[0, 1].set_title("With Systematics")
+    plt.savefig(os.path.join(test_directory, "test-plot_noise_comparison.png"))

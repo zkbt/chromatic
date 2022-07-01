@@ -952,7 +952,7 @@ class Rainbow:
         _create_fake_wavelike_quantity,
         _create_fake_timelike_quantity,
         _create_fake_fluxlike_quantity,
-        remove_astrophysical_signals,
+        remove_trends,
     )
 
     # import summary statistics for each wavelength
