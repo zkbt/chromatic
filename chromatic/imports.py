@@ -7,9 +7,11 @@ import matplotlib.cm as cm
 import matplotlib.gridspec as gs
 
 import copy, pkg_resources, os, glob, pickle
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 import warnings, textwrap
+
+from time import time as get_current_seconds
 
 
 def custom_formatwarning(message, *args, **kwargs):
@@ -44,6 +46,29 @@ from .units import *
 
 # define a driectory where we can put any necessary data files
 data_directory = pkg_resources.resource_filename("chromatic", "data")
+
+
+def is_being_run_from_jupyter():
+    try:
+        return get_ipython().__class__.__name__ == "ZMQInteractiveShell"
+    except NameError:
+        return False
+
+
+from astropy.utils.data import download_file
+
+
+def download_file_with_warning(*args, **kwargs):
+    if is_being_run_from_jupyter():
+        warnings.warn(
+            """
+        The progress bar for this download is not being shown
+        because `astropy.utils.data.download_file` is being run
+        from a jupyter notebook instead of from the terminal.
+        """
+        )
+    kwargs["show_progress"] = True
+    return download_file(*args, **kwargs)
 
 
 def expand_filenames(filepath):
