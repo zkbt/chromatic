@@ -245,3 +245,16 @@ def test_pcolormesh():
     b.imshow(ax=ax[1, 0])
     b.pcolormesh(ax=ax[1, 1])
     plt.savefig(os.path.join(test_directory, "test-pcolormesh-vs-imshow.png"))
+
+
+def test_plot_noise_comparison():
+    N = 3
+    fi, ax = plt.subplots(
+        N, 2, sharey=True, figsize=(8, 6), sharex=True, constrained_layout=True
+    )
+    for r in range(N):
+        for i, a in enumerate([0, 0.01]):
+            s = SimulatedRainbow().inject_systematics(amplitude=a).inject_noise()
+            s.plot_noise_comparison(ax=ax[r, i])
+    ax[0, 0].set_title("No Systematics")
+    ax[0, 1].set_title("With Systematics")
