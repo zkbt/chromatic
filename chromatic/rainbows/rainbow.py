@@ -952,6 +952,7 @@ class Rainbow:
         _create_fake_wavelike_quantity,
         _create_fake_timelike_quantity,
         _create_fake_fluxlike_quantity,
+        remove_trends,
     )
 
     # import summary statistics for each wavelength
@@ -982,6 +983,7 @@ class Rainbow:
         plot_quantities,
         imshow_interact,
         plot_spectra,
+        plot_noise_comparison,
         plot,
     )
 
