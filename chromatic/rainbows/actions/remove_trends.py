@@ -83,7 +83,7 @@ def remove_trends(
             warnings.warn(
                 f"""
             You didn't supply all expected keywords for '{method}'.
-            Relying on defaults, the values to be used are:
+            Relying on defaults, the values will be:
             {kw_to_use}
             """
             )
@@ -97,7 +97,7 @@ def remove_trends(
             warnings.warn(
                 f"""
             You didn't supply all expected keywords for '{method}'.
-            The default values to be used are:
+            Relying on defaults, the values will be:
             {kw_to_use}
             """
             )
