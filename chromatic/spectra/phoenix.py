@@ -1,6 +1,8 @@
 from ..imports import *
-from ..resampling import bintoR
+from ..resampling import bintoR, bintogrid
 from ..version import __version__
+import astropy.config.paths
+from astropy.utils.data import is_url_in_cache, cache_total_size
 
 
 class PHOENIXLibrary:
@@ -23,6 +25,12 @@ class PHOENIXLibrary:
         30000,
         100000,
     ]
+
+    def get_cache_dir(self):
+        return astropy.config.paths.get_cache_dir(self._cache_label)
+
+    def get_cache_size(self):
+        return (cache_total_size(self._cache_label) * u.byte).to(u.gigabyte)
 
     def __init__(self, directory=".", photons=True):
         """
@@ -54,6 +62,8 @@ class PHOENIXLibrary:
             os.path.join(directory),
             "chromatic-model-stellar-spectra",
         )
+
+        self._local_paths = {}
 
     def _download_grid(self, R, metallicity=0.0, cache=True):
         """
@@ -91,15 +101,29 @@ class PHOENIXLibrary:
         # download (or find the cached local file)
         basename = self._get_grid_filename(R, metallicity=metallicity)
         url = f"https://casa.colorado.edu/~bertathompson/chromatic/{basename}"
-        print(
-            f"""
-        Downloading pre-processed grid for R={R}, metallicity={metallicity} from
-        {url}
-        """
-        )
-        self._local_paths[R] = download_file_with_warning(
-            url, pkgname=self._cache_label, cache=cache, show_progress=True
-        )
+
+        if is_url_in_cache(url, pkgname=self._cache_label):
+            self._local_paths[R] = download_file(
+                url, pkgname=self._cache_label, cache=True
+            )
+        else:
+
+            threshold = 1000
+            if R <= threshold:
+                expected_time = f"Because the resolution is R<{threshold}, this should be pretty quick."
+            else:
+                expected_time = f"Because the resolution is R>{threshold}, this might be annoyingly slow."
+            print(
+                f"""
+            Downloading pre-processed grid for R={R}, metallicity={metallicity} from
+            {url}
+            {expected_time}
+            """
+            )
+
+            self._local_paths[R] = download_file_with_warning(
+                url, pkgname=self._cache_label, cache=cache, show_progress=True
+            )
         return self._local_paths[R]
 
     def _download_raw_data(self, metallicity=0.0, cache=True):
@@ -324,7 +348,7 @@ class PHOENIXLibrary:
         filename = f"phoenix_{unit_string}_metallicity={metallicity:3.1f}_R={R:.0f}.npy"
         return filename
 
-    def _create_grids(self, metallicities=[0.0], remake=False):
+    def _create_grids(self, remake=False):
         """
         Create pre-processed grids for all resolutions.
 
@@ -335,7 +359,7 @@ class PHOENIXLibrary:
         remake : bool
             Should we remake the library even if a file exists?
         """
-        for metallicity in metallicities:
+        for metallicity in self._available_metallicities:
             for R in self._available_resolutions:
                 self._create_grid(
                     R,
@@ -512,6 +536,7 @@ class PHOENIXLibrary:
         except (AttributeError, AssertionError):
             self.metadata = metadata
             self.models = models
+            self.wavelength_cached_models = {}
 
         self.units = {
             k: u.Unit(self.metadata[f"{k}_unit"]) for k in ["wavelength", "spectrum"]
@@ -578,10 +603,69 @@ class PHOENIXLibrary:
             weight_above = (value - bounds[0]) / span
             return weight_below, weight_above
 
-    _available_metallicities = [0.0, 1.0]
+    _available_metallicities = [-2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0]
+
+    def _wavelengths_to_hashable(self, w):
+        """
+        Convert an arbitrary array of wavelengths into
+        something that can be used as a hash in a dictionary.
+
+        Parameters
+        ----------
+        w : u.Quantity
+            The wavelength array.
+
+        Returns
+        -------
+        h : tuple
+            A static tuple that summarizes the wavelength array
+            with its minimum, maximum, and number of elements.
+            (Technically this won't be perfectly unique for
+            non-uniform grids, but it's probably good enough
+            for most uses.)
+        """
+        return (np.min(w), np.max(w), len(w))
+
+    def _get_spectrum_from_grid(self, key, wavelength=None, wavelength_edges=None):
+        if (wavelength is None) and (wavelength_edges is None):
+            return self.models[key]
+        else:
+            # make sure ask only for one type of wavelength
+            assert (wavelength is None) or (wavelength_edges is None)
+
+            # figure out the key associated with these wavelengths
+            if wavelength is None:
+                wavelength_key = self._wavelengths_to_hashable(wavelength_edges)
+            elif wavelength_edges is None:
+                wavelength_key = self._wavelengths_to_hashable(wavelength)
+
+            # make sure the dictionary exists
+            try:
+                self.wavelength_cached_models[wavelength_key]
+            except KeyError:
+                self.wavelength_cached_models[wavelength_key] = {}
+
+            # get or populate the necessary entry in the grid
+            try:
+                return self.wavelength_cached_models[wavelength_key][key]
+            except KeyError:
+                self.wavelength_cached_models[wavelength_key][key] = bintogrid(
+                    self.wavelength,
+                    self.models[key],
+                    newx=wavelength,
+                    newx_edges=wavelength_edges,
+                )["y"]
+                return self.wavelength_cached_models[wavelength_key][key]
 
     def get_spectrum(
-        self, temperature=3000, logg=5.0, metallicity=0.0, R=10, visualize=False
+        self,
+        temperature=3000,
+        logg=5.0,
+        metallicity=0.0,
+        R=100,
+        wavelength=None,
+        wavelength_edges=None,
+        visualize=False,
     ):
         """
         Get a spectrum for an arbitrary temperature, logg, metallicity.
@@ -600,10 +684,28 @@ class PHOENIXLibrary:
             check back soon for custom wavelength grids. There is extra
             overhead associated with switching resolutions, so if you're
             going to retrieve many spectra, try to group by resolution.
+            (If you're using the `wavelength` or `wavelength_edges` option
+            below, please be ensure your requested R exceeds that needed
+            to support your wavelengths.)
+        wavelength : u.Quantity
+            A grid of wavelengths on which you would like your spectrum.
+            If this is None, the complete wavelength array will be returned
+            at your desired resolution. Otherwise, the spectrum will be
+            returned exactly at those wavelengths. Grid points will be
+            cached for this new wavelength grid to speed up applications
+            that need to retreive lots of similar spectra for the same
+            wavelength (like many optimization or sampling problems).
+        wavelength_edges : u.Quantity
+            Same as `wavelength` (see above!) but defining the wavelength
+            grid by its edges instead of its centers. The returned spectrum
+            will have 1 fewer element than `wavelength_edges`.
 
         Returns
         -------
         wavelength : u.Quantity
+            The wavelengths, at the specified resolution.
+        spectrum : u.Quantity
+            The spectrum, in either photons or flux.
         """
 
         # this kludgy business is to try to avoid loading multiple metallicities unless absolutely necessary
@@ -643,7 +745,9 @@ class PHOENIXLibrary:
         if N == 1:
             weights = [1]
             key = (bounding_temperature[0], bounding_logg[0], bounding_metallicity[0])
-            spectrum = self.models[key].flatten()
+            spectrum = self._get_spectrum_from_grid(
+                key, wavelength=wavelength, wavelength_edges=wavelength_edges
+            ).flatten()
         else:
             logT, bounding_logT = np.log(temperature), np.log(bounding_temperature)
             weight_temperature = self._get_interpolation_weights(logT, bounding_logT)
@@ -660,7 +764,11 @@ class PHOENIXLibrary:
                         weights[i] = wt * wg * wz
                         key = (t, g, z)
                         try:
-                            this_spectrum = self.models[key]
+                            this_spectrum = self._get_spectrum_from_grid(
+                                key,
+                                wavelength=wavelength,
+                                wavelength_edges=wavelength_edges,
+                            )
                         except KeyError:
                             raise ValueError(
                                 f"""
@@ -678,15 +786,21 @@ class PHOENIXLibrary:
                         i += 1
 
             weight_sum = np.sum(weights)
-            assert np.isclose(weight_sum, 1) or (weight_sum <= 1)
+            assert np.isclose(weight_sum, 1)  # or (weight_sum <= 1)
             weights /= weight_sum
             spectrum = np.sum(weights[:, np.newaxis] * spectra, axis=0)
+
+        if wavelength is None:
+            if wavelength_edges is None:
+                wavelength = self.wavelength
+            else:
+                wavelength = 0.5 * (wavelength_edges[:-1] + wavelength_edges[1:])
 
         if visualize:
             fi = plt.figure(figsize=(8, 3))
             for w, s in zip(weights, spectra):
-                plt.plot(self.wavelength, s, alpha=w)
-            plt.plot(self.metadata["wavelength"], spectrum, color="black")
+                plt.plot(wavelength, s, alpha=w)
+            plt.plot(wavelength, spectrum, color="black")
             plt.xlabel(
                 f"Wavelength ({self.units['wavelength'].to_string('latex_inline')})"
             )
@@ -695,7 +809,7 @@ class PHOENIXLibrary:
             )
             plt.suptitle(", ".join([f"{k}={v}" for k, v in inputs.items()]))
 
-        return self.wavelength, spectrum * self.units["spectrum"]
+        return wavelength, spectrum * self.units["spectrum"]
 
     def plot_available(self, temperature=None, logg=None, metallicity=None):
 
@@ -762,3 +876,6 @@ class PHOENIXLibrary:
         plt.xlabel("R = $\lambda/\Delta\lambda$")
         plt.ylabel("Time Required")
         return t
+
+
+phoenix_library = PHOENIXLibrary()
