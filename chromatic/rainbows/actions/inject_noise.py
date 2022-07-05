@@ -52,7 +52,7 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
 
         # inject a realization of noise using number_of_photons
         # (yields poisson distribution)
-        new.fluxlike["flux"] = np.random.poisson(mu) #mu is the center
+        new.fluxlike["flux"] = np.random.poisson(mu) * u.photon #mu is the center
 
         # store S/N as metadata
         new.metadata["number_of_photons"] = number_of_photons
