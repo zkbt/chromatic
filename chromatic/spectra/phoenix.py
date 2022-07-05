@@ -373,10 +373,20 @@ class PHOENIXLibrary:
                     remake=remake,
                 )
 
-    def _upload_grids(self, destination):
+    def _create_upload_command_for_grids(self, destination):
+        """
+        A tiny wrapper to generate a UNIX command that
+        can upload locally-generated library files to
+        an online source.
+
+        Returns
+        -------
+        command : string
+            A copy-paste `rsync` command to upload new files.
+        """
         source = os.path.join(self._directory_for_new_grids, "phoenix_*.npy")
         command = f"rsync -v --progress {source} {destination}"
-        return os.system(command)
+        return command
 
     def _create_grid(self, R, metallicity=0.0, remake=False):
         """
