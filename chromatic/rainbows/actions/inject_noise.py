@@ -5,7 +5,8 @@ __all__ = ["inject_noise"]
 
 def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     """
-    Inject uncorrelated Gaussian random noise into the flux.
+    Inject uncorrelated random noise from a Gaussian
+    or Poisson distribution into the flux.
 
     Parameters
     ----------
