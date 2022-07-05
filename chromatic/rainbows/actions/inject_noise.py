@@ -2,8 +2,7 @@ from ...imports import *
 
 __all__ = ["inject_noise"]
 
-# Molly! add a `number_of_photons=None` keyword argument to the function call.
-# By saying, `=None`, it will default to None.
+
 def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     """
     Inject uncorrelated Gaussian random noise into the flux.
@@ -29,7 +28,7 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     rainbow : Rainbow
         A new Rainbow object with the systematics injected.
     """
-    print('Run ralphie run')
+
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("inject_noise", locals())
 
@@ -44,23 +43,16 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
         model = self.flux * 1
         new.fluxlike["model"] = model
 
-    # Molly! The next three chunks of code are the thing that would
-    # need to be different for `number_of_photons`. I think you should
-    # duplicate these to start with, and then set up an if/else statement
-    # that does your `number_of_photons` calculation if its value
-    # is not None, or does the `signal_to_noise` calculation otherwise.
-
+    # setting up an if/else statement so that the user
+    # can choose if they want to use their own
+    # number_of_photons or the automatic signal_to_noise
+    # noise generation
     if number_of_photons != None:
-        #mu = np.mean(number_of_photons)
-        #std = np.sqrt(mu)
         mu = model * number_of_photons
 
-        #uncertainty =
-        #new.fluxlike["uncertainty"] = uncertainty
-        #new.fluxlike["flux"] = np.random.poisson(mu, 100) #center, number of points)
-        new.fluxlike["flux"] = np.random.poisson(mu)
-
-        plt.hist(new.fluxlike["flux"].flatten(), bins = 30, density = True)
+        # inject a realization of noise using number_of_photons
+        # (yields poisson distribution)
+        new.fluxlike["flux"] = np.random.poisson(mu) #mu is the center
 
         # store S/N as metadata
         new.metadata["number_of_photons"] = number_of_photons
