@@ -183,9 +183,15 @@ class PHOENIXLibrary:
 
         # get the complete list of spectrum files
         self._raw_spectrum_filenames = list(
-            ascii.read(self._raw_local_paths[f"index-Z={metallicity_string}"])
-            .columns[-1]
-            .data
+            [
+                x
+                for x in ascii.read(
+                    self._raw_local_paths[f"index-Z={metallicity_string}"]
+                )
+                .columns[-1]
+                .data
+                if ".fits" in x
+            ]
         )
         self._raw_spectrum_urls = [
             "/".join([self._raw_base_url, self._raw_directory, f])
@@ -394,6 +400,7 @@ class PHOENIXLibrary:
 
         try:
             assert self._current_raw_metallicity == metallicity
+            assert len(self._raw_spectrum_filenames) == len(self._raw_downloaded)
         except (AttributeError, AssertionError):
             self._download_raw_data(metallicity=metallicity)
 
@@ -481,7 +488,18 @@ class PHOENIXLibrary:
             The resolution of the grid.
         """
 
-        i = np.flatnonzero(np.array(self._available_resolutions) >= R)[0]
+        ok = np.array(self._available_resolutions) >= R
+        if np.any(ok):
+            i = np.flatnonzero(ok)[0]
+        else:
+            warnings.warn(
+                f"""
+            Your request resolution of R={R} is higher than the maximum.
+            It will be rounded down to R={np.max(self._available_resolutions)}.
+            """
+            )
+            i = -1
+
         if i is not None:
             smallest_sufficient_R = self._available_resolutions[i]
         else:
@@ -626,6 +644,25 @@ class PHOENIXLibrary:
         """
         return (np.min(w), np.max(w), len(w))
 
+    def _wavelengths_to_R(self, w):
+        """
+        Calculate the minimum spectral resolution R that
+        would be sufficient to support a set of wavelengths.
+
+        Parameters
+        ----------
+        w : u.Quantity
+            The wavelength array.
+
+        Returns
+        -------
+        R : float
+            The maxmium value of w/dw (= 1/dlnw) in the array.
+        """
+        return 1 / np.min(np.diff(np.log(w.value)))
+
+        return (np.min(w), np.max(w), len(w))
+
     def _get_spectrum_from_grid(self, key, wavelength=None, wavelength_edges=None):
         if (wavelength is None) and (wavelength_edges is None):
             return self.models[key]
@@ -710,16 +747,39 @@ class PHOENIXLibrary:
 
         # this kludgy business is to try to avoid loading multiple metallicities unless absolutely necessary
         try:
-            assert self.metadata["R"] == R
+            # if no wavelength grids are provided, just go with R
+            if (wavelength is None) and (wavelength_edges is None):
+                assert self.metadata["R"] == R
+            # if wavelength grids are provided, make sure the grid has high enough R
+            else:
+                # make sure ask only for one type of wavelength
+                assert (wavelength is None) or (wavelength_edges is None)
+
+                # figure out the minimum R that'd be enough
+                if wavelength is None:
+                    necessary_R = self._wavelengths_to_R(wavelength_edges)
+                elif wavelength_edges is None:
+                    necessary_R = self._wavelengths_to_R(wavelength)
+
+                if self.metadata.get("R", 0) < necessary_R:
+                    R = self._find_smallest_R(necessary_R)
+                    assert False
+
             assert (metallicity >= np.min(self.metadata["metallicity"])) and (
                 metallicity <= np.max(self.metadata["metallicity"])
             )
         except (AttributeError, AssertionError):
             if metallicity in self._available_metallicities:
-                self._load_grid(self._find_smallest_R(R), metallicity=metallicity)
+                self._load_grid(
+                    self._find_smallest_R(R=R),
+                    metallicity=metallicity,
+                )
             else:
                 for m in self._available_metallicities:
-                    self._load_grid(self._find_smallest_R(R), metallicity=m)
+                    self._load_grid(
+                        self._find_smallest_R(R=R),
+                        metallicity=m,
+                    )
 
         # store the inputs as a convenient dictionary to pass around
         inputs = dict(temperature=temperature, logg=logg, metallicity=metallicity)
@@ -820,7 +880,7 @@ class PHOENIXLibrary:
         labels = dict(
             temperature="Temperature (K)",
             logg="$log_{10}[g/(cm/s^2)]$",
-            metallicity="[Z/H] (metallicity)",
+            metallicity="[Fe/H] (metallicity)",
         )
         gridkw = dict(marker=".", alpha=0.3)
         for i, ky in enumerate(self._keys_for_indexing):
@@ -834,6 +894,7 @@ class PHOENIXLibrary:
                 plt.ylabel(labels[ky])
                 # if i == (N - 1):
                 plt.xlabel(labels[kx])
+        plt.suptitle(f"R={self.metadata['R']}")
 
     def plot_time_required(self, iterations=5):
         timings = {}
@@ -878,4 +939,5 @@ class PHOENIXLibrary:
         return t
 
 
-phoenix_library = PHOENIXLibrary()
+phoenix_library = PHOENIXLibrary(photons=True)
+get_phoenix_photons = phoenix_library.get_spectrum
