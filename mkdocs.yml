@@ -11,12 +11,12 @@ nav:
         - actions.ipynb
         - visualizing.ipynb
         - multi.ipynb
-    - Tools: tools.md
-        - tool-spectra.ipynb
     - Developer Guide:
         - designing.ipynb
         - documentation.ipynb
         - github.ipynb
+    - Related Tools:
+        - tool-spectra.ipynb
 theme:
   name: "material"
   features:
