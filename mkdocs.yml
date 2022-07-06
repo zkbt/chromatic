@@ -16,7 +16,7 @@ nav:
         - documentation.ipynb
         - github.ipynb
     - Related Tools:
-        - tool-spectra.ipynb
+        - tools/spectra.ipynb
 theme:
   name: "material"
   features:
