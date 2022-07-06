@@ -6,7 +6,7 @@ __all__ = ["inject_noise"]
 def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     """
     Inject uncorrelated random noise from a Gaussian
-    or Poisson distribution into the flux.
+    or Poisson distribution into the flux array.
 
     Parameters
     ----------
@@ -19,15 +19,15 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
 
     number_of_photons : float
         The number of photons expected to be recieved
-        from some light source.  For example, the number
-        of photons expected from a Sun-like star as seen
-        with a human eye from a distance of one parsec and
-        an exposure time of 0.1s is 25229 photons.
+        from the light source per wavelength and time.
+
+        If `number_of_photons` is set, then `signal_to_noise`
+        will be ignored.
 
     Returns
     -------
     rainbow : Rainbow
-        A new Rainbow object with the systematics injected.
+        A new Rainbow object with the noise injected.
     """
 
     # create a history entry for this action (before other variables are defined)
@@ -51,12 +51,19 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     if number_of_photons != None:
         mu = model * number_of_photons
 
+        # convert the model to photons and store it
+        new.fluxlike["model"] = mu * u.photon
+
         # inject a realization of noise using number_of_photons
         # (yields poisson distribution)
-        new.fluxlike["flux"] = np.random.poisson(mu) * u.photon #mu is the center
+        new.fluxlike["flux"] = np.random.poisson(mu) * u.photon  # mu is the center
 
-        # store S/N as metadata
+        # store number of photons as metadata
         new.metadata["number_of_photons"] = number_of_photons
+
+        # calculate the uncertainty
+        uncertainty = np.sqrt(mu)
+        new.fluxlike["uncertainty"] = uncertainty * u.photon
 
         # append the history entry to the new Rainbow
         new._record_history_entry(h)
