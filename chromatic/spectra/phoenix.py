@@ -110,7 +110,7 @@ class PHOENIXLibrary:
 
             threshold = 1000
             if R <= threshold:
-                expected_time = f"Because the resolution is R<{threshold}, this should be pretty quick."
+                expected_time = f"Because the resolution is R<={threshold}, this should be pretty quick."
             else:
                 expected_time = f"Because the resolution is R>{threshold}, this might be annoyingly slow."
             print(
@@ -523,7 +523,7 @@ class PHOENIXLibrary:
             smallest_sufficient_R = np.max(self._available_resolutions)
         return smallest_sufficient_R
 
-    def get_local_grid(self, R, metallicity=0.0, directory="."):
+    def _get_local_grid(self, R, metallicity=0.0, directory="."):
         bespoke = os.path.join(
             self._directory_for_new_grids,
             self._get_grid_filename(R, metallicity=metallicity),
@@ -552,7 +552,7 @@ class PHOENIXLibrary:
             pass
 
         metadata, models = np.load(
-            self.get_local_grid(R, metallicity=metallicity), allow_pickle=True
+            self._get_local_grid(R, metallicity=metallicity), allow_pickle=True
         )[()]
 
         try:
@@ -706,8 +706,8 @@ class PHOENIXLibrary:
 
     def get_spectrum(
         self,
-        temperature=3000,
-        logg=5.0,
+        temperature=5780,
+        logg=4.43,
         metallicity=0.0,
         R=100,
         wavelength=None,
@@ -834,10 +834,12 @@ class PHOENIXLibrary:
                         weights[i] = wt * wg * wz
                         key = (t, g, z)
                         try:
-                            this_spectrum = self._get_spectrum_from_grid(
-                                key,
-                                wavelength=wavelength,
-                                wavelength_edges=wavelength_edges,
+                            this_log_spectrum = np.log(
+                                self._get_spectrum_from_grid(
+                                    key,
+                                    wavelength=wavelength,
+                                    wavelength_edges=wavelength_edges,
+                                )
                             )
                         except KeyError:
                             raise ValueError(
@@ -851,14 +853,12 @@ class PHOENIXLibrary:
                             Please run `.plot_available()` to see what models are possible.
                             """
                             )
-                        spectra.append(this_spectrum)
+                        spectra.append(this_log_spectrum)
                         # print(f"{weights[i]} * [{key}]")
                         i += 1
-
             weight_sum = np.sum(weights)
-            assert np.isclose(weight_sum, 1)  # or (weight_sum <= 1)
-            weights /= weight_sum
-            spectrum = np.sum(weights[:, np.newaxis] * spectra, axis=0)
+            assert np.isclose(weight_sum, 1)
+            spectrum = np.exp(np.sum(weights[:, np.newaxis] * spectra, axis=0))
 
         if wavelength is None:
             if wavelength_edges is None:

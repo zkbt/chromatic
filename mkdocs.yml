@@ -5,12 +5,14 @@ nav:
     - installation.ipynb
     - quickstart.ipynb
     - User Guide:
-      - basics.ipynb
-      - io.ipynb
-      - creating.ipynb
-      - actions.ipynb
-      - visualizing.ipynb
-      - multi.ipynb
+        - basics.ipynb
+        - io.ipynb
+        - creating.ipynb
+        - actions.ipynb
+        - visualizing.ipynb
+        - multi.ipynb
+    - Tools: tools.md
+        - tool-spectra.ipynb
     - Developer Guide:
         - designing.ipynb
         - documentation.ipynb
