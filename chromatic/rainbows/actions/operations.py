@@ -10,16 +10,6 @@ def _is_probably_rainbow(x):
     return "Rainbow" in x.__class__.__name__
 
 
-def _raise_ambiguous_shape_error(x):
-    """
-    Raise an error if the shape of a Rainbow is ambiguous.
-    """
-    if x.nwave == x.ntime:
-        raise RuntimeError(
-            f"{self} has same number of wavelengths and times; we can't tell which is which."
-        )
-
-
 def _do_rainbows_match(a, b):
     """
     A check that two Rainbows have matching wavelengths and times.
@@ -40,6 +30,47 @@ def _do_rainbows_match(a, b):
     """
 
     return np.array_equal(a.wavelength, b.wavelength) and np.array_equal(a.time, b.time)
+
+
+def _raise_ambiguous_shape_error(self, x):
+    """
+    Raise an error if the shape of a Rainbow is ambiguous.
+    """
+    if x.nwave == x.ntime:
+        raise RuntimeError(
+            f"{self} has same number of wavelengths and times; we can't tell which is which."
+        )
+
+
+def _broadcast_to_fluxlike(self, x):
+    """
+    Convert a scalar, wavelike array, timelike array, or
+    fluxlike array into something that can be broadcast into
+    a fluxlike shape for math.
+
+    Parameters
+    ----------
+    x : int, float, bool, array, u.Quantity, ...
+        The input.
+
+    Returns
+    -------
+    x[:,:] : array
+        The input in a format that can happily do
+        math with a 2D fluxlike array.
+    """
+    if np.shape(x) == (self.nwave,):
+        self._raise_ambiguous_shape_error(self)
+        return x[:, np.newaxis]
+    elif np.shape(x) == (self.ntime,):
+        self._raise_ambiguous_shape_error(self)
+        return x[np.newaxis, :]
+    elif np.shape(x) in [(), (1,), self.shape]:
+        return x
+    else:
+        raise ValueError(
+            f"The shapes {np.shape(x)} and {self.shape} cannot be cast together."
+        )
 
 
 def _apply_operation(self, other, operation, dzdx="1", dzdy="1"):
@@ -93,18 +124,7 @@ def _apply_operation(self, other, operation, dzdx="1", dzdy="1"):
 
     # other object not Rainbow
     else:
-        if np.shape(other) == (self.nwave,):
-            _raise_ambiguous_shape_error(self)
-            y = other[:, np.newaxis]
-        elif np.shape(other) == (self.ntime,):
-            _raise_ambiguous_shape_error(self)
-            y = other[np.newaxis, :]
-        elif np.shape(other) in [(), (1,), self.shape]:
-            y = other
-        else:
-            raise ValueError(
-                f"The shapes {self.shape} and {np.shape(other)} cannot be cast together."
-            )
+        y = self._broadcast_to_fluxlike(other)
         sigma_y = 0
         for k in self._keys_that_respond_to_math:
             result.fluxlike[k] = operation(self.fluxlike[k], y)

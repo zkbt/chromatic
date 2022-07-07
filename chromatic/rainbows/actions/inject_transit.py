@@ -4,7 +4,7 @@ import batman
 __all__ = ["inject_transit"]
 
 
-def inject_transit(self, planet_params={}, planet_radius=0.1):
+def inject_transit(self, planet_radius=0.1, **planet_params):
 
     """
     Simulate a wavelength-dependent planetary transit using
@@ -13,7 +13,15 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
     Parameters
     ----------
 
-    planet_params : Dictionary
+    planet_radius : float, array
+        Two options:
+            1D array with same dimensions as wavelength array,
+                with each value corresponding to Rp/Rs at that wavelength.
+            float representing Rp/Rs if the radius is not wavelength-dependent.
+        example value: planet_radius = 0.01,
+
+    planet_params : dict
+        All other keywords will be interpreted as other planet parameters.
         Values for planetary parameters for use in batman modelling.
         Any values not supplied will be set to defaults:
             "t0" = time of inferior conjunction (days) (default 0)
@@ -37,15 +45,6 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
                 coefficient vs wavelength variations itself- there exist codes
                 (such as hpparvi/PyLDTk and nespinoza/limb-darkening) which
                 can be used for this.
-
-        example value: planet_params = {"a":12, "inc":87}
-
-    planet_radius = Two options:
-            1D array with same dimensions as wavelength array,
-                each value corresponds to planet radius/stellar radius at that
-                wavelength.
-            float representing Rp/Rstar if the radius is not wavelength-dependent.
-        example value: planet_radius = 0.01,
 
     """
 

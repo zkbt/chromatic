@@ -698,6 +698,31 @@ class Rainbow:
             """
             )
 
+        # warn if the times and wavelengths are the same size
+        if (self.nwave == self.ntime) and (self.ntime is not None):
+            warnings.warn(
+                f"""
+            The number of wavelengths ({self.nwave}) is the same as the
+            number of times ({self.ntime}). This is fine, we suppose
+            (<mock exasperated sigh>), but here are few reasons you might
+            want to reconsider letting them have the same size:
+                (1) Mathemetical operations and variabile assignment
+                    inside this Rainbow make guesses about whether a quantity
+                    is wavelike or timelike based on its shape; these features
+                    will fail (or even worse do something mysterious) if
+                    there are the same numbers of wavelengths and times.
+                (2) For your own darn sake, if your fluxlike arrays are
+                    all square, it's going to be very easy for you to accidentally
+                    transpose them and not realize it.
+                (3) It's very unlikely that your real data had exactly the same
+                    number of times and wavelengths, so we're guessing that you
+                    probably just created these arrays from scratch, which
+                    hopefully means it's not too annoying to just make them
+                    have different numbers of wavelengths and times.
+            Thanks!
+            """
+            )
+
         # does the flux have the right shape?
         if self.shape != np.shape(self.flux):
             message = f"""
@@ -932,6 +957,8 @@ class Rainbow:
     # import the basic operations for Rainbows
     from .actions.operations import (
         _apply_operation,
+        _broadcast_to_fluxlike,
+        _raise_ambiguous_shape_error,
         __add__,
         __sub__,
         __mul__,
