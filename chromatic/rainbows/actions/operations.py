@@ -185,7 +185,7 @@ def __sub__(self, other):
     flux.
     """
     # create the history entry
-    h = self._create_history_entry("+", locals())
+    h = self._create_history_entry("-", locals())
 
     # calculate a new Rainbow using the operation and error propagation
     result = self._apply_operation(other, operation=np.subtract, dzdx="1", dzdy="1")
@@ -219,7 +219,7 @@ def __mul__(self, other):
     """
 
     # create the history entry
-    h = self._create_history_entry("+", locals())
+    h = self._create_history_entry("*", locals())
 
     # calculate a new Rainbow using the operation and error propagation
     result = self._apply_operation(other, operation=np.multiply, dzdx="y", dzdy="x")
@@ -252,7 +252,7 @@ def __truediv__(self, other):
     flux.
     """
     # create the history entry
-    h = self._create_history_entry("+", locals())
+    h = self._create_history_entry("/", locals())
 
     # calculate a new Rainbow using the operation and error propagation
     result = self._apply_operation(

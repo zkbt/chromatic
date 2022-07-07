@@ -62,6 +62,8 @@ def test_rainbow_operations():
 
 
 def test_operations_with_uncertainty():
+    a = SimulatedRainbow().inject_noise(signal_to_noise=100) + 1
+    b = SimulatedRainbow().inject_noise(signal_to_noise=50) * 0.5
     for x in [
         "a",
         "b",
