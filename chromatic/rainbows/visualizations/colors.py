@@ -57,17 +57,22 @@ def _make_sure_cmap_is_defined(self, cmap=None, vmin=None, vmax=None):
 
     if hasattr(self, "cmap"):
         if (cmap is not None) or (vmin is not None) or (vmax is not None):
-            warnings.warn(
+            if (
+                (cmap != self.get("cmap"))
+                and (vmin != self.get("vmin"))
+                and (vmax != self.get("vmax"))
+            ):
+                warnings.warn(
+                    """
+                It looks like you're trying to set up a new custom
+                cmap and/or wavelength normalization scheme. You
+                should be aware that a cmap has already been defined
+                for this object; if you're visualizing the same
+                rainbow in different ways, we strongly suggest
+                that you not change the cmap or normalization
+                between them, for visual consistency.
                 """
-            It looks like you're trying to set up a new custom
-            cmap and/or wavelength normalization scheme. You
-            should be aware that a cmap has already been defined
-            for this object; if you're visualizing the same
-            rainbow in different ways, we strongly suggest
-            that you not change the cmap or normalization
-            between them, for visual consistency.
-            """
-            )
+                )
         else:
             return
     self._setup_wavelength_colors(cmap=cmap, vmin=vmin, vmax=vmax)

@@ -21,6 +21,22 @@ class RainbowWithModel(Rainbow):
         """
         return self.flux - self.model
 
+    @property
+    def residuals_plus_one(self):
+        """
+        Calculate the residuals on the fly,
+        to make sure they're always up to date.
+        """
+        return self.flux - self.model + 1
+
+    @property
+    def ones(self):
+        """
+        Generate an array of ones that looks like the flux.
+        (A tiny wrapper needed for `plot_lightcurves_with_models`)
+        """
+        return np.ones_like(self.flux)
+
     def _validate_core_dictionaries(self):
         super()._validate_core_dictionaries()
         try:
@@ -36,6 +52,59 @@ class RainbowWithModel(Rainbow):
             ...or similarly with a more interesting array.
             """
             warnings.warn(message)
+
+    def plot_lightcurves_with_models(
+        self,
+        quantity="flux",
+        errorbar=False,
+        labels=True,
+        data_plotkw={},
+        model_plotkw={},
+        **kw,
+    ):
+        """
+        Produce a "rainbow plot" of multiple light curves,
+        in the style of Knutson et al. (2007).
+        """
+
+        assert quantity in ["flux", "residuals"]
+
+        plotkw = (
+            dict(marker="o", linewidth=0, markeredgecolor="none", zorder=0)
+            | data_plotkw
+        )
+        if quantity == "residuals":
+            kw.update(quantity="residuals_plus_one")
+        elif quantity == "flux":
+            kw.update(quantity="flux")
+        self.plot_lightcurves(errorbar=errorbar, labels=labels, plotkw=plotkw, **kw)
+
+        plotkw = dict(marker=None, linewidth=1, zorder=1) | model_plotkw
+        if quantity == "residuals":
+            kw.update(quantity="ones")
+        elif quantity == "flux":
+            kw.update(quantity="model")
+        self.plot_lightcurves(errorbar=False, labels=False, plotkw=plotkw, **kw)
+
+    def plot_lightcurves_and_residuals_with_models(self, figsize=(8, 6), **kw):
+        fi, ax = plt.subplots(
+            1,
+            2,
+            figsize=figsize,
+            dpi=300,
+            sharey=True,
+            sharex=True,
+            constrained_layout=True,
+        )
+
+        self.plot_lightcurves_with_models(ax=ax[0], spacing=0.01, **kw)
+        self.plot_lightcurves_with_models(
+            quantity="residuals",
+            ax=ax[1],
+            spacing=ax[0]._most_recent_chromatic_plot_spacing,
+            **kw,
+        )
+        ax[1].set_ylabel("Residuals (+ offsets)")
 
     def imshow_data_with_models(
         self,

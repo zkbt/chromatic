@@ -14,6 +14,7 @@ def plot_spectra(
     vmin=None,
     vmax=None,
     errorbar=False,
+    labels=True,
     minimum_acceptable_ok=1,
     scatterkw={},
     errorbarkw={},
@@ -44,6 +45,8 @@ def plot_spectra(
         The maximum value to use for the wavelength colormap.
     errorbar : boolean
         Should we plot errorbars?
+    labels : boolean
+        Should we label each spectrum?
     minimum_acceptable_ok : float
         The smallest value of `ok` that will still be included.
         (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
@@ -108,7 +111,7 @@ def plot_spectra(
         try:
             spacing = ax._most_recent_chromatic_plot_spacing
         except AttributeError:
-            spacing = 3 * np.nanstd(self.flux)
+            spacing = 3 * np.nanstd(self.get(quantity))
     ax._most_recent_chromatic_plot_spacing = spacing
 
     # TO-DO: check if this Rainbow has been normalized
@@ -167,13 +170,15 @@ def plot_spectra(
                 plt.scatter(plot_x, plot_y, **this_scatterkw)
 
                 # add text labels next to each spectrum
-                this_textkw = dict(va="bottom", color=default_color)
+                this_textkw = dict(va="center", color=default_color)
                 this_textkw.update(**textkw)
-                plt.annotate(
-                    f"{t.to_value(t_unit):.2f} {t_unit.to_string('latex_inline')}",
-                    (min_wave, np.median(plot_y) - 0.5 * spacing),
-                    **this_textkw,
-                )
+                if labels:
+                    plt.text(
+                        min_wave,
+                        np.median(plot_y) - 0.5 * spacing,
+                        f"{t.to_value(t_unit):.2f} {t_unit.to_string('latex_inline')}",
+                        **this_textkw,
+                    )
 
         # add text labels to the plot
         plt.xlabel(f"Wavelength ({w_unit.to_string('latex_inline')})")

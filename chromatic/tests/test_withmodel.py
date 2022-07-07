@@ -43,3 +43,27 @@ def test_imshow_data_with_models():
     s.imshow_data_with_models(
         models=["systematics_model", "planet_model"], cmap="gray", label="outside"
     )
+
+
+def test_plot_lightcurves_and_residuals_with_models():
+    s = SimulatedRainbow(R=3, dt=3 * u.minute)
+    r = s.inject_transit(
+        limb_dark="quadratic",
+        u=np.transpose(
+            [np.linspace(1.0, 0.0, s.nwave), np.linspace(0.5, 0.0, s.nwave)]
+        ),
+    ).inject_noise(signal_to_noise=1000)
+    for i, options in enumerate(
+        [
+            dict(),
+            dict(cmap=one2another("skyblue", "sienna")),
+            dict(data_plotkw=dict(alpha=0.5), cmap="magma_r"),
+            dict(figsize=(8, 4), cmap=one2another("orchid", "indigo")),
+        ]
+    ):
+        r.plot_lightcurves_and_residuals_with_models(**options)
+        plt.savefig(
+            os.path.join(
+                test_directory, f"rainbow-of-lightcurves-and-residuals-example{i}.png"
+            )
+        )
