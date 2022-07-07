@@ -161,3 +161,4 @@ def plot_lightcurves(
         # add text labels to the plot
         plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")
+

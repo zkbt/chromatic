@@ -24,6 +24,9 @@ def test_rainbow_basics():
     assert r[np.arange(2, 4), :].shape == (2, nt)
     assert r[r.wavelength < 1.5 * u.micron, :].shape == (nw / 2, nt)
     assert r[:, r.time < 0 * u.day].shape == (nw, nt / 2)
+    assert r[0, :].shape == (1, nt)
+    assert r[:, 0].shape == (nw, 1)
+    assert r[0, 0].shape == (1, 1)
 
     assert r[r.wavelength < 1.5 * u.micron, r.time < 0 * u.day].shape == (
         nw / 2,

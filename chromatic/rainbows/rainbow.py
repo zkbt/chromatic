@@ -805,6 +805,13 @@ class Rainbow:
         # create a copy
         new = self._create_copy()
 
+        # make sure we don't drop down to 1D arrays
+        if isinstance(i_wavelength, int):
+            i_wavelength = [i_wavelength]
+
+        if isinstance(i_time, int):
+            i_time = [i_time]
+
         # do indexing of wavelike
         for w in self.wavelike:
             new.wavelike[w] = self.wavelike[w][i_wavelength]
@@ -945,6 +952,7 @@ class Rainbow:
         _create_fake_wavelike_quantity,
         _create_fake_timelike_quantity,
         _create_fake_fluxlike_quantity,
+        remove_trends,
     )
 
     # import summary statistics for each wavelength
@@ -975,6 +983,7 @@ class Rainbow:
         plot_quantities,
         imshow_interact,
         plot_spectra,
+        plot_noise_comparison,
         plot,
     )
 
