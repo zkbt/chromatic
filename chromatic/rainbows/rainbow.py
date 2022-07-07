@@ -22,6 +22,9 @@ class Rainbow:
     waveaxis = 0
     timeaxis = 1
 
+    # which fluxlike keys will respond to math between objects
+    _keys_that_respond_to_math = ["flux"]
+
     def __init__(
         self,
         filepath=None,
@@ -927,7 +930,14 @@ class Rainbow:
         return new
 
     # import the basic operations for Rainbows
-    from .actions.operations import __add__, __sub__, __mul__, __truediv__, __eq__
+    from .actions.operations import (
+        _apply_operation,
+        __add__,
+        __sub__,
+        __mul__,
+        __truediv__,
+        __eq__,
+    )
 
     # import other actions that return other Rainbows
     from .actions import (

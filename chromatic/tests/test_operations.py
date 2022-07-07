@@ -59,3 +59,27 @@ def test_rainbow_operations():
         c + wl_like
     with pytest.raises(Exception):
         c - wl_like
+
+
+def test_operations_with_uncertainty():
+    for x in [
+        "a",
+        "b",
+        "(a+0)",
+        "(a+1)",
+        "(a+b)",
+        "(a-b)",
+        "(a*b)",
+        "(a/b)",
+        "(a+b)/(a-b)*2",
+    ]:
+        print(f"{x:^38}")
+        r = eval(x)
+
+        print(f"       mean(flux) = {np.mean(r.flux)}")
+        print(f"      mean(model) = {np.mean(r.model)}")
+        print(f"mean(uncertainty) = {np.mean(r.uncertainty)}")
+        print()
+
+        scaled_sigma = np.std(r.residuals / r.uncertainty)
+        assert np.isclose(scaled_sigma, 1, rtol=0.02)

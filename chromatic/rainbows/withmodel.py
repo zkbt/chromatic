@@ -10,6 +10,9 @@ class RainbowWithModel(Rainbow):
     This class definition inherits from `Rainbow`.
     """
 
+    # which fluxlike keys will respond to math between objects
+    _keys_that_respond_to_math = ["flux", "model"]
+
     @property
     def residuals(self):
         """
