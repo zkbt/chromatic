@@ -116,7 +116,7 @@ def plot_lightcurves(
 
             # grab the quantity and yerr for this particular wavelength
             t, y, sigma = self.get_ok_data_for_wavelength(
-                i, minimum_acceptable_ok=minimum_acceptable_ok
+                i, minimum_acceptable_ok=minimum_acceptable_ok, y=quantity
             )
 
             if np.any(np.isfinite(y)):
@@ -161,4 +161,3 @@ def plot_lightcurves(
         # add text labels to the plot
         plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")
-

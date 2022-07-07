@@ -11,15 +11,23 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     Parameters
     ----------
 
-    signal_to_noise : float
+    signal_to_noise : float, array
         The signal-to-noise per wavelength per time.
         For example, S/N=100 would mean that the
         uncertainty on the flux for each each
         wavelength-time data point will be 1%.
+        If it is a scalar, then even point is the same.
+        If it is an array with a fluxlike, wavelike,
+        or timelike shape it will be broadcast
+        appropriately.
 
-    number_of_photons : float
+    number_of_photons : float, array
         The number of photons expected to be recieved
         from the light source per wavelength and time.
+        If it is a scalar, then even point is the same.
+        If it is an array with a fluxlike, wavelike,
+        or timelike shape it will be broadcast
+        appropriately.
 
         If `number_of_photons` is set, then `signal_to_noise`
         will be ignored.
@@ -49,7 +57,7 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     # number_of_photons or the automatic signal_to_noise
     # noise generation
     if number_of_photons != None:
-        mu = model * number_of_photons
+        mu = model * self._broadcast_to_fluxlike(number_of_photons)
 
         # convert the model to photons and store it
         new.fluxlike["model"] = mu * u.photon
@@ -70,7 +78,7 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
 
     else:
         # calculate the uncertainty with a fixed S/N
-        uncertainty = model / signal_to_noise
+        uncertainty = model / self._broadcast_to_fluxlike(signal_to_noise)
         new.fluxlike["uncertainty"] = uncertainty
 
         # inject a realization of the noise

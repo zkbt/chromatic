@@ -124,7 +124,7 @@ def plot_spectra(
         for i, t in enumerate(self.time):
             # grab the spectrum for this particular time
             w, y, sigma = self.get_ok_data_for_time(
-                i, minimum_acceptable_ok=minimum_acceptable_ok
+                i, minimum_acceptable_ok=minimum_acceptable_ok, y=quantity
             )
             if np.any(np.isfinite(y)):
 
