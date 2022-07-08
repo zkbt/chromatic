@@ -14,6 +14,7 @@ def plot_lightcurves(
     vmin=None,
     vmax=None,
     errorbar=False,
+    text=True,
     minimum_acceptable_ok=1,
     plotkw={},
     errorbarkw={},
@@ -43,6 +44,8 @@ def plot_lightcurves(
         The maximum value to use for the wavelength colormap.
     errorbar : boolean
         Should we plot errorbars?
+    text : boolean
+        Should we label each lightcurve?
     minimum_acceptable_ok : float
         The smallest value of `ok` that will still be included.
         (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
@@ -99,7 +102,7 @@ def plot_lightcurves(
         try:
             spacing = ax._most_recent_chromatic_plot_spacing
         except AttributeError:
-            spacing = 3 * np.nanstd(self.flux)
+            spacing = 3 * np.nanstd(self.get(quantity))
     ax._most_recent_chromatic_plot_spacing = spacing
 
     # TO-DO: check if this Rainbow has been normalized
@@ -109,6 +112,10 @@ def plot_lightcurves(
     Be aware that the baseline flux levels may therefore
     be a little bit funny in .plot()."""
     )'''
+    if self._is_probably_normalized():
+        label_y = "1 - (0.5 + i) * spacing"
+    else:
+        label_y = "np.median(plot_y) - 0.5 * spacing"
     with quantity_support():
 
         #  loop through wavelengths
@@ -116,7 +123,7 @@ def plot_lightcurves(
 
             # grab the quantity and yerr for this particular wavelength
             t, y, sigma = self.get_ok_data_for_wavelength(
-                i, minimum_acceptable_ok=minimum_acceptable_ok
+                i, minimum_acceptable_ok=minimum_acceptable_ok, y=quantity
             )
 
             if np.any(np.isfinite(y)):
@@ -150,13 +157,15 @@ def plot_lightcurves(
                 plt.plot(plot_x, plot_y, **this_plotkw)
 
                 # add text labels next to each quantity plot
-                this_textkw = dict(va="bottom", color=color)
+                this_textkw = dict(va="center", color=color)
                 this_textkw.update(**textkw)
-                plt.annotate(
-                    f"{w.to_value(w_unit):.2f} {w_unit.to_string('latex_inline')}",
-                    (min_time, np.median(plot_y) - 0.5 * spacing),
-                    **this_textkw,
-                )
+                if text:
+                    plt.text(
+                        min_time,
+                        eval(label_y),
+                        f"{w.to_value(w_unit):.2f} {w_unit.to_string('latex_inline')}",
+                        **this_textkw,
+                    )
 
         # add text labels to the plot
         plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
