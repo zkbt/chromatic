@@ -18,7 +18,7 @@ def test_attach_model():
     assert withmodel == original
 
 
-def test_imshow_data_with_models():
+def test_imshow_with_models():
     s = (
         SimulatedRainbow()
         .inject_transit()
@@ -26,26 +26,26 @@ def test_imshow_data_with_models():
         .inject_noise()
         .bin(R=50, dt=5 * u.minute)
     )
-    s.imshow_data_with_models(cmap="gray")
+    s.imshow_with_models(cmap="gray")
     plt.savefig(os.path.join(test_directory, "imshow-data-with-model.pdf"))
-    s.imshow_data_with_models(models=["systematics_model", "planet_model"], cmap="gray")
+    s.imshow_with_models(models=["systematics_model", "planet_model"], cmap="gray")
     plt.savefig(os.path.join(test_directory, "imshow-data-with-model-components.pdf"))
 
-    s.imshow_data_with_models(models=["systematics_model", "planet_model"], cmap="gray")
-    s.imshow_data_with_models(
+    s.imshow_with_models(models=["systematics_model", "planet_model"], cmap="gray")
+    s.imshow_with_models(
         models=["systematics_model", "planet_model"], cmap="gray", label=False
     )
-    s.imshow_data_with_models(
+    s.imshow_with_models(
         models=["systematics_model", "planet_model"],
         cmap="gray",
-        labelkw=dict(color="red"),
+        label_textkw=dict(color="red"),
     )
-    s.imshow_data_with_models(
+    s.imshow_with_models(
         models=["systematics_model", "planet_model"], cmap="gray", label="outside"
     )
 
 
-def test_plot_lightcurves_and_residuals_with_models():
+def test_plot_with_model_and_residuals():
     s = SimulatedRainbow(R=3, dt=3 * u.minute)
     r = s.inject_transit(
         limb_dark="quadratic",
@@ -56,14 +56,38 @@ def test_plot_lightcurves_and_residuals_with_models():
     for i, options in enumerate(
         [
             dict(),
+            dict(errorbar=True),
             dict(cmap=one2another("skyblue", "sienna")),
             dict(data_plotkw=dict(alpha=0.5), cmap="magma_r"),
             dict(figsize=(8, 4), cmap=one2another("orchid", "indigo")),
         ]
     ):
-        r.plot_lightcurves_and_residuals_with_models(**options)
+        r.plot_with_model_and_residuals(**options)
         plt.savefig(
             os.path.join(
                 test_directory, f"rainbow-of-lightcurves-and-residuals-example{i}.png"
             )
         )
+
+
+def test_plot_and_animate_with_models(output="gif"):
+    s = (
+        SimulatedRainbow(R=5)
+        .inject_transit()
+        .inject_systematics()
+        .inject_noise(signal_to_noise=500)
+    )
+    s.setup_wavelength_colors(
+        cmap="magma", vmin=0.1 * u.micron, vmax=10 * u.micron, log=True
+    )
+    for o in ["vertical", "horizontal"]:
+        for e in [True, False]:
+            s.plot_one_wavelength_with_models(0, errorbar=e, orientation=o)
+            error_string = {True: "with", False: "without"}[e] + "-errorbars"
+            filename = f"data-with-models-{o}-{error_string}"
+            plt.savefig(os.path.join(test_directory, f"plot-{filename}.png"))
+            s.animate_with_models(
+                os.path.join(test_directory, f"animate-{filename}.{output}"),
+                errorbar=e,
+                orientation=o,
+            )

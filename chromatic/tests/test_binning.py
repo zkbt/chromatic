@@ -269,10 +269,10 @@ def test_uncertainty_weighting_during_binning():
 
         b = t.bin(R=3, dt=20 * u.minute)
         b.imshow(ax=ax[1, col])
-        b.plot_lightcurves_with_models(ax=ax[2, col])
+        b.plot_with_model(ax=ax[2, col])
 
         lc = t.get_lightcurve_as_rainbow()
-        lc.plot_lightcurves_with_models(ax=ax[3, col])
+        lc.plot_with_model(ax=ax[3, col])
     plt.savefig(
         os.path.join(test_directory, "uncertainty-weighting-during-binning.png"),
         facecolor="white",

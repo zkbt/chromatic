@@ -1013,7 +1013,7 @@ class Rainbow:
         _setup_animate_spectra,
         animate_spectra,
         _setup_animated_scatter,
-        _setup_wavelength_colors,
+        setup_wavelength_colors,
         _make_sure_cmap_is_defined,
         get_wavelength_color,
         imshow_quantities,

@@ -14,7 +14,7 @@ def plot_spectra(
     vmin=None,
     vmax=None,
     errorbar=False,
-    labels=True,
+    text=True,
     minimum_acceptable_ok=1,
     scatterkw={},
     errorbarkw={},
@@ -45,7 +45,7 @@ def plot_spectra(
         The maximum value to use for the wavelength colormap.
     errorbar : boolean
         Should we plot errorbars?
-    labels : boolean
+    text : boolean
         Should we label each spectrum?
     minimum_acceptable_ok : float
         The smallest value of `ok` that will still be included.
@@ -172,7 +172,7 @@ def plot_spectra(
                 # add text labels next to each spectrum
                 this_textkw = dict(va="center", color=default_color)
                 this_textkw.update(**textkw)
-                if labels:
+                if text:
                     plt.text(
                         min_wave,
                         np.median(plot_y) - 0.5 * spacing,

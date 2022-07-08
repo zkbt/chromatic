@@ -14,7 +14,7 @@ def plot_lightcurves(
     vmin=None,
     vmax=None,
     errorbar=False,
-    labels=True,
+    text=True,
     minimum_acceptable_ok=1,
     plotkw={},
     errorbarkw={},
@@ -44,7 +44,7 @@ def plot_lightcurves(
         The maximum value to use for the wavelength colormap.
     errorbar : boolean
         Should we plot errorbars?
-    labels : boolean
+    text : boolean
         Should we label each lightcurve?
     minimum_acceptable_ok : float
         The smallest value of `ok` that will still be included.
@@ -159,7 +159,7 @@ def plot_lightcurves(
                 # add text labels next to each quantity plot
                 this_textkw = dict(va="center", color=color)
                 this_textkw.update(**textkw)
-                if labels:
+                if text:
                     plt.text(
                         min_time,
                         eval(label_y),

@@ -1,13 +1,13 @@
 from ...imports import *
 
 __all__ = [
-    "_setup_wavelength_colors",
+    "setup_wavelength_colors",
     "_make_sure_cmap_is_defined",
     "get_wavelength_color",
 ]
 
 
-def _setup_wavelength_colors(self, cmap=None, vmin=None, vmax=None):
+def setup_wavelength_colors(self, cmap=None, vmin=None, vmax=None, log=None):
     """
     Set up a color map and normalization function for
     colors datapoints by their wavelengths.
@@ -20,20 +20,28 @@ def _setup_wavelength_colors(self, cmap=None, vmin=None, vmax=None):
         The wavelength at the bottom of the cmap.
     vmax : astropy.units.Quantity
         The wavelength at the top of the cmap.
+    log : bool
+        If True, colors will scale with log(wavelength).
+        If False, colors will scale with wavelength.
+        If None, the scale will be guessed from the internal wscale.
     """
 
     # populate the cmap object
     self.cmap = cm.get_cmap(cmap)
 
-    vmin = vmin or np.nanmin(self.wavelength)
-    vmax = vmax or np.nanmax(self.wavelength)
+    vmin = vmin
+    if vmin is None:
+        vmin = np.nanmin(self.wavelength)
+    vmax = vmax
+    if vmax is None:
+        vmax = np.nanmax(self.wavelength)
 
-    if self.wscale in ["?", "linear"]:
-        self.norm = col.Normalize(
+    if (self.wscale in ["log"]) or (log == True):
+        self.norm = col.LogNorm(
             vmin=vmin.to("micron").value, vmax=vmax.to("micron").value
         )
-    elif self.wscale in ["log"]:
-        self.norm = col.LogNorm(
+    if (self.wscale in ["?", "linear"]) or (log == False):
+        self.norm = col.Normalize(
             vmin=vmin.to("micron").value, vmax=vmax.to("micron").value
         )
 
@@ -75,7 +83,7 @@ def _make_sure_cmap_is_defined(self, cmap=None, vmin=None, vmax=None):
                 )
         else:
             return
-    self._setup_wavelength_colors(cmap=cmap, vmin=vmin, vmax=vmax)
+    self.setup_wavelength_colors(cmap=cmap, vmin=vmin, vmax=vmax)
 
 
 def get_wavelength_color(self, wavelength):

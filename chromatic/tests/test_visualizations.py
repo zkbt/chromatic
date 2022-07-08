@@ -102,12 +102,12 @@ def test_animate_other_quantites():
     )
 
 
-def test_wavelength_cmap():
+def test_cmap():
 
     r = SimulatedRainbow(R=10).inject_noise()
 
     # can we set up the wavelength-based color map
-    r._setup_wavelength_colors(cmap=one2another("black", "red"))
+    r.setup_wavelength_colors(cmap=one2another("black", "red"))
 
     # test a few examples
     assert r.get_wavelength_color(r.wavelength[0]) == (0.0, 0.0, 0.0, 1.0)
