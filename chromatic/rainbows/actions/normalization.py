@@ -41,7 +41,8 @@ def normalize(self, axis="wavelength", percentile=50):
 
         if axis.lower()[0] == "w":
             normalization = np.nanpercentile(new.flux, percentile, axis=self.timeaxis)
-            new.fluxlike["flux"] = new.flux / normalization[:, np.newaxis]
+            for k in self._keys_that_respond_to_math:
+                new.fluxlike[k] = new.get(k) / normalization[:, np.newaxis]
             try:
                 new.fluxlike["uncertainty"] = (
                     self.uncertainty / normalization[:, np.newaxis]
@@ -50,7 +51,8 @@ def normalize(self, axis="wavelength", percentile=50):
                 pass
         elif axis.lower()[0] == "t":
             normalization = np.nanpercentile(self.flux, percentile, axis=self.waveaxis)
-            new.fluxlike["flux"] = new.flux / normalization[np.newaxis, :]
+            for k in self._keys_that_respond_to_math:
+                new.fluxlike[k] = new.get(k) / normalization[np.newaxis, :]
             try:
                 new.fluxlike["uncertainty"] = (
                     self.uncertainty / normalization[np.newaxis, :]
