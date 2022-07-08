@@ -1,6 +1,50 @@
 from ...imports import *
 
-__all__ = ["_add_panel_labels"]
+__all__ = ["_add_panel_labels", "_get_animation_writer_and_displayer"]
+
+
+def _get_animation_writer_and_displayer(filename="animation.html", **kw):
+    """
+    Create the right animation writer based on filename.
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the movie to create.
+
+    Returns
+    -------
+    writer : MovieWriter
+        The matplotlib writer object.
+    displayer : ?
+        The
+    """
+
+    # define the options
+    writers = {"html": ani.HTMLWriter, "mp4": ani.FFMpegWriter, "gif": ani.PillowWriter}
+    warnings = {
+        "html": "Please try `pip insall matplotlib --upgrade` and rerunning?",
+        "mp4": "Please try `conda install ffmpeg` and rerunning?",
+        "gif": "Please try `pip insall matplotlib --upgrade` and rerunning?",
+    }
+    from IPython.display import HTML, Video, Image
+
+    displayers = {"html": HTML, "mp4": Video, "gif": Image}
+
+    # get the writer object
+    suffix = filename.split(".")[-1]
+    writer = writers[suffix](**kw)
+    displayer = displayers[suffix]
+
+    if writer.isAvailable():
+        return writer, displayer
+    else:
+        raise ValueError(
+            f"""
+        The writer {writer} needed for your `.{suffix}` file is not available.
+        {warnings[k]}
+        """
+        )
 
 
 def _add_panel_labels(axes, preset="inside", **kw):

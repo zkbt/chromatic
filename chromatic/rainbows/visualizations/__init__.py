@@ -9,3 +9,4 @@ from .plot import *
 from .utilities import *
 from .pcolormesh import *
 from .plot_noise_comparison import *
+from .models import *

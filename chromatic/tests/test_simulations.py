@@ -42,19 +42,19 @@ def test_star_flux():
 
 def test_inject_transit():
     h = SimulatedRainbow(wavelength=np.logspace(0, 1) * u.micron).inject_noise()
-    h.inject_transit(planet_params={"per": 0.1})
+    h.inject_transit(per=0.1)
     h.inject_transit(planet_radius=np.zeros(50) + 0.1)
 
     i = SimulatedRainbow(dt=2 * u.minute).inject_noise(signal_to_noise=1000)
     fi, ax = plt.subplots(3, 1, sharex=True, figsize=(8, 8))
     i.imshow(ax=ax[0], vmin=0.975, vmax=1.005)
     plt.xlabel("")
-    i.inject_transit(
-        planet_params=dict(per=3), planet_radius=np.random.normal(0.1, 0.01, i.nwave)
-    ).imshow(ax=ax[1], vmin=0.975, vmax=1.005)
+    i.inject_transit(per=3, planet_radius=np.random.normal(0.1, 0.01, i.nwave)).imshow(
+        ax=ax[1], vmin=0.975, vmax=1.005
+    )
     # test the limb darkening
     i.inject_transit(
-        planet_params={
+        **{
             "per": 3,
             "limb_dark": "quadratic",
             "u": np.transpose(
