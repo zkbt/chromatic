@@ -8,7 +8,7 @@ def inject_spectrum(
     self,
     temperature=5800 * u.K,
     logg=4.43,
-    metallicty=0.0,
+    metallicity=0.0,
     radius=1 * u.Rsun,
     distance=10 * u.pc,
     phoenix=True,
@@ -61,8 +61,8 @@ def inject_spectrum(
         f = get_planck_photons
 
     # get the spectrum from the surface
-    surface_flux = f(
-        temperature=temperature,
+    _, surface_flux = f(
+        temperature=u.Quantity(temperature).value,
         logg=logg,
         metallicity=metallicity,
         wavelength=self.wavelength,
