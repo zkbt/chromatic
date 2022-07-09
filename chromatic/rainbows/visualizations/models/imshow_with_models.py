@@ -16,7 +16,7 @@ def _create_title(s):
 
 def imshow_with_models(
     self,
-    models=["model"],
+    models=["systematics_model", "planet_model"],
     vlimits_data=[0.98, 1.02],
     vspan_residuals=0.02,
     figsize=(8, 3),
@@ -65,6 +65,18 @@ def imshow_with_models(
         to `.imshow` for all panels. Please see the docstring
         for that function for the full set of options.
     """
+
+    # make sure we use only models that exist
+    models_that_exist = []
+    for m in models:
+        if self.get(m) is None:
+            warnings.warn(f"'{m}' doesn't exist and will be skipped.")
+        else:
+            models_that_exist.append(m)
+    if len(models_that_exist) == 0:
+        models_that_exist = ["model"]
+    models = models_that_exist
+
     # make sure color limits are set for data and model
     percentiles = [1, 99]
     if vlimits_data is None:

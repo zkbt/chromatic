@@ -82,7 +82,7 @@ def test_animate():
     )
 
 
-def test_animate_other_quantites():
+def test_animate_other_quantities():
     k = "some-imaginary-fluxlike-quantity"
     s = (
         SimulatedRainbow(R=5, dt=20 * u.minute)

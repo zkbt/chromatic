@@ -539,6 +539,8 @@ class Rainbow:
         # weird kludge to deal with rounding errors (particularly in two-step .bin)
         if ok.dtype == bool:
             return ok
+        elif np.all((ok == 1) | (ok == 0)):
+            return ok.astype(bool)
         else:
             return np.round(ok, decimals=12)
 
@@ -630,7 +632,7 @@ class Rainbow:
                 self.metadata[key] = value
             else:
                 self._put_array_in_right_dictionary(key, value)
-        except ValueError:
+        except (AttributeError, ValueError):
             self.__dict__[key] = value
 
     @property
@@ -964,6 +966,7 @@ class Rainbow:
         __mul__,
         __truediv__,
         __eq__,
+        diff,
     )
 
     # import other actions that return other Rainbows

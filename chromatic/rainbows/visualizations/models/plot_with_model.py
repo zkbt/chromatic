@@ -7,11 +7,12 @@ __all__ = ["plot_with_model", "plot_with_model_and_residuals"]
 def plot_with_model(
     self,
     quantity="flux",
-    errorbar=False,
+    errorbar=True,
     text=True,
     data_plotkw={},
     data_errorbarkw={},
     model_plotkw={},
+    minimum_acceptable_ok=1e-10,
     **kw,
 ):
     """
@@ -51,7 +52,12 @@ def plot_with_model(
     elif quantity == "flux":
         kw.update(quantity="flux")
     self.plot_lightcurves(
-        errorbar=errorbar, text=text, plotkw=plotkw, errorbarkw=errorbarkw, **kw
+        errorbar=errorbar,
+        text=text,
+        plotkw=plotkw,
+        errorbarkw=errorbarkw,
+        minimum_acceptable_ok=minimum_acceptable_ok,
+        **kw,
     )
 
     # plot the model
@@ -60,7 +66,13 @@ def plot_with_model(
         kw.update(quantity="ones")
     elif quantity == "flux":
         kw.update(quantity="model")
-    self.plot_lightcurves(errorbar=False, text=False, plotkw=plotkw, **kw)
+    self.plot_lightcurves(
+        errorbar=False,
+        text=False,
+        plotkw=plotkw,
+        minimum_acceptable_ok=minimum_acceptable_ok,
+        **kw,
+    )
 
 
 def plot_with_model_and_residuals(self, figsize=(8, 6), **kw):
