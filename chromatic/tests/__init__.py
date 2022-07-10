@@ -15,4 +15,5 @@ from .test_summaries import *
 from .test_withmodel import *
 from .test_ok import *
 from .test_history import *
+from .test_spectra import *
 from .test_remove_trends import *

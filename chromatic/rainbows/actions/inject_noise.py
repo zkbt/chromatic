@@ -56,7 +56,7 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     # can choose if they want to use their own
     # number_of_photons or the automatic signal_to_noise
     # noise generation
-    if number_of_photons != None:
+    if number_of_photons is not None:
         mu = model * self._broadcast_to_fluxlike(number_of_photons)
 
         # convert the model to photons and store it
