@@ -20,7 +20,7 @@ required_coords = ["wavelength", "time"]
 chromatic_to_ers = dict(flux="flux", uncertainty="flux_error", ok="quality_flag")
 
 
-def to_xarray_stellar_spectra(self, filepath):
+def to_xarray_stellar_spectra(self, filepath, overwrite=True):
     """
     Write a Rainbow to a file in the xarray_stellar_spectra format.
 
@@ -119,4 +119,9 @@ def to_xarray_stellar_spectra(self, filepath):
             )
 
     # save out to file
-    ds.to_netcdf(filepath)  # , engine="h5netcdf", invalid_netcdf=True)
+    if overwrite:
+        try:
+            os.remove(filepath)
+        except FileNotFoundError:
+            pass
+    ds.to_netcdf(filepath, mode="w")  # , engine="h5netcdf", invalid_netcdf=True)

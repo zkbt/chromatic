@@ -65,7 +65,7 @@ def bin(
     wavelength=None,
     wavelength_edges=None,
     nwavelengths=None,
-    minimum_acceptable_ok=0.5,
+    minimum_acceptable_ok=1,
     minimum_points_per_bin=None,
     trim=True,
 ):
@@ -201,7 +201,7 @@ def bin_in_time(
     time=None,
     time_edges=None,
     ntimes=None,
-    minimum_acceptable_ok=0.5,
+    minimum_acceptable_ok=1,
     minimum_points_per_bin=None,
     trim=True,
 ):
@@ -410,7 +410,7 @@ def bin_in_wavelength(
     wavelength=None,
     wavelength_edges=None,
     nwavelengths=None,
-    minimum_acceptable_ok=0.5,
+    minimum_acceptable_ok=1,
     minimum_points_per_bin=None,
     trim=True,
     starting_wavelengths="1D",

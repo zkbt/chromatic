@@ -40,7 +40,7 @@ chromatic_to_ers = dict(
 )
 
 
-def to_xarray_fitted_light_curves(self, filepath):
+def to_xarray_fitted_light_curves(self, filepath, overwrite=True):
     """
     Write a Rainbow to a file in the xarray_fitted_light_curves format.
 
@@ -151,4 +151,9 @@ def to_xarray_fitted_light_curves(self, filepath):
             )
 
     # save out to file
-    ds.to_netcdf(filepath)  # , engine="h5netcdf", invalid_netcdf=True)
+    if overwrite:
+        try:
+            os.remove(filepath)
+        except FileNotFoundError:
+            pass
+    ds.to_netcdf(filepath, mode="w")  # , engine="h5netcdf", invalid_netcdf=True)
