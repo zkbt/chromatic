@@ -709,17 +709,14 @@ def bintoR(
 
     Returns
     -------
-    newx : np.array
-        The new grid of x values.
-    newy : np.array
-        The new gridded y values.
-    newunc : np.array
-        The new gridded y uncertainties.
-        These will be returned only if `unc != None` in the
-        original inputs. Otherwise, only two outputs will be
-        returned, newx and newy.
-
-    # TODO: confirm nans in input arrays are handled OK
+    result : dict
+        A dictionary containing at least...
+            `x` = the center of the output grid
+            `y` = the resampled value on the output grid
+            `x_edge_lower` = the lower edges of the output grid
+            `x_edge_upper` = the upper edges of the output grid
+        ...and possibly also
+            `uncertainty` = the calculated uncertainty per bin
     """
 
     try:

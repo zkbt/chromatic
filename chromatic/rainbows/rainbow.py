@@ -985,6 +985,7 @@ class Rainbow:
         inject_transit,
         inject_systematics,
         inject_noise,
+        inject_spectrum,
         fold,
         compare,
         get_lightcurve_as_rainbow,
