@@ -6,6 +6,8 @@ __all__ = ["plot_noise_comparison"]
 def plot_noise_comparison(
     self,
     ax=None,
+    method="standard-deviation",
+    minimum_acceptable_ok=1e-10,
     w_unit="micron",
     cmap=None,
     norm=None,
@@ -27,6 +29,11 @@ def plot_noise_comparison(
     ----------
     ax : matplotlib.axes.Axes
         The axes into which to make this plot.
+    method : string
+        What method to use to obtain measured scatter. Current options are 'MAD', 'standard-deviation'.
+    minimum_acceptable_ok : float
+        The smallest value of `ok` that will still be included.
+        (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
     w_unit : str, astropy.unit.Unit
         The unit for plotting wavelengths.
     cmap : str, matplotlib.colors.Colormap
@@ -64,15 +71,6 @@ def plot_noise_comparison(
         Nothing will happen with them.
     """
 
-    if len(kw) > 0:
-        message = f"""
-        You provided the keyword argument(s)
-        {kw}
-        but this function doesn't know how to
-        use them. Sorry!
-        """
-        warnings.warn(message)
-
     # make sure that the wavelength-based colormap is defined
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
 
@@ -88,9 +86,11 @@ def plot_noise_comparison(
     plot_x = w.to_value(w_unit)
 
     # specify y_plots
-    plot_measured_scatter = self.get_measured_scatter()
+    plot_measured_scatter = self.get_measured_scatter(
+        method=method, minimum_acceptable_ok=minimum_acceptable_ok
+    )
     plot_typical_uncertainty = self.get_typical_uncertainty()
-    yplots = [self.get_typical_uncertainty(), self.get_measured_scatter()]
+    yplots = [plot_typical_uncertainty, plot_measured_scatter]
 
     # define colors
     if measured_color == "auto":
@@ -130,7 +130,7 @@ def plot_noise_comparison(
 
     # add text labels to the plot
     plt.xlabel(f"Wavelength ({w_unit.to_string('latex_inline')})")
-    plt.ylabel("$\sigma$ = Standard Deviation")
+    plt.ylabel(f"$\sigma$ ('{method}')")
     if legend:
         this_legendkw = dict(frameon=False)
         this_legendkw.update(**legendkw)
