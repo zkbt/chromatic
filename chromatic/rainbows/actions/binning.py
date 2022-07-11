@@ -570,7 +570,7 @@ def bin_in_wavelength(
             if starting_wavelengths.upper() == "1D":
                 w = self.wavelike["wavelength"][:]
             elif starting_wavelengths.upper() == "2D":
-                w = self.fluxlike["wavelength"][:, t]
+                w = self.fluxlike["wavelength_2d"][:, t]
             # bin the quantities for this time
             binned = binning_function(
                 x=w,

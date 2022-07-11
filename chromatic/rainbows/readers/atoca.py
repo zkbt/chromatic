@@ -67,7 +67,15 @@ def from_atoca(rainbow, filepath, order=1):
         raise NotImplementedError(msg)
     else:
         # Ensure that the user knows which order they are getting.
-        print("Unpacking order {}".format(order), flush=True)
+        other_order = {1: 2, 2: 1}[order]
+        warnings.warn(
+            f"""
+        You are loading NIRISS order {order} from the ATOCA file
+        {filepath}
+        If you want the other order, try providing the
+        `order={other_order}` as a keyword argument to `Rainbow()`.
+        """
+        )
 
     filenames = expand_filenames(filepath)
 

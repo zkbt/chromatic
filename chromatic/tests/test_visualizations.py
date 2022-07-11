@@ -82,7 +82,7 @@ def test_animate():
     )
 
 
-def test_animate_other_quantites():
+def test_animate_other_quantities():
     k = "some-imaginary-fluxlike-quantity"
     s = (
         SimulatedRainbow(R=5, dt=20 * u.minute)
@@ -102,12 +102,12 @@ def test_animate_other_quantites():
     )
 
 
-def test_wavelength_cmap():
+def test_cmap():
 
     r = SimulatedRainbow(R=10).inject_noise()
 
     # can we set up the wavelength-based color map
-    r._setup_wavelength_colors(cmap=one2another("black", "red"))
+    r.setup_wavelength_colors(cmap=one2another("black", "red"))
 
     # test a few examples
     assert r.get_wavelength_color(r.wavelength[0]) == (0.0, 0.0, 0.0, 1.0)
@@ -245,3 +245,26 @@ def test_pcolormesh():
     b.imshow(ax=ax[1, 0])
     b.pcolormesh(ax=ax[1, 1])
     plt.savefig(os.path.join(test_directory, "test-pcolormesh-vs-imshow.png"))
+
+
+def test_plot_noise_comparison():
+    fi, ax = plt.subplots(
+        2,
+        2,
+        sharey="row",
+        figsize=(8, 6),
+        sharex=True,
+        dpi=300,
+        constrained_layout=True,
+    )
+    for i, a in enumerate([0, 0.01]):
+        s = (
+            SimulatedRainbow(dw=0.1 * u.micron)
+            .inject_systematics(amplitude=a)
+            .inject_noise()
+        )
+        s.imshow(ax=ax[0, i], xaxis="wavelength")
+        s.plot_noise_comparison(ax=ax[1, i])
+    ax[0, 0].set_title("No Systematics")
+    ax[0, 1].set_title("With Systematics")
+    plt.savefig(os.path.join(test_directory, "test-plot_noise_comparison.png"))

@@ -22,6 +22,9 @@ class Rainbow:
     waveaxis = 0
     timeaxis = 1
 
+    # which fluxlike keys will respond to math between objects
+    _keys_that_respond_to_math = ["flux"]
+
     def __init__(
         self,
         filepath=None,
@@ -146,7 +149,7 @@ class Rainbow:
             if metadata is not None:
                 self.metadata.update(**metadata)
         # then try to initialize from a file
-        elif (type(filepath) == str) or (type(filepath) == list):
+        elif isinstance(filepath, str) or isinstance(filepath, list):
             self._initialize_from_file(filepath=filepath, format=format, **kw)
 
         # finally, tidy up by guessing the scales
@@ -536,6 +539,8 @@ class Rainbow:
         # weird kludge to deal with rounding errors (particularly in two-step .bin)
         if ok.dtype == bool:
             return ok
+        elif np.all((ok == 1) | (ok == 0)):
+            return ok.astype(bool)
         else:
             return np.round(ok, decimals=12)
 
@@ -591,7 +596,7 @@ class Rainbow:
         try:
             return getattr(self, key)
         except AttributeError:
-            return None
+            return default
 
     def __setattr__(self, key, value):
         """
@@ -627,7 +632,7 @@ class Rainbow:
                 self.metadata[key] = value
             else:
                 self._put_array_in_right_dictionary(key, value)
-        except ValueError:
+        except (AttributeError, ValueError):
             self.__dict__[key] = value
 
     @property
@@ -695,6 +700,31 @@ class Rainbow:
             """
             )
 
+        # warn if the times and wavelengths are the same size
+        if (self.nwave == self.ntime) and (self.ntime is not None):
+            warnings.warn(
+                f"""
+            The number of wavelengths ({self.nwave}) is the same as the
+            number of times ({self.ntime}). This is fine, we suppose
+            (<mock exasperated sigh>), but here are few reasons you might
+            want to reconsider letting them have the same size:
+                (1) Mathemetical operations and variabile assignment
+                    inside this Rainbow make guesses about whether a quantity
+                    is wavelike or timelike based on its shape; these features
+                    will fail (or even worse do something mysterious) if
+                    there are the same numbers of wavelengths and times.
+                (2) For your own darn sake, if your fluxlike arrays are
+                    all square, it's going to be very easy for you to accidentally
+                    transpose them and not realize it.
+                (3) It's very unlikely that your real data had exactly the same
+                    number of times and wavelengths, so we're guessing that you
+                    probably just created these arrays from scratch, which
+                    hopefully means it's not too annoying to just make them
+                    have different numbers of wavelengths and times.
+            Thanks!
+            """
+            )
+
         # does the flux have the right shape?
         if self.shape != np.shape(self.flux):
             message = f"""
@@ -722,6 +752,11 @@ class Rainbow:
                     flux array's shape of {np.shape(self.flux)}.
                     """
                     warnings.warn(message)
+
+        # make sure 2D arrays are uniquely named from 1D
+        for k in tuple(self.fluxlike.keys()):
+            if (k in self.wavelike) or (k in self.timelike):
+                self.fluxlike[f"{k}_2d"] = self.fluxlike.pop(k)
 
         if "ok" in self.fluxlike:
             is_nan = np.isnan(self.fluxlike["flux"])
@@ -755,22 +790,30 @@ class Rainbow:
                 l, u = calculate_bin_leftright(self.wavelength)
                 self.wavelike["wavelength_lower"] = l
                 self.wavelike["wavelength_upper"] = u
+            else:
+                l, u = calculate_bin_leftright(self.wavelength)
+                self.wavelike["wavelength_lower"] = l
+                self.wavelike["wavelength_upper"] = u
 
-    def _make_sure_time_edges_are_defined(self):
+    def _make_sure_time_edges_are_defined(self, redo=True):
         """
         Make sure there are some time edges defined.
         """
         if self.ntime <= 1:
             return
-        if ("time_lower" not in self.timelike) or ("time_upper" not in self.timelike):
+        if (
+            ("time_lower" not in self.timelike)
+            or ("time_upper" not in self.timelike)
+            or redo
+        ):
             if self.metadata.get("tscale", None) == "log":
-                l, u = calculate_bin_leftright(np.log(self.time.value))
-                self.timelike["time_lower"] = np.exp(l) * self.time.unit
-                self.timelike["time_upper"] = np.exp(u) * self.time.unit
+                lower, upper = calculate_bin_leftright(np.log(self.time.value))
+                self.timelike["time_lower"] = np.exp(lower) * self.time.unit
+                self.timelike["time_upper"] = np.exp(upper) * self.time.unit
             elif self.metadata.get("tscale", None) == "linear":
-                l, u = calculate_bin_leftright(self.time)
-                self.timelike["time_lower"] = l
-                self.timelike["time_upper"] = u
+                lower, upper = calculate_bin_leftright(self.time)
+                self.timelike["time_lower"] = lower
+                self.timelike["time_upper"] = upper
 
     def __getitem__(self, key):
         """
@@ -800,6 +843,13 @@ class Rainbow:
 
         # create a copy
         new = self._create_copy()
+
+        # make sure we don't drop down to 1D arrays
+        if isinstance(i_wavelength, int):
+            i_wavelength = [i_wavelength]
+
+        if isinstance(i_time, int):
+            i_time = [i_time]
 
         # do indexing of wavelike
         for w in self.wavelike:
@@ -916,7 +966,17 @@ class Rainbow:
         return new
 
     # import the basic operations for Rainbows
-    from .actions.operations import __add__, __sub__, __mul__, __truediv__, __eq__
+    from .actions.operations import (
+        _apply_operation,
+        _broadcast_to_fluxlike,
+        _raise_ambiguous_shape_error,
+        __add__,
+        __sub__,
+        __mul__,
+        __truediv__,
+        __eq__,
+        diff,
+    )
 
     # import other actions that return other Rainbows
     from .actions import (
@@ -934,6 +994,7 @@ class Rainbow:
         inject_transit,
         inject_systematics,
         inject_noise,
+        inject_spectrum,
         fold,
         compare,
         get_lightcurve_as_rainbow,
@@ -941,6 +1002,7 @@ class Rainbow:
         _create_fake_wavelike_quantity,
         _create_fake_timelike_quantity,
         _create_fake_fluxlike_quantity,
+        remove_trends,
     )
 
     # import summary statistics for each wavelength
@@ -964,13 +1026,14 @@ class Rainbow:
         _setup_animate_spectra,
         animate_spectra,
         _setup_animated_scatter,
-        _setup_wavelength_colors,
+        setup_wavelength_colors,
         _make_sure_cmap_is_defined,
         get_wavelength_color,
         imshow_quantities,
         plot_quantities,
         imshow_interact,
         plot_spectra,
+        plot_noise_comparison,
         plot,
     )
 
@@ -986,4 +1049,6 @@ class Rainbow:
         _remove_last_history_entry,
         _create_history_entry,
         history,
+        get_times_as_astropy,
+        set_times_from_astropy,
     )

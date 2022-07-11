@@ -37,14 +37,14 @@ from ...imports import *
 __all__ = ["to_abcdefgh"]
 
 
-def to_abcdefgh(rainbow, filepath):
+def to_abcdefgh(self, filepath):
     """
     Write a Rainbow to a file in the abcdefgh format.
 
     Parameters
     ----------
 
-    rainbow : Rainbow
+    self : Rainbow
         The object to be saved.
 
     filepath : str
@@ -52,13 +52,13 @@ def to_abcdefgh(rainbow, filepath):
     """
 
     # a 1D array of wavelengths (with astropy units of length)
-    the_1D_array_of_wavelengths = rainbow.wavelike["wavelength"]
+    the_1D_array_of_wavelengths = self.wavelike["wavelength"]
 
     # a 1D array of times (with astropy units of time)
-    the_1D_array_of_times = rainbow.timelike["time"]
+    the_1D_array_of_times = self.timelike["time"]
 
     # a 2D (row = wavelength, col = array of fluxes
-    the_2D_array_of_fluxes = rainbow.fluxlike["flux"]
+    the_2D_array_of_fluxes = self.fluxlike["flux"]
 
     # write out your file, however you like
     write_to_abcdefgh(

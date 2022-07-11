@@ -3,10 +3,10 @@ Define a reader for STScI pipeline x1dints.fits files.
 """
 from ...imports import *
 
-__all__ = ["from_coloumbe"]
+__all__ = ["from_coulombe"]
 
 
-def from_coloumbe(rainbow, filepath, order=1):
+def from_coulombe(rainbow, filepath, order=1):
     """
     Populate a Rainbow from an STScI pipeline x1dints file,
     or a group of x1dints files for multiple segments.
@@ -111,13 +111,13 @@ def from_coloumbe(rainbow, filepath, order=1):
 
     # try to pull in the errors
     try:
-        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["flux_error"]
+        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["flux_error"] * 1
     except KeyError:
-        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["error"]
-
+        rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["error"] * 1
+    other_order = {1: 2, 2: 1}[order]
     message = f"""
     Loading NIRISS order '{order}'. If you want the other order,
-    trying `r = Rainbow(..., format='coloumbe', order={(order+1)%4})`
+    trying `r = Rainbow(..., format='coulombe', order={other_order})`
     """
     warnings.warn(message)
 
