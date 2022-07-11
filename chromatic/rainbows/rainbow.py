@@ -596,7 +596,7 @@ class Rainbow:
         try:
             return getattr(self, key)
         except AttributeError:
-            return None
+            return default
 
     def __setattr__(self, key, value):
         """
@@ -790,21 +790,25 @@ class Rainbow:
                 self.wavelike["wavelength_lower"] = l
                 self.wavelike["wavelength_upper"] = u
 
-    def _make_sure_time_edges_are_defined(self):
+    def _make_sure_time_edges_are_defined(self, redo=True):
         """
         Make sure there are some time edges defined.
         """
         if self.ntime <= 1:
             return
-        if ("time_lower" not in self.timelike) or ("time_upper" not in self.timelike):
+        if (
+            ("time_lower" not in self.timelike)
+            or ("time_upper" not in self.timelike)
+            or redo
+        ):
             if self.metadata.get("tscale", None) == "log":
-                l, u = calculate_bin_leftright(np.log(self.time.value))
-                self.timelike["time_lower"] = np.exp(l) * self.time.unit
-                self.timelike["time_upper"] = np.exp(u) * self.time.unit
+                lower, upper = calculate_bin_leftright(np.log(self.time.value))
+                self.timelike["time_lower"] = np.exp(lower) * self.time.unit
+                self.timelike["time_upper"] = np.exp(upper) * self.time.unit
             elif self.metadata.get("tscale", None) == "linear":
-                l, u = calculate_bin_leftright(self.time)
-                self.timelike["time_lower"] = l
-                self.timelike["time_upper"] = u
+                lower, upper = calculate_bin_leftright(self.time)
+                self.timelike["time_lower"] = lower
+                self.timelike["time_upper"] = upper
 
     def __getitem__(self, key):
         """
@@ -1040,4 +1044,6 @@ class Rainbow:
         _remove_last_history_entry,
         _create_history_entry,
         history,
+        get_times_as_astropy,
+        set_times_from_astropy,
     )

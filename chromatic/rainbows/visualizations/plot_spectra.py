@@ -9,7 +9,7 @@ def plot_spectra(
     ax=None,
     spacing=0.1,
     w_unit="micron",
-    t_unit="hour",
+    t_unit="day",
     cmap=None,
     vmin=None,
     vmax=None,
