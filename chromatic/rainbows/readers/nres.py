@@ -65,7 +65,7 @@ def from_nres(rainbow, filepath, order=52):
             nwaves = len(wavelengths)
             for k in ["wavelength", "flux", "uncertainty", "ok"]:
                 rainbow.fluxlike[k] = np.zeros((nwaves, ntimes))
-            rainbow.fluxlike["wavelength"] *= u.micron
+            rainbow.fluxlike["wavelength_2d"] *= u.micron
             rainbow.fluxlike["ok"] = rainbow.fluxlike["ok"].astype(np.bool)
             rainbow.timelike["time"] = np.zeros(ntimes) * u.day
 
@@ -73,7 +73,7 @@ def from_nres(rainbow, filepath, order=52):
         rainbow.timelike["time"][i] = date_bjd * u.day * 1
 
         # populate a 2D (row = wavelength, col = time, value = wavelength)
-        rainbow.fluxlike["wavelength"][:, i] = wavelengths * 1
+        rainbow.fluxlike["wavelength_2d"][:, i] = wavelengths * 1
 
         # populate a 2D (row = wavelength, col = time) array of fluxes
         rainbow.fluxlike["flux"][:, i] = fluxes * 1
@@ -86,7 +86,7 @@ def from_nres(rainbow, filepath, order=52):
 
     # populate a 1D array of wavelengths (with astropy units of length)
     rainbow.wavelike["wavelength"] = np.nanmedian(
-        rainbow.fluxlike["wavelength"], axis=rainbow.timeaxis
+        rainbow.fluxlike["wavelength_2d"], axis=rainbow.timeaxis
     )
 
     # add some warnings if there's any funny business

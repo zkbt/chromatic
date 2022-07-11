@@ -88,6 +88,7 @@ setup(
         "tqdm",
         "batman-package>=2.4.9",
         "altair",
+        "xarray",
         "astraeus @ git+https://github.com/kevin218/Astraeus@main",
     ],
     # what version of Python is required?

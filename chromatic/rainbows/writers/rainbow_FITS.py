@@ -9,14 +9,14 @@ from ...imports import *
 __all__ = ["to_rainbow_FITS"]
 
 
-def to_rainbow_FITS(rainbow, filepath, overwrite=True):
+def to_rainbow_FITS(self, filepath, overwrite=True):
     """
     Write a Rainbow to a FITS file.
 
     Parameters
     ----------
 
-    rainbow : Rainbow
+    self : Rainbow
         The object to be saved.
 
     filepath : str
@@ -31,18 +31,18 @@ def to_rainbow_FITS(rainbow, filepath, overwrite=True):
     header["comment"] = " [3]=['TIMELIKE'] contains (ntime)-shaped arrays"
     header["comment"] = "The primary extension header contains some metadata."
 
-    for k in rainbow.metadata:
+    for k in self.metadata:
         try:
-            header[k] = rainbow.metadata[k]
+            header[k] = self.metadata[k]
         except ValueError:
             warnings.warn(f"metadata item '{k}' cannot be saved to FITS header")
 
     primary_hdu = fits.PrimaryHDU(header=header)
 
     # create extensions for the three other core dictionaries
-    flux_hdu = fits.BinTableHDU(Table(rainbow.fluxlike), name="fluxlike")
-    wave_hdu = fits.BinTableHDU(Table(rainbow.wavelike), name="wavelike")
-    time_hdu = fits.BinTableHDU(Table(rainbow.timelike), name="timelike")
+    flux_hdu = fits.BinTableHDU(Table(self.fluxlike), name="fluxlike")
+    wave_hdu = fits.BinTableHDU(Table(self.wavelike), name="wavelike")
+    time_hdu = fits.BinTableHDU(Table(self.timelike), name="timelike")
 
     hdu_list = fits.HDUList([primary_hdu, flux_hdu, wave_hdu, time_hdu])
     hdu_list.writeto(filepath, overwrite=overwrite)

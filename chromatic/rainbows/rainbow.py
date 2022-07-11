@@ -539,6 +539,8 @@ class Rainbow:
         # weird kludge to deal with rounding errors (particularly in two-step .bin)
         if ok.dtype == bool:
             return ok
+        elif np.all((ok == 1) | (ok == 0)):
+            return ok.astype(bool)
         else:
             return np.round(ok, decimals=12)
 
@@ -594,7 +596,7 @@ class Rainbow:
         try:
             return getattr(self, key)
         except AttributeError:
-            return None
+            return default
 
     def __setattr__(self, key, value):
         """
@@ -630,7 +632,7 @@ class Rainbow:
                 self.metadata[key] = value
             else:
                 self._put_array_in_right_dictionary(key, value)
-        except ValueError:
+        except (AttributeError, ValueError):
             self.__dict__[key] = value
 
     @property
@@ -751,6 +753,11 @@ class Rainbow:
                     """
                     warnings.warn(message)
 
+        # make sure 2D arrays are uniquely named from 1D
+        for k in tuple(self.fluxlike.keys()):
+            if (k in self.wavelike) or (k in self.timelike):
+                self.fluxlike[f"{k}_2d"] = self.fluxlike.pop(k)
+
         if "ok" in self.fluxlike:
             is_nan = np.isnan(self.fluxlike["flux"])
             self.fluxlike["ok"][is_nan] = 0
@@ -788,21 +795,25 @@ class Rainbow:
                 self.wavelike["wavelength_lower"] = l
                 self.wavelike["wavelength_upper"] = u
 
-    def _make_sure_time_edges_are_defined(self):
+    def _make_sure_time_edges_are_defined(self, redo=True):
         """
         Make sure there are some time edges defined.
         """
         if self.ntime <= 1:
             return
-        if ("time_lower" not in self.timelike) or ("time_upper" not in self.timelike):
+        if (
+            ("time_lower" not in self.timelike)
+            or ("time_upper" not in self.timelike)
+            or redo
+        ):
             if self.metadata.get("tscale", None) == "log":
-                l, u = calculate_bin_leftright(np.log(self.time.value))
-                self.timelike["time_lower"] = np.exp(l) * self.time.unit
-                self.timelike["time_upper"] = np.exp(u) * self.time.unit
+                lower, upper = calculate_bin_leftright(np.log(self.time.value))
+                self.timelike["time_lower"] = np.exp(lower) * self.time.unit
+                self.timelike["time_upper"] = np.exp(upper) * self.time.unit
             elif self.metadata.get("tscale", None) == "linear":
-                l, u = calculate_bin_leftright(self.time)
-                self.timelike["time_lower"] = l
-                self.timelike["time_upper"] = u
+                lower, upper = calculate_bin_leftright(self.time)
+                self.timelike["time_lower"] = lower
+                self.timelike["time_upper"] = upper
 
     def __getitem__(self, key):
         """
@@ -964,6 +975,7 @@ class Rainbow:
         __mul__,
         __truediv__,
         __eq__,
+        diff,
     )
 
     # import other actions that return other Rainbows
@@ -1037,4 +1049,6 @@ class Rainbow:
         _remove_last_history_entry,
         _create_history_entry,
         history,
+        get_times_as_astropy,
+        set_times_from_astropy,
     )

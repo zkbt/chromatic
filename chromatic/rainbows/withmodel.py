@@ -59,3 +59,6 @@ class RainbowWithModel(Rainbow):
         plot_one_wavelength_with_models,
         animate_with_models,
     )
+
+
+# REMOVE THE RAINBOW WITH MODEL AND JUST ADD A VALIDATION STEP TO ALL MODEL-DEPENDENT THINGS?

@@ -37,7 +37,7 @@ def _create_shared_wavelength_axis(
         Should we make some plots showing how the shared wavelength
         axis compares to the original input wavelength axes?
     """
-    w = rainbow.fluxlike["wavelength"] * 1
+    w = rainbow.fluxlike["wavelength_2d"] * 1
     w[rainbow.ok == False] = np.nan
     dw_per_time = np.gradient(w, axis=rainbow.waveaxis)
     R_per_time = w / dw_per_time
@@ -152,7 +152,7 @@ def align_wavelengths(self, minimum_acceptable_ok=1, minimum_points_per_bin=0, *
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("align_wavelengths", locals())
 
-    if "wavelength" not in self.fluxlike:
+    if "wavelength_2d" not in self.fluxlike:
         warnings.warn(
             f"""
         No 2D wavelength information was found, so

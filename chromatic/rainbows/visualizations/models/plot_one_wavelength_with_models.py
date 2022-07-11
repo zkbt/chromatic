@@ -37,6 +37,7 @@ def plot_one_wavelength_with_models(
     label="inside",
     label_textkw={"color": "black"},
     animation=False,
+    minimum_acceptable_ok=1e-10,
     **kw,
 ):
     """
@@ -236,10 +237,18 @@ def plot_one_wavelength_with_models(
 
     # pull out the raw data and complete model
     data_x, data_y, data_sigma = self.get_ok_data_for_wavelength(
-        i_wavelength, x="time", y="flux", sigma="uncertainty"
+        i_wavelength,
+        x="time",
+        y="flux",
+        sigma="uncertainty",
+        minimum_acceptable_ok=minimum_acceptable_ok,
     )
     model_x, model_y, _ = self.get_ok_data_for_wavelength(
-        i_wavelength, x="time", y="model", sigma="uncertainty"
+        i_wavelength,
+        x="time",
+        y="model",
+        sigma="uncertainty",
+        minimum_acceptable_ok=minimum_acceptable_ok,
     )
 
     # loop through models to include
@@ -248,11 +257,14 @@ def plot_one_wavelength_with_models(
         # choose the model we want to isolate
         if k == "residuals":
             this_model_x, this_model_y, _ = self.get_ok_data_for_wavelength(
-                i_wavelength, x="time", y="ones"
+                i_wavelength,
+                x="time",
+                y="ones",
+                minimum_acceptable_ok=minimum_acceptable_ok,
             )
         else:
             this_model_x, this_model_y, _ = self.get_ok_data_for_wavelength(
-                i_wavelength, x="time", y=k
+                i_wavelength, x="time", y=k, minimum_acceptable_ok=minimum_acceptable_ok
             )
 
         # point to the appropriate plotting axes
@@ -303,6 +315,9 @@ def plot_one_wavelength_with_models(
     # add (a), (b), (c) labels to the panels, if desired
     if label:
         _add_panel_labels(ax[:], preset=label, **label_textkw)
+
+    # set xlimits
+    ax[0].set_xlim(self.time.to_value(t_unit).min(), self.time.to_value(t_unit).max())
     plt.sca(ax[0])
 
 
@@ -335,4 +350,5 @@ def animate_with_models(
 
     from IPython.display import display
 
+    plt.close(figure)
     display(displayer(filename))

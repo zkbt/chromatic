@@ -57,6 +57,14 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     # number_of_photons or the automatic signal_to_noise
     # noise generation
     if number_of_photons is not None:
+        if u.Quantity(model).unit != u.Unit(""):
+            raise ValueError(
+                f"""
+            We haven't yet implemented `number_of_photons` noise
+            for models that have units associated with them. Sorry!
+            """
+            )
+
         mu = model * self._broadcast_to_fluxlike(number_of_photons)
 
         # convert the model to photons and store it
@@ -82,7 +90,15 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
         new.fluxlike["uncertainty"] = uncertainty
 
         # inject a realization of the noise
-        new.fluxlike["flux"] = np.random.normal(model, uncertainty)
+        if isinstance(model, u.Quantity):
+            unit = model.unit
+            loc = model.to_value(unit)
+            scale = uncertainty.to_value(unit)
+        else:
+            unit = 1
+            loc = model
+            scale = uncertainty
+        new.fluxlike["flux"] = np.random.normal(model, uncertainty) * unit
 
         # store S/N as metadata
         new.metadata["signal_to_noise"] = signal_to_noise

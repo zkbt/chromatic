@@ -9,7 +9,7 @@ def plot_lightcurves(
     ax=None,
     spacing=None,
     w_unit="micron",
-    t_unit="hour",
+    t_unit="day",
     cmap=None,
     vmin=None,
     vmax=None,

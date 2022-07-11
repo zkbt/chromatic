@@ -10,14 +10,14 @@ from ...version import version
 __all__ = ["to_rainbow_npy"]
 
 
-def to_rainbow_npy(rainbow, filepath, **kw):
+def to_rainbow_npy(self, filepath, **kw):
     """
     Write a Rainbow to a file in the .rainbow.npy format.
 
     Parameters
     ----------
 
-    rainbow : Rainbow
+    self : Rainbow
         The object to be saved.
 
     filepath : str
@@ -27,7 +27,7 @@ def to_rainbow_npy(rainbow, filepath, **kw):
     assert ".rainbow.npy" in filepath
 
     # populate a dictionary containing the four core dictionaries
-    dictionary_to_save = rainbow._get_core_dictionaries()
+    dictionary_to_save = self._get_core_dictionaries()
 
     # save that to a file
     np.save(filepath, [dictionary_to_save, version()], allow_pickle=True)

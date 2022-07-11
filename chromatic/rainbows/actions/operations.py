@@ -288,25 +288,70 @@ def __truediv__(self, other):
 def __eq__(self, other):
     """
     Test whether (self) == (other).
+    This compares the wavelike, timelike, and fluxlike arrays
+    for exact matches. It skips entirely over the metadata.
     """
     # start by assuming the Rainbows are identical
     same = True
 
-    # loop through the core dictionaries
-    for d in self._core_dictionaries:
-        if d == "metadata":
-            continue
-        # pull out each core dictionary from both
-        d1, d2 = vars(self)[d], vars(other)[d]
-        same *= d1.keys() == d2.keys()
+    for a, b in zip([self, other], [other, self]):
 
-        # loop through elements of each dictionary
-        for k in d1:
+        # loop through the core dictionaries
+        for d in a._core_dictionaries:
+            if d == "metadata":
+                continue
+            # pull out each core dictionary from both
+            d1, d2 = vars(self)[d], vars(b)[d]
+            same *= set(d1.keys()) == set(d2.keys())
 
-            # ignore different histories (e.g. new vs loaded)
-            if k != "history":
+            # loop through elements of each dictionary
+            for k in d1:
 
-                # test that all elements match for both
-                same *= np.all(d1[k] == d2.get(k, None))
+                # ignore different histories (e.g. new vs loaded)
+                if k != "history":
+
+                    # test that all elements match for both
+                    if d == "fluxlike":
+                        same *= np.all(
+                            np.isclose(
+                                a.get(k)[a.ok.astype(bool)], b.get(k)[a.ok.astype(bool)]
+                            )
+                        )
+                    else:
+                        same *= np.all(np.isclose(a.get(k), b.get(k)))
 
     return bool(same)
+
+
+def diff(self, other):
+    """
+    Test whether (self) == (other).
+    This compares the wavelike, timelike, and fluxlike arrays
+    for exact matches. It skips entirely over the metadata.
+    """
+    # start by assuming the Rainbows are identical
+    same = True
+
+    for a, b in zip([self, other], [other, self]):
+
+        # loop through the core dictionaries
+        for d in a._core_dictionaries:
+            if d == "metadata":
+                continue
+            # pull out each core dictionary from both
+            d1, d2 = vars(self)[d], vars(b)[d]
+            if set(d1.keys()) != set(d2.keys()):
+                differences = list(set(d1.keys()) - set(d2.keys()))
+                print(f"{a}.{d} has {differences} and {b} does not")
+
+            # loop through elements of each dictionary
+            for k in d1:
+                # ignore different histories (e.g. new vs loaded)
+                if k != "history":
+                    continue
+                # test that all elements match for both
+                if np.all(a.get(k) == b.get(k)) == False:
+                    print(f"{a}.{d}[{k}] != {b}.{d}[{k}]")
+
+
+0
