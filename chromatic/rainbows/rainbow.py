@@ -753,6 +753,11 @@ class Rainbow:
                     """
                     warnings.warn(message)
 
+        # make sure 2D arrays are uniquely named from 1D
+        for k in tuple(self.fluxlike.keys()):
+            if (k in self.wavelike) or (k in self.timelike):
+                self.fluxlike[f"{k}_2d"] = self.fluxlike.pop(k)
+
         if "ok" in self.fluxlike:
             is_nan = np.isnan(self.fluxlike["flux"])
             self.fluxlike["ok"][is_nan] = 0
