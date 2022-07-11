@@ -3,7 +3,7 @@ from ...imports import *
 __all__ = ["get_measured_scatter"]
 
 
-def get_measured_scatter(self,quantity='flux', method="standard-deviation"):
+def get_measured_scatter(self, quantity="flux", method="standard-deviation"):
     """
     Get measured scatter from a chromatic rainbow.
 
@@ -25,7 +25,7 @@ def get_measured_scatter(self,quantity='flux', method="standard-deviation"):
         return scatters
 
     if method == "MAD":
-        scatters = median_abs_deviation(
+        scatters = median_absolute_deviation(
             self.fluxlike[quantity].copy(), axis=1, scale="normal"
         )  # Setting the scale 'normal' is like * 1.48
         return scatters
