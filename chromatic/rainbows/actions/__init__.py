@@ -10,3 +10,4 @@ from .inject_spectrum import *
 from .fold import *
 from .compare import *
 from .remove_trends import *
+from .attach_model import *

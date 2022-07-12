@@ -1,5 +1,7 @@
 from ...imports import *
 
+__all__ = ["remove_trends"]
+
 
 def remove_trends(
     self, method="median_filter", **kw

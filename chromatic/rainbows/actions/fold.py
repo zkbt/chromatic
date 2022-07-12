@@ -1,5 +1,7 @@
 from ...imports import *
 
+__all__ = ["fold"]
+
 
 def fold(self, period=None, t0=None, event="Mid-Transit"):
     """

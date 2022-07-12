@@ -1,0 +1,100 @@
+from ....imports import *
+
+__all__ = [
+    "get_for_time",
+    "get_ok_data_for_time",
+]
+
+
+def get_for_time(self, i, quantity="flux"):
+    """
+    Get 'quantity' associated with time 'i'.
+
+    Parameters
+    ----------
+    i : int
+        The time index to retrieve.
+    quantity : string
+        The quantity to retrieve. If it is flux-like,
+        column 'i' will be returned. If it is wave-like,
+        the array itself will be returned.
+
+    Returns
+    -------
+    quantity : np.array, u.Quantity
+        The 1D array of 'quantity' corresponding to time 'i'.
+    """
+    z = self.get(quantity)
+    if np.shape(z) == self.shape:
+        return z[:, i]
+    elif len(z) == self.nwave:
+        return z
+    else:
+        raise RuntimeError(
+            f"""
+        You tried to retrieve time {i} from '{quantity}',
+        but this quantity is neither flux-like nor wave-like.
+        It's not possible to return a wave-like array. Sorry!
+        """
+        )
+
+
+def get_ok_data_for_time(
+    self,
+    i,
+    x="wavelength",
+    y="flux",
+    sigma="uncertainty",
+    minimum_acceptable_ok=1,
+    express_badness_with_uncertainty=False,
+):
+    """
+    A small wrapper to get the good data from a time,
+    either trimming out data that are not OK or inflating the
+    uncertainties to infinity.
+
+    Parameters
+    ----------
+    i : int
+        The time index to retrieve.
+    x : string
+        What quantity should be retrieved as 'x'? (default = 'time')
+    y : string
+        What quantity should be retrieved as 'y'? (default = 'flux')
+    sigma : string
+        What quantity should be retrieved as 'sigma'? (default = 'uncertainty')
+    minimum_acceptable_ok : float
+        The smallest value of `ok` that will still be included.
+        (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
+    express_badness_with_uncertainty : bool
+        If False, data that don't pass the `ok` cut will be removed.
+        If True, data that don't pass the `ok` cut will have their
+        uncertainties inflated to infinity (np.inf).
+
+    Returns
+    -------
+    x : np.array
+        The time.
+    y : np.array
+        The desired quantity (default is `flux`)
+    sigma : np.array
+        The uncertainty on the desired quantity
+    """
+
+    # get 1D independent variable
+    x_values = self.get_for_time(i, x) * 1
+
+    # get 1D array of what to keep
+    ok = self.ok[:, i] >= minimum_acceptable_ok
+
+    # get 1D array of the quantity
+    y_values = self.get_for_time(i, y) * 1
+
+    # get 1D array of uncertainty
+    sigma_values = self.get_for_time(i, sigma) * 1
+
+    if express_badness_with_uncertainty:
+        sigma_values[ok == False] = np.inf
+        return x_values, y_values, sigma_values
+    else:
+        return x_values[ok], y_values[ok], sigma_values[ok]

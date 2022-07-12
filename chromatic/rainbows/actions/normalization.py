@@ -78,9 +78,9 @@ def _is_probably_normalized(
     is_normalized = "normalize" in self.history()
 
     # are values generally close to 1?
-    spectrum = self.get_spectrum()
+    spectrum = self.get_average_spectrum()
     sigma = np.maximum(
-        u.Quantity(self.get_typical_uncertainty()).value,
+        u.Quantity(self.get_expected_uncertainty()).value,
         u.Quantity(self.get_measured_scatter(method="MAD")).value,
     )
     try:

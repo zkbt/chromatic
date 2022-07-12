@@ -5,8 +5,8 @@ __all__ = [
     "bin",
     "bin_in_time",
     "bin_in_wavelength",
-    "get_lightcurve_as_rainbow",
-    "get_spectrum_as_rainbow",
+    "get_average_lightcurve_as_rainbow",
+    "get_average_spectrum_as_rainbow",
 ]
 
 
@@ -354,7 +354,8 @@ def bin_in_time(
             if k not in new.fluxlike:
                 new_shape = (new.nwave, new.ntime)
                 new.fluxlike[k] = np.zeros(new_shape)
-                # FIXME make this more robust to units
+                if isinstance(self.fluxlike[k], u.Quantity):
+                    new.fluxlike[k] *= self.fluxlike[k].unit
 
             # store the binned array in the appropriate place
             if k == "uncertainty":
@@ -583,7 +584,8 @@ def bin_in_wavelength(
             if k not in new.fluxlike:
                 new_shape = (new.nwave, new.ntime)
                 new.fluxlike[k] = np.zeros(new_shape)
-                # FIXME make this more robust to units
+                if isinstance(self.fluxlike[k], u.Quantity):
+                    new.fluxlike[k] *= self.fluxlike[k].unit
 
             # store the binned array in the appropriate place
             if k == "uncertainty":
@@ -632,7 +634,7 @@ def bin_in_wavelength(
         return new
 
 
-def get_lightcurve_as_rainbow(self):
+def get_average_lightcurve_as_rainbow(self):
     """
     Produce a wavelength-integrated light curve.
 
@@ -641,7 +643,7 @@ def get_lightcurve_as_rainbow(self):
     lc : Rainbow
         A Rainbow object with just one wavelength.
     """
-    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+    h = self._create_history_entry("get_average_spectrum_as_rainbow", locals())
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -651,7 +653,7 @@ def get_lightcurve_as_rainbow(self):
     return new
 
 
-def get_spectrum_as_rainbow(self):
+def get_average_spectrum_as_rainbow(self):
     """
     Produce a time-integrated spectrum.
 
@@ -660,7 +662,7 @@ def get_spectrum_as_rainbow(self):
     lc : Rainbow
         A Rainbow object with just one time.
     """
-    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+    h = self._create_history_entry("get_average_spectrum_as_rainbow", locals())
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

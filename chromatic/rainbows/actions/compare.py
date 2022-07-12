@@ -1,6 +1,8 @@
 from ...imports import *
 from ..multi import *
 
+__all__ = ["compare"]
+
 
 def compare(self, rainbows):
     """

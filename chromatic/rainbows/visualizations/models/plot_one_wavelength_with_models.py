@@ -334,11 +334,11 @@ def animate_with_models(
 
     # initialize the animator
     writer, displayer = _get_animation_writer_and_displayer(
-        filename=filename, fps=fps, bitrate=-1
+        filename=filename, fps=fps, bitrate=bitrate
     )
-    figure = self._animate_with_models_setup["fi"]
 
-    # the "with" construction is a little confusing (= copy and paste it?)
+    # set up to save frames directly into the animation
+    figure = self._animate_with_models_setup["fi"]
     with writer.saving(figure, filename, dpi or figure.get_dpi()):
 
         # loop over exposures
@@ -348,7 +348,10 @@ def animate_with_models(
             # save this snapshot to a movie frame
             writer.grab_frame()
 
+    # close the figure that was created
+    plt.close(figure)
+
+    # display the animation
     from IPython.display import display
 
-    plt.close(figure)
     display(displayer(filename))

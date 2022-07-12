@@ -673,7 +673,9 @@ class PHOENIXLibrary:
 
         return (np.min(w), np.max(w), len(w))
 
-    def _get_spectrum_from_grid(self, key, wavelength=None, wavelength_edges=None):
+    def _get_average_spectrum_from_grid(
+        self, key, wavelength=None, wavelength_edges=None
+    ):
         if (wavelength is None) and (wavelength_edges is None):
             return self.models[key]
         else:
@@ -704,7 +706,7 @@ class PHOENIXLibrary:
                 )["y"]
                 return self.wavelength_cached_models[wavelength_key][key]
 
-    def get_spectrum(
+    def get_average_spectrum(
         self,
         temperature=5780,
         logg=4.43,
@@ -815,7 +817,7 @@ class PHOENIXLibrary:
         if N == 1:
             weights = [1]
             key = (bounding_temperature[0], bounding_logg[0], bounding_metallicity[0])
-            spectrum = self._get_spectrum_from_grid(
+            spectrum = self._get_average_spectrum_from_grid(
                 key, wavelength=wavelength, wavelength_edges=wavelength_edges
             ).flatten()
         else:
@@ -835,7 +837,7 @@ class PHOENIXLibrary:
                         key = (t, g, z)
                         try:
                             this_log_spectrum = np.log(
-                                self._get_spectrum_from_grid(
+                                self._get_average_spectrum_from_grid(
                                     key,
                                     wavelength=wavelength,
                                     wavelength_edges=wavelength_edges,
@@ -928,13 +930,13 @@ class PHOENIXLibrary:
 
                 # how long does it take to retrieve a spectrum that exists?
                 start = get_current_seconds()
-                self.get_spectrum(temperature=3000, logg=4.5, metallicity=0.0)
+                self.get_average_spectrum(temperature=3000, logg=4.5, metallicity=0.0)
                 dt = get_current_seconds() - start
                 timings["get spectrum at grid point"].append(dt)
 
                 # how long does it take to retrieve a spectrum that needs to be interpolated?
                 start = get_current_seconds()
-                self.get_spectrum(temperature=3456, logg=5.67, metallicity=0.0)
+                self.get_average_spectrum(temperature=3456, logg=5.67, metallicity=0.0)
                 dt = get_current_seconds() - start
                 timings["get interpolated spectrum"].append(dt)
 
@@ -950,4 +952,4 @@ class PHOENIXLibrary:
 
 
 phoenix_library = PHOENIXLibrary(photons=True)
-get_phoenix_photons = phoenix_library.get_spectrum
+get_phoenix_photons = phoenix_library.get_average_spectrum

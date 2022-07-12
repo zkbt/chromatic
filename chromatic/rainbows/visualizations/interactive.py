@@ -19,38 +19,41 @@ __all__ = ["imshow_interact"]
 def imshow_interact(
     self,
     quantity="Flux",
-    ylog=False,
     t_unit="d",
     w_unit="micron",
     cmap="viridis",
-    custom_ylims=[],
+    ylim=[],
+    ylog=None,
 ):
-    """Display interactive spectrum plot for chromatic Rainbow with a wavelength-averaged 2D quantity
-    defined by the user. The user can interact with the 3D spectrum to choose the wavelength range over
-    which the average is calculated.
+    """
+    Display interactive spectrum plot for chromatic Rainbow with a
+    wavelength-averaged 2D quantity defined by the user. The user
+    can interact with the 3D spectrum to choose the wavelength range
+    over which the average is calculated.
 
     Parameters
     ----------
-        self : Rainbow object
-            chromatic Rainbow object to plot
-        quantity : str
-            (optional, default='Flux)
-            The quantity on the z-axis
-        ylog : boolean
-            (optional, default=False)
-            Boolean for whether to take log10 of the y-axis data
-        t_unit : str
-            (optional, default='d')
-            The time unit to use (seconds, minutes, hours, days etc.)
-        w_unit : str
-            (optional, default='micron')
-            The wavelength unit to use
-        cmap : str
-            (optional, default='viridis')
-            The color scheme to use from Vega documentation
-        custom_ylims : list
-            (optional, default=[])
-            If the user wants to define their own ylimits on the lightcurve plot
+    self : Rainbow object
+        chromatic Rainbow object to plot
+    quantity : str
+        (optional, default='flux')
+        The quantity to imshow, currently either `flux` or `uncertainty`
+    ylog : boolean
+        (optional, default=None)
+        Boolean for whether to take log10 of the y-axis data.
+        If None, will be guessed from the data.
+    t_unit : str
+        (optional, default='d')
+        The time unit to use (seconds, minutes, hours, days etc.)
+    w_unit : str
+        (optional, default='micron')
+        The wavelength unit to use
+    cmap : str
+        (optional, default='viridis')
+        The color scheme to use from Vega documentation
+    ylim : list
+        (optional, default=[])
+        If the user wants to define their own ylimits on the lightcurve plot
     """
 
     # preset the x and y axes as Time (in units defined by the user) and Wavelength
@@ -82,17 +85,27 @@ def imshow_interact(
         warnings.warn(
             ">10,000 data points - interactive plot will lag! You should try binning the Rainbow first!"
         )
-        if not ylog:
-            warnings.warn(
-                "It looks like you might have unbinned data - you may want to use ylog=True!"
-            )
+
+    if self._is_probably_normalized() == False:
+        warnings.warn(
+            """
+        It looks like you might be trying to use `imshow_interact` with an
+        unnormalized Rainbow object. You might consider normalizing first
+        with `rainbow.normalize().imshow_interact()`.
+        """
+        )
 
     # The unbinned Rainbow is sometimes in log scale, therefore plotting will be ugly with uniform axis spacing
     # ylog tells the function to take the log10 of the y-axis data
+    try:
+        ylog = ylog or (self.wscale == "log")
+    except AttributeError:
+        ylog = ylog or False
+
     if ylog:
         source[ylabel] = np.log10(source[ylabel])
-        source = source.rename(columns={ylabel: f"log({ylabel})"})
-        ylabel = f"log({ylabel})"
+        source = source.rename(columns={ylabel: f"log10({ylabel})"})
+        ylabel = f"log10({ylabel})"
 
     # Add interactive part
     brush = alt.selection(type="interval", encodings=["y"])
@@ -143,8 +156,8 @@ def imshow_interact(
     # Layer the various plotting parts
     spectrum_int = alt.layer(background, highlight, data=source)
 
-    if len(custom_ylims) > 0:
-        domain = custom_ylims
+    if len(ylim) > 0:
+        domain = ylim
     else:
         domain = [source[z].min() - 0.005, source[z].max() + 0.005]
 

@@ -1,4 +1,5 @@
 from ...imports import *
+from .utilities import *
 
 __all__ = [
     "_setup_animated_scatter",
@@ -9,7 +10,7 @@ __all__ = [
 ]
 
 
-def _setup_animated_scatter(self, ax=None, scatterkw={}, textkw={}):
+def _setup_animated_scatter(self, ax=None, figurekw={}, scatterkw={}, textkw={}):
     """
     Wrapper to set up the basics of animate-able plot.
 
@@ -22,6 +23,8 @@ def _setup_animated_scatter(self, ax=None, scatterkw={}, textkw={}):
     ax : matplotlib.axes.Axes
         The axes into which the plot should be drawn.
         If None, a new one will be created.
+    figurekw : dict
+        A dictionary of keywords to be passed to `plt.figure`
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
     textkw : dict
@@ -30,7 +33,8 @@ def _setup_animated_scatter(self, ax=None, scatterkw={}, textkw={}):
 
     # make sure the ax and figure are defined
     if ax is None:
-        fig, ax = plt.subplots()
+        kw = dict(facecolor="white") | figurekw
+        fig, ax = plt.subplots(**kw)
     else:
         fig = ax.get_figure()
 
@@ -47,7 +51,7 @@ def _setup_animated_scatter(self, ax=None, scatterkw={}, textkw={}):
     text = plt.text(**this_textkw)
 
     # return a dictionary with things that will be useful to hang onto
-    return dict(fig=fig, ax=ax, scatter=scatter, text=text)
+    return dict(fi=fig, ax=ax, scatter=scatter, text=text)
 
 
 def _setup_animate_lightcurves(
@@ -181,7 +185,12 @@ def _setup_animate_lightcurves(
 
 
 def animate_lightcurves(
-    self, filename="animated-lightcurves.gif", fps=None, dpi=None, **kwargs
+    self,
+    filename="animated-lightcurves.gif",
+    fps=5,
+    dpi=None,
+    bitrate=None,
+    **kwargs,
 ):
     """
     Create an animation to show how the lightcurve changes
@@ -224,15 +233,25 @@ def animate_lightcurves(
     """
     self._setup_animate_lightcurves(**kwargs)
 
-    # make and save the animation
-    animator = ani.FuncAnimation(
-        self._animate_lightcurves_components["fig"],
-        self._animate_lightcurves_components["update"],
-        frames=np.arange(0, self.nwave),
-        blit=True,
+    # initialize the animator
+    writer, displayer = _get_animation_writer_and_displayer(
+        filename=filename, fps=fps, bitrate=bitrate
     )
-    animator.save(filename, fps=fps, dpi=dpi, savefig_kwargs=dict(facecolor="white"))
-    plt.close()
+
+    # set up to save frames directly into the animation
+    figure = self._animate_lightcurves_components["fi"]
+    with writer.saving(figure, filename, dpi or figure.get_dpi()):
+        for i in tqdm(range(self.nwave)):
+            self._animate_lightcurves_components["update"](i)
+            writer.grab_frame()
+
+    # close the figure that was created
+    plt.close(figure)
+
+    # display the animation
+    from IPython.display import display
+
+    display(displayer(filename))
 
 
 def _setup_animate_spectra(
@@ -376,7 +395,7 @@ def _setup_animate_spectra(
 
 
 def animate_spectra(
-    self, filename="animated-spectra.gif", fps=None, dpi=None, **kwargs
+    self, filename="animated-spectra.gif", fps=5, dpi=None, bitrate=None, **kwargs
 ):
     """
     Create an animation to show how the spectrum changes
@@ -420,12 +439,22 @@ def animate_spectra(
 
     self._setup_animate_spectra(**kwargs)
 
-    # make and save the animation
-    animator = ani.FuncAnimation(
-        self._animate_spectra_components["fig"],
-        self._animate_spectra_components["update"],
-        frames=np.arange(0, self.ntime),
-        blit=True,
+    # initialize the animator
+    writer, displayer = _get_animation_writer_and_displayer(
+        filename=filename, fps=fps, bitrate=bitrate
     )
-    animator.save(filename, fps=fps, dpi=dpi, savefig_kwargs=dict(facecolor="white"))
-    plt.close()
+
+    # set up to save frames directly into the animation
+    figure = self._animate_spectra_components["fi"]
+    with writer.saving(figure, filename, dpi or figure.get_dpi()):
+        for i in tqdm(range(self.ntime)):
+            self._animate_spectra_components["update"](i)
+            writer.grab_frame()
+
+    # close the figure that was created
+    plt.close(figure)
+
+    # display the animation
+    from IPython.display import display
+
+    display(displayer(filename))

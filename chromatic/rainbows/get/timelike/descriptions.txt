@@ -1,0 +1,6 @@
+cartoon | name | description
+⏰🔭🌈 | get_average_lightcurve | Get the weighted average light curve.
+⏰🔎🌈 | get_for_time | Get a quantity associated with a time index.
+⏰👌🌈 | get_ok_data_for_time | Get a quantity associated with a time index.
+⏰🛰🌈 | get_times_as_astropy | Get the times as an astropy Time object.
+⏰🚀🌈 | set_times_from_astropy | Set the times from an astropy Time object (modifies in-place).
