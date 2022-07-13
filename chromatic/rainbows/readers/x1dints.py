@@ -109,6 +109,14 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
                     mjd_barycentric_integration_midpoints, format="mjd", scale="tdb"
                 )
                 rainbow.set_times_from_astropy(astropy_times, is_barycentric=True)
+                warnings.warn(
+                    f"""
+                Times were set by linearly interpolating between the exposure
+                start and end points. It's very possible these times are off
+                by at least a few seconds and possibly up to the duration
+                of one integration (= {hdu["primary"].header["EFFINTTM"]}s)
+                """
+                )
 
                 # set up the fluxlike quantities
                 column_units = {}
