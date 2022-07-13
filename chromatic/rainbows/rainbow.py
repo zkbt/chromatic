@@ -383,6 +383,8 @@ class Rainbow:
         # validate that something reasonable got populated
         self._validate_core_dictionaries()
         self._validate_uncertainties()
+        self._guess_wscale()
+        self._guess_tscale()
 
     def _create_copy(self):
         """

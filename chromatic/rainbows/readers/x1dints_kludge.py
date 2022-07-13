@@ -3,10 +3,63 @@ Define a reader for STScI pipeline x1dints.fits files.
 """
 from ...imports import *
 
-__all__ = ["from_x1dints"]
+__all__ = ["from_x1dints_kludge"]
 
 
-def from_x1dints(rainbow, filepath, order=1, **kw):
+def setup_integration_times(filenames):
+    """
+    Figure out the times of each integration,
+    either by reading them from the headers
+    or by totally just making them up from scratch.
+
+    Parameters
+    ----------
+    filenames : list
+        A sorted list of filenames, corresponding to one or more segments.
+    """
+
+    # create an empty timelike dictionary
+    timelike = {}
+
+    # check the first segment
+    first_hdu = fits.open(filenames[0])
+
+    # does the first segment define some times?
+    try:
+        assert len(first_hdu["int_times"].data) > 0
+
+        # grab the integration time information
+        for c in first_hdu["int_times"].data.columns.names:
+            timelike[c] = first_hdu["int_times"].data[c]
+
+        # be sure to set our standard time axis
+        timelike["time"] = timelike["int_mid_BJD_TDB"] * u.day
+    # if times are not in header, make up some imaginary ones!
+    except:
+        # alert the user to what we're doing
+        warnings.warn("No times found! Making up imaginary ones!")
+        last_hdu = fits.open(filenames[-1])
+
+        # figure out the total number of integrations (DOES THIS NEED THE -1?)
+        try:
+            N_integrations = last_hdu["PRIMARY"].header["INTEND"] - 1
+        except KeyError:
+            # (this kludge necessary for CV-simulated NIRSpec)
+            N_integrations = last_hdu["PRIMARY"].header["NINTS"]
+
+        # get the time per integration (DOES THIS INCLUDE OVERHEADS?)
+        time_per_integration = last_hdu["PRIMARY"].header["EFFINTTM"] * u.s
+        warnings.warn(f"The imaginary times assume {time_per_integration}/integration.")
+
+        # create a fake array of times
+        fake_times = np.arange(N_integrations) * time_per_integration
+        timelike["time"] = fake_times.to(u.day)
+
+    # return a timelike dictionary
+    return timelike
+
+
+def from_x1dints_kludge(rainbow, filepath, **kw):
     """
     Populate a Rainbow from an STScI pipeline x1dints file,
     or a group of x1dints files for multiple segments.
@@ -29,6 +82,10 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
     # create a list of filenames (which might be just 1)
     filenames = expand_filenames(filepath)
 
+    # figure out the times (necessary to set up arrays)
+    timelike = setup_integration_times(filenames)
+    rainbow.timelike.update(**timelike)
+
     # loop over file (each one a segment)
     for i_file, f in enumerate(tqdm(filenames)):
 
@@ -40,75 +97,40 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
 
             # grab the entire primary header
             rainbow.metadata["header"] = hdu["PRIMARY"].header
+            # TO-DO: (watch out for the things that aren't constant across segments!)
 
         # set the index to the start of this segment
-        integration_counter = hdu["PRIMARY"].header["INTSTART"]
-        n_integrations_total = hdu["PRIMARY"].header["NINTS"]
-        n_integrations_in_this_segment = (
-            hdu["PRIMARY"].header["INTEND"] - hdu["PRIMARY"].header["INTSTART"] + 1
-        )
+        try:
+            integration_counter = hdu["PRIMARY"].header["INTSTART"]
+        except KeyError:
+            # (this kludge necessary for CV-simulated NIRSpec)
+            integration_counter = 0
 
-        if hdu["PRIMARY"].header["INSTRUME"] == "NIRISS":
-            n_orders = 3
-        else:
-            n_orders = 1
-        assert (order >= 1) and (order <= n_orders)
-
-        non_spectrum_extensions = [
-            x for x in ["PRIMARY", "SCI", "INT_TIMES", "ASDF"] if x in hdu
-        ]
-        if "int_times" in hdu:
-            warnings.warn(
-                f"""
-            It looks like the `x1dints` file you're trying to load
-            contains an `int_times` extension, suggesting it's an
-            early simulated dataset. If it doesn't succeed with this
-            updated reader, please try again with format='x1dints_kludge',
-            which was tuned to a bunch of the quirks of ERS Data
-            Challenge simulations.
-            """
+        try:
+            n_integrations_predicted_by_header = (
+                hdu["PRIMARY"].header["INTEND"] - hdu["PRIMARY"].header["INTSTART"]
             )
-
-        # make sure sizes match, ignoring PRIMARY, SCI, ASDF
-        assert n_integrations_in_this_segment * n_orders == (
-            len(hdu) - len(non_spectrum_extensions)
+        except KeyError:
+            n_integrations_predicted_by_header = 0
+        n_integrations_in_segment = np.maximum(
+            len(hdu) - 3, n_integrations_predicted_by_header
         )
 
-        # loop through the integrations in this segment
-        for i in range(n_integrations_in_this_segment):
-            e = 2 + i * n_orders + (order - 1)
+        # print(integration_counter, n_integrations_in_segment, len(hdu))
+
+        # loop through the spectra
+        for e in range(2, 2 + n_integrations_in_segment):
 
             # do this stuff only on the very first time through
-            if i_file == 0 and i == 0:
-
+            if i_file == 0 and e == 2:
                 # pull out a wavelength grid (assuming it'll stay constant)
                 unit_string = hdu[e].columns["wavelength"].unit
                 if unit_string is None:
-                    unit_string = "micron"
-                    warnings.warn("No wavelength unit was found; assuming micron.")
+                    unit_string = ""
                 wavelength_unit = u.Unit(unit_string)
                 rainbow.wavelike["wavelength"] = (
                     hdu[e].data["wavelength"] * wavelength_unit * 1
                 )
-
-                # make up a time grid (this is still a little kludgy; it'd be better to have int_times)
-                first_mjd_barycentric_integration_midpoint = (
-                    hdu["sci"].header["TDB-BEG"] * u.day
-                    + hdu["primary"].header["EFFINTTM"] / 2 * u.second
-                )
-                last_mjd_barycentric_integration_midpoint = (
-                    hdu["sci"].header["TDB-END"] * u.day
-                    - hdu["primary"].header["EFFINTTM"] / 2 * u.second
-                )
-                mjd_barycentric_integration_midpoints = np.linspace(
-                    first_mjd_barycentric_integration_midpoint,
-                    last_mjd_barycentric_integration_midpoint,
-                    n_integrations_total,
-                )
-                astropy_times = Time(
-                    mjd_barycentric_integration_midpoints, format="mjd", scale="tdb"
-                )
-                rainbow.set_times_from_astropy(astropy_times, is_barycentric=True)
 
                 # set up the fluxlike quantities
                 column_units = {}
@@ -166,7 +188,7 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
         flux uncertainties for this Rainbow object. The
         available `fluxlike` columns are:
             {rainbow.fluxlike.keys()}
-        A long-term solution might be to fix the `from_x1dints`
+        A long-term solution might be to fix the `from_x1dints_kludge`
         reader, but a short-term solution would be to pick one
         of the columns listed above and say something like
 
@@ -175,3 +197,7 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
         where `x` is the Rainbow you just created.
         """
         warnings.warn(message)
+
+    # try to guess wscale (and then kludge and call it linear)
+    # rainbow._guess_wscale()
+    # rainbow.metadata['wscale'] = 'linear' # TODO: fix this kludge

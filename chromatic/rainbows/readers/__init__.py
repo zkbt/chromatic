@@ -1,4 +1,6 @@
 from .x1dints import *
+from .x1dints_kludge import *
+
 from .eureka_txt import *
 from .eureka_specdata import *
 from .eureka_lcdata import *
@@ -72,8 +74,11 @@ def guess_reader(filepath, format=None):
     elif fnmatch(f, "*order*.npy"):
         return from_espinoza
     # does it look like a STScI x1dints.fits file?
-    elif fnmatch(f, "*x1dints.fits") or fnmatch(f, "*extract_1d.fits"):
+    elif fnmatch(f, "*x1dints.fits"):
         return from_x1dints
+    # does it look like a STScI x1dints.fits file?
+    elif fnmatch(f, "*extract_1d.fits"):
+        return from_x1dints_kludge
     # does it look like an Eureka! S3 text file?
     elif fnmatch(f, "*S3_*_Save.dat") or fnmatch(f, "*S3_*_Save.txt"):
         return from_eureka_S3_txt
