@@ -33,7 +33,8 @@ def _setup_animated_scatter(self, ax=None, figurekw={}, scatterkw={}, textkw={})
 
     # make sure the ax and figure are defined
     if ax is None:
-        kw = dict(facecolor="white") | figurekw
+        kw = dict(facecolor="white")
+        kw.update(**figurekw)
         fig, ax = plt.subplots(**kw)
     else:
         fig = ax.get_figure()

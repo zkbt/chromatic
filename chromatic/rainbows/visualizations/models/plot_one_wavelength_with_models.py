@@ -24,7 +24,7 @@ def plot_one_wavelength_with_models(
     vspan_residuals=None,
     panelsize=(3.25, 2),
     orientation="vertical",
-    errorbar=False,
+    errorbar=True,
     text=True,
     data_errorbarkw={},
     model_plotkw={},
@@ -215,25 +215,22 @@ def plot_one_wavelength_with_models(
     xlabel = f"Time ({t_unit.to_string('latex_inline')})"
 
     # set defaults for the model line plots
-    plotkw = (
-        dict(marker=None, linewidth=1, zorder=1, color=color, alpha=0.5) | model_plotkw
-    )
+    plotkw = dict(marker=None, linewidth=1, zorder=1, color=color, alpha=0.5)
+    plotkw.update(**model_plotkw)
 
     # set default for the data errorbar plots
     default_markersize = plt.matplotlib.rcParams["lines.markersize"]
-    errorbarkw = (
-        dict(
-            color=color,
-            linewidth=0,
-            elinewidth=int(errorbar),
-            marker="o",
-            markersize=int(errorbar == False) * default_markersize,
-            markeredgecolor="none",
-            alpha=0.5,
-            zorder=-1,
-        )
-        | data_errorbarkw
+    errorbarkw = dict(
+        color=color,
+        linewidth=0,
+        elinewidth=int(errorbar),
+        marker="o",
+        # markersize=int(errorbar == False) * default_markersize,
+        markeredgecolor="none",
+        alpha=0.5,
+        zorder=-1,
     )
+    errorbarkw.update(**data_errorbarkw)
 
     # pull out the raw data and complete model
     data_x, data_y, data_sigma = self.get_ok_data_for_wavelength(
@@ -297,17 +294,15 @@ def plot_one_wavelength_with_models(
             a.set_xlabel(xlabel)
 
     # add text labels for the wavelength
-    textkw = (
-        dict(
-            x=0.98,
-            y=0.04,
-            va="bottom",
-            ha="right",
-            transform=ax[0].transAxes,
-            color=color,
-        )
-        | wavelength_textkw
+    textkw = dict(
+        x=0.98,
+        y=0.04,
+        va="bottom",
+        ha="right",
+        transform=ax[0].transAxes,
+        color=color,
     )
+    textkw.update(**wavelength_textkw)
     textkw.update(s=f"{w.to_value(w_unit):.2f} {w_unit.to_string('latex_inline')}")
     if text:
         ax[0].text(**textkw)
@@ -323,14 +318,17 @@ def plot_one_wavelength_with_models(
 
 def animate_with_models(
     self,
-    filename="animated-lightcurves-with-models.html",
+    filename="animated-lightcurves-with-models.gif",
     fps=5,
     bitrate=None,
     dpi=None,
+    orientation="horizontal",
     **kw,
 ):
 
-    self.plot_one_wavelength_with_models(0, animation=False, **kw)
+    self.plot_one_wavelength_with_models(
+        0, animation=False, orientation=orientation, **kw
+    )
 
     # initialize the animator
     writer, displayer = _get_animation_writer_and_displayer(
@@ -344,7 +342,9 @@ def animate_with_models(
         # loop over exposures
         for i in tqdm(range(self.nwave)):
 
-            self.plot_one_wavelength_with_models(i, animation=True, **kw)
+            self.plot_one_wavelength_with_models(
+                i, animation=True, orientation=orientation, **kw
+            )
             # save this snapshot to a movie frame
             writer.grab_frame()
 

@@ -79,8 +79,8 @@ def remove_trends(
     #            new.flux[i,:] = new.flux[i,:]/grad
 
     if method == "median_filter":
-        defaults = dict(size=(1, 11))
-        kw_to_use = defaults | kw
+        kw_to_use = dict(size=(1, 11))
+        kw_to_use.update(**kw)
         if "size" not in kw:
             warnings.warn(
                 f"""
@@ -93,8 +93,8 @@ def remove_trends(
         new.flux = new.flux / medfilt
 
     if method == "savgol_filter":
-        defaults = dict(window_length=11, polyorder=1)
-        kw_to_use = defaults | kw
+        kw_to_use = dict(window_length=11, polyorder=1)
+        kw_to_use.update(**kw)
         if ("window_length" not in kw) or ("polyorder" not in kw):
             warnings.warn(
                 f"""
