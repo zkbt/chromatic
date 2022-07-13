@@ -1,0 +1,3 @@
+cartoon | name | description
+🙋🌈📄 | help | Get one-line help summaries of available methods.
+📓🌈🪵 | history | Get the history that went into this Rainbow.

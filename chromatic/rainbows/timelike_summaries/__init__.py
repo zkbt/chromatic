@@ -1,1 +1,0 @@
-from .lightcurve import *

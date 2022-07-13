@@ -1,13 +1,17 @@
 cartoon | name | description
+🌈🧮📝 | +-*/ | Do basic math operations with two Rainbows.
+🌈🗂🔪 | [:,:] | Index, slice, or mask a Rainbow to get a subset.
 🌈🚧🌊 | align_wavelengths | Align spectra with different wavelength grids onto one shared axis.
 🌈🧺🧱 | bin | Bin to a new wavelength or time grid.
 🌈🧑‍🤝‍🧑🌈 | compare | Connect to other 🌈 objects for easy comparison.
 🌈⏲🎞 | fold | Fold times relative to a particular period and epoch.
-🌈🪐🚞 | inject_transit | Inject a transit signal.
+🌈🧺⏰ | get_average_lightcurve_as_rainbow | Bin down to a single integrated light curve.
+🌈🧺🌊 | get_average_spectrum_as_rainbow | Bin down to a single integrated spectrum.
 🌈🎧🎲 | inject_noise| Inject (uncorrelated, simple) random noise.
 🌈🎧🎹 | inject_systematics| Inject (correlated, wobbly) systematic noise.
+🌈⭐️👻 | inject_spectrum | Inject a static stellar spectrum.
+🌈🪐🚞 | inject_transit | Inject a transit signal.
 🌈🫓😑 | normalize | Normalize by dividing through by a typical spectrum (and/or light curve).
-🌈🍱💇 | trim | Trim away wavelengths or times that contain no good data.
+🌈🏴‍☠️🛁 | remove_trends | Remove smooth trends in time and/or wavelength.
 🌈🚇🌊 | shift | Doppler shift wavelengths.
-🌈🧮📝 | +-*/ | Do basic math operations with two Rainbows.
-🌈🗂🔪 | [:,:] | Index, slice, or mask a Rainbow to get a subset.
+🌈🍱💇 | trim | Trim away wavelengths or times that contain no good data.

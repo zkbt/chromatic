@@ -318,9 +318,9 @@ class MultiRainbow:
 
     def align_wavelengths(self, **kw):
         """
-        Make a new MultiRainbow where wavelengths have
-        been aligned across all the Rainbows, making
-        a guesst for whether
+        Make a new MultiRainbow where wavelengths have been aligned
+        across all the Rainbows, making a guess for a reasonable
+        new wavelength grid.
 
         Parameters
         ----------
@@ -517,7 +517,7 @@ class MultiRainbow:
             r._setup_animate_lightcurves(ax=a, **kwargs)
 
         # the figure should be the same for all panels
-        figure = r._animate_lightcurves_components["fig"]
+        figure = r._animate_lightcurves_components["fi"]
 
         def update(frame):
             """
@@ -590,7 +590,7 @@ class MultiRainbow:
             r._setup_animate_spectra(ax=a, **kwargs)
 
         # the figure should be the same for all panels
-        figure = r._animate_spectra_components["fig"]
+        figure = r._animate_spectra_components["fi"]
 
         def update(frame):
             """

@@ -13,7 +13,7 @@ def plot_lightcurves(
     cmap=None,
     vmin=None,
     vmax=None,
-    errorbar=False,
+    errorbar=True,
     text=True,
     minimum_acceptable_ok=1,
     plotkw={},

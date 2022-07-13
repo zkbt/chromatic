@@ -64,7 +64,8 @@ def to_xarray_stellar_spectra(self, filepath, overwrite=True):
         except AttributeError:
             data = quantity
             units = ""
-        attrs = self.metadata.get(f"metadata-for-{k}", {}) | {"units": units}
+        attrs = self.metadata.get(f"metadata-for-{k}", {})
+        attrs.update(units=units)
         return xr.DataArray(
             name=chromatic_to_ers.get(key, key), data=data, attrs=attrs, **kw
         )

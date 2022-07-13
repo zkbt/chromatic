@@ -8,7 +8,7 @@ from .text import *
 
 
 # construct a dictionary of available writers
-available_writers = {k: globals()[k] for k in globals() if k[0:5] == "to_"}
+available_writers = {k: globals()[k] for k in globals() if k[0:3] == "to_"}
 
 
 def guess_writer(filepath, format=None):

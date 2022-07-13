@@ -1,0 +1,3 @@
+cartoon | name | description
+🎨🗂📺 | imshow_quantities    | Show multiple 2D (wavelength and time) quantities as imshow maps.
+🎨🗂🧶 | plot_quantities      | Show multiple 1D (wavelength or time) quantities as scatter plots.

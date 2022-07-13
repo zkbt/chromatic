@@ -43,9 +43,9 @@ def plot_with_model(
     assert quantity in ["flux", "residuals"]
 
     # plot the data
-    plotkw = (
-        dict(marker="o", linewidth=0, markeredgecolor="none", zorder=0) | data_plotkw
-    )
+    plotkw = dict(marker="o", linewidth=0, markeredgecolor="none", zorder=0)
+    plotkw.update(**data_plotkw)
+
     errorbarkw = data_errorbarkw
     if quantity == "residuals":
         kw.update(quantity="residuals_plus_one")
@@ -61,7 +61,8 @@ def plot_with_model(
     )
 
     # plot the model
-    plotkw = dict(marker=None, linewidth=1, zorder=1) | model_plotkw
+    plotkw = dict(marker=None, linewidth=1, zorder=1)
+    plotkw.update(**model_plotkw)
     if quantity == "residuals":
         kw.update(quantity="ones")
     elif quantity == "flux":

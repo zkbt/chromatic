@@ -1,4 +1,4 @@
-from ...imports import *
+from ....imports import *
 
 __all__ = ["plot_noise_comparison"]
 
@@ -89,8 +89,8 @@ def plot_noise_comparison(
     plot_measured_scatter = self.get_measured_scatter(
         method=method, minimum_acceptable_ok=minimum_acceptable_ok
     )
-    plot_typical_uncertainty = self.get_typical_uncertainty()
-    yplots = [plot_typical_uncertainty, plot_measured_scatter]
+    plot_expected_uncertainty = self.get_expected_uncertainty()
+    yplots = [plot_expected_uncertainty, plot_measured_scatter]
 
     # define colors
     if measured_color == "auto":

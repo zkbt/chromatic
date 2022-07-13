@@ -7,6 +7,8 @@
 *.dat
 *.npy
 *.txt
+*.html
+!descriptions.txt
 sandbox/
 docs/example-datasets/
 site/
