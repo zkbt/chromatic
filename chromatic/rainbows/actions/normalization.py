@@ -84,8 +84,10 @@ def _is_probably_normalized(
         u.Quantity(self.get_measured_scatter(method="MAD")).value,
     )
     try:
-        assert np.any(sigma > 0)
-        is_close = np.nanpercentile(np.abs(spectrum - 1) / sigma, 95) < 5
+        sigma_value = u.Quantity(sigma).value
+        spectrum_value = u.Quantity(spectrum).value
+        assert np.any(sigma_value > 0)
+        is_close = np.nanpercentile(np.abs(spectrum_value - 1) / sigma, 95) < 5
     except AssertionError:
-        is_close = np.nanpercentile(np.abs(spectrum - 1), 95) < 0.1
+        is_close = np.nanpercentile(np.abs(spectrum_value - 1), 95) < 0.1
     return is_normalized or is_close
