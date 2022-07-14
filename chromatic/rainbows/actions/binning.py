@@ -320,7 +320,8 @@ def bin_in_time(
     # TODO (think about cleverer bintogrid for 2D arrays?)
     new.fluxlike = {}
     ok = self.ok
-    for k in self.fluxlike:
+    # loop through wavelengths
+    for w in tqdm(np.arange(new.nwave)):
 
         '''
         if k == "uncertainty":
@@ -331,8 +332,7 @@ def bin_in_time(
             """
             )'''
 
-        # loop through wavelengths
-        for w in range(new.nwave):
+        for k in self.fluxlike:
             # mask out "bad" wavelengths
             time_is_bad = ok[w, :] < minimum_acceptable_ok
             if (self.uncertainty is None) or np.all(self.uncertainty == 0):
@@ -554,9 +554,9 @@ def bin_in_wavelength(
 
     # get a fluxlike array of what's OK to include in the bins
     ok = self.ok
-    for k in self.fluxlike:
+    for t in tqdm(np.arange(new.ntime)):
 
-        for t in range(new.ntime):
+        for k in self.fluxlike:
 
             # mask out "bad" wavelengths
             wavelength_is_bad = ok[:, t] < minimum_acceptable_ok
