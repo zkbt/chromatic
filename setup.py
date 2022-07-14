@@ -89,7 +89,6 @@ setup(
         "batman-package>=2.4.9",
         "altair",
         "xarray",
-        "astraeus @ git+https://github.com/kevin218/Astraeus@main",
     ],
     # what version of Python is required?
     python_requires=">=3.7",  # f-strings are introduced in 3.6!
