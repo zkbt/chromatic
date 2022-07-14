@@ -50,6 +50,7 @@ def inject_transit(self, planet_radius=0.1, **planet_params):
 
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("inject_transit", locals())
+    h = h.replace("planet_params={", "**{")
 
     # create a copy of the existing Rainbow
     new = self._create_copy()

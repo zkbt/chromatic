@@ -29,9 +29,9 @@ def test_bin_with_not_ok_data():
                 )
             continue
 
-        cautious = a.bin(dw=0.7 * u.micron, dt=20 * u.minute, minimum_acceptable_ok=1)
+        cautious = a.bin(dw=0.4 * u.micron, dt=4 * u.minute, minimum_acceptable_ok=1)
         carefree = a.bin(
-            dw=0.7 * u.micron, dt=20 * u.minute, minimum_acceptable_ok=0, trim=False
+            dw=0.4 * u.micron, dt=4 * u.minute, minimum_acceptable_ok=0, trim=False
         )
         if np.any(a.ok == 0):
             assert np.any((carefree.ok != 1) & (carefree.ok != 0))

@@ -41,33 +41,39 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
             # grab the entire primary header
             rainbow.metadata["header"] = hdu["PRIMARY"].header
 
+            if hdu["PRIMARY"].header["INSTRUME"] == "NIRISS":
+                n_orders = 3
+                warnings.warn(
+                    f"""
+                Loading NIRISS spectroscopic `order={order}``. Three orders are available,
+                and you can set which (1,2,3) you want to read with the `order=` option.
+                """
+                )
+            else:
+                n_orders = 1
+            assert (order >= 1) and (order <= n_orders)
+
+            non_spectrum_extensions = [
+                x for x in ["PRIMARY", "SCI", "INT_TIMES", "ASDF"] if x in hdu
+            ]
+            if "int_times" in hdu:
+                warnings.warn(
+                    f"""
+                It looks like the `x1dints` file you're trying to load
+                contains an `int_times` extension, suggesting it's an
+                early simulated dataset. If it doesn't succeed with this
+                updated reader, please try again with format='x1dints_kludge',
+                which was tuned to a bunch of the quirks of ERS Data
+                Challenge simulations.
+                """
+                )
+
         # set the index to the start of this segment
         integration_counter = hdu["PRIMARY"].header["INTSTART"]
         n_integrations_total = hdu["PRIMARY"].header["NINTS"]
         n_integrations_in_this_segment = (
             hdu["PRIMARY"].header["INTEND"] - hdu["PRIMARY"].header["INTSTART"] + 1
         )
-
-        if hdu["PRIMARY"].header["INSTRUME"] == "NIRISS":
-            n_orders = 3
-        else:
-            n_orders = 1
-        assert (order >= 1) and (order <= n_orders)
-
-        non_spectrum_extensions = [
-            x for x in ["PRIMARY", "SCI", "INT_TIMES", "ASDF"] if x in hdu
-        ]
-        if "int_times" in hdu:
-            warnings.warn(
-                f"""
-            It looks like the `x1dints` file you're trying to load
-            contains an `int_times` extension, suggesting it's an
-            early simulated dataset. If it doesn't succeed with this
-            updated reader, please try again with format='x1dints_kludge',
-            which was tuned to a bunch of the quirks of ERS Data
-            Challenge simulations.
-            """
-            )
 
         # make sure sizes match, ignoring PRIMARY, SCI, ASDF
         assert n_integrations_in_this_segment * n_orders == (
@@ -85,7 +91,7 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
                 unit_string = hdu[e].columns["wavelength"].unit
                 if unit_string is None:
                     unit_string = "micron"
-                    warnings.warn("No wavelength unit was found; assuming micron.")
+                    # warnings.warn("No wavelength unit was found; assuming micron.")
                 wavelength_unit = u.Unit(unit_string)
                 rainbow.wavelike["wavelength"] = (
                     hdu[e].data["wavelength"] * wavelength_unit * 1
