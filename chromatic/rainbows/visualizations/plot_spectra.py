@@ -13,7 +13,7 @@ def plot_spectra(
     cmap=None,
     vmin=None,
     vmax=None,
-    errorbar=False,
+    errorbar=True,
     text=True,
     minimum_acceptable_ok=1,
     scatterkw={},
@@ -103,7 +103,11 @@ def plot_spectra(
 
     # make sure ax is set up
     if ax is None:
-        ax = plt.subplot()
+        fi = plt.figure(
+            figsize=plt.matplotlib.rcParams["figure.figsize"][::-1],
+            constrained_layout=True,
+        )
+        ax = plt.gca()
     plt.sca(ax)
 
     # figure out the spacing to use
@@ -185,3 +189,4 @@ def plot_spectra(
         plt.ylabel("Relative Flux (+ offsets)")
         if self.get("wscale") == "log":
             plt.xscale("log")
+    return ax

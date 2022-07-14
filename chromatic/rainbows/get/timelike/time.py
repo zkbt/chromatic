@@ -1,4 +1,4 @@
-from ...imports import *
+from ....imports import *
 
 
 def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentric=None):

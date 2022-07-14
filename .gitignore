@@ -7,11 +7,16 @@
 *.dat
 *.npy
 *.txt
+*.html
+*.h5
+*.xc
+!descriptions.txt
 sandbox/
 docs/example-datasets/
 site/
 examples/
 *.swp
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

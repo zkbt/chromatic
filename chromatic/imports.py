@@ -1,6 +1,10 @@
 # basics
 import numpy as np
 import matplotlib.pyplot as plt
+
+plt.matplotlib.rcParams["figure.dpi"] = 300
+plt.rcParams["figure.constrained_layout.use"] = True
+
 import matplotlib.animation as ani
 import matplotlib.colors as col
 import matplotlib.cm as cm

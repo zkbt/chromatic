@@ -92,7 +92,7 @@ setup(
         "astraeus @ git+https://github.com/kevin218/Astraeus@main",
     ],
     # what version of Python is required?
-    python_requires=">=3.8",  # f-strings are introduced in 3.6!
+    python_requires=">=3.7",  # f-strings are introduced in 3.6!
     # requirements in `key` will install with `pip install chromatic-lightcurves[key]`
     extras_require={
         "develop": [
