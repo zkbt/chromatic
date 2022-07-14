@@ -514,12 +514,18 @@ class Rainbow:
 
         # assemble from three possible arrays
         ok = self.fluxlike.get("ok", np.ones(self.shape).astype(bool))
-        ok *= self.wavelike.get("ok", np.ones(self.nwave).astype(bool))[:, np.newaxis]
-        ok *= self.timelike.get("ok", np.ones(self.ntime).astype(bool))[np.newaxis, :]
+        ok = (
+            ok
+            * self.wavelike.get("ok", np.ones(self.nwave).astype(bool))[:, np.newaxis]
+        )
+        ok = (
+            ok
+            * self.timelike.get("ok", np.ones(self.ntime).astype(bool))[np.newaxis, :]
+        )
 
         # make sure flux is finite
         if self.flux is not None:
-            ok *= np.isfinite(self.flux)
+            ok = ok * np.isfinite(self.flux)
 
         # weird kludge to deal with rounding errors (particularly in two-step .bin)
         if ok.dtype == bool:
