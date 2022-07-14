@@ -94,7 +94,11 @@ def plot_lightcurves(
 
     # make sure ax is set up
     if ax is None:
-        ax = plt.subplot()
+        fi = plt.figure(
+            figsize=plt.matplotlib.rcParams["figure.figsize"][::-1],
+            constrained_layout=True,
+        )
+        ax = plt.gca()
     plt.sca(ax)
 
     # figure out the spacing to use
@@ -106,16 +110,18 @@ def plot_lightcurves(
     ax._most_recent_chromatic_plot_spacing = spacing
 
     # TO-DO: check if this Rainbow has been normalized
-    '''warnings.warn(
-        """
-    It's not clear if/how this object has been normalized.
-    Be aware that the baseline flux levels may therefore
-    be a little bit funny in .plot()."""
-    )'''
     if self._is_probably_normalized():
         label_y = "1 - (0.5 + i) * spacing"
+        ylim = 1 - np.array([self.nwave + 1, -1]) * spacing
     else:
         label_y = "np.median(plot_y) - 0.5 * spacing"
+        warnings.warn(
+            """
+            It's not clear if/how this object has been normalized.
+            Be aware that the baseline flux levels may therefore
+            be a little bit funny in .plot()."""
+        )
+        ylim = [None, None]
     with quantity_support():
 
         #  loop through wavelengths
@@ -170,3 +176,5 @@ def plot_lightcurves(
         # add text labels to the plot
         plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")
+        plt.ylim(*ylim)
+    return ax

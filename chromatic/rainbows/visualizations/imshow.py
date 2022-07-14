@@ -15,6 +15,8 @@ def imshow(
     mask_ok=True,
     color_ok="tomato",
     alpha_ok=0.8,
+    vmin=None,
+    vmax=None,
     **kw,
 ):
     """
@@ -158,8 +160,12 @@ def imshow(
             "Please specify either `xaxis='time'` or `xaxis='wavelength'` for `.plot()`"
         )
 
+    # figure out a good shared color limits (unless already supplied)
+    vmin = vmin or np.nanpercentile(u.Quantity(z.flatten()).value, 1)
+    vmax = vmax or np.nanpercentile(u.Quantity(z.flatten()).value, 99)
+
     # define some default keywords
-    imshow_kw = dict(interpolation="nearest")
+    imshow_kw = dict(interpolation="nearest", vmin=vmin, vmax=vmax)
     imshow_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)

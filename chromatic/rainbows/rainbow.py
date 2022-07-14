@@ -187,7 +187,7 @@ class Rainbow:
         if np.any(np.diff(i_wavelength) < 0):
             message = f"""
             The {self.nwave} input wavelengths were not monotonically increasing.
-            `Rainbow` {self} has been sorted from lowest to highest wavelength.
+            {self} has been sorted from lowest to highest wavelength.
             If you want to recover the original wavelength order, the original
             wavelength indices are available in `rainbow.original_wave_index`.
             """
@@ -196,7 +196,7 @@ class Rainbow:
         if np.any(np.diff(i_time) < 0):
             message = f"""
             The {self.ntime} input times were not monotonically increasing.
-            `Rainbow` {self} has been sorted from lowest to highest time.
+            {self} has been sorted from lowest to highest time.
             If you want to recover the original time order, the original
             time indices are available in `rainbow.original_time_index`.
             """
@@ -325,7 +325,10 @@ class Rainbow:
 
         # store the flux and uncertainty
         self.fluxlike["flux"] = flux
-        self.fluxlike["uncertainty"] = uncertainty or np.ones_like(flux) * np.nan
+        if uncertainty is None:
+            self.fluxlike["uncertainty"] = np.ones_like(flux) * np.nan
+        else:
+            self.fluxlike["uncertainty"] = uncertainty
 
         # sort other arrays by shape
         for k, v in kw.items():

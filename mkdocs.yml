@@ -10,7 +10,8 @@ nav:
         - creating.ipynb
         - actions.ipynb
         - visualizing.ipynb
-        - multi.ipynb
+        - models.ipynb
+        #- multi.ipynb
     - Developer Guide:
         - designing.ipynb
         - documentation.ipynb

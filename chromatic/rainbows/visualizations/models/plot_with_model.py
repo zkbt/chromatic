@@ -9,6 +9,7 @@ def plot_with_model(
     quantity="flux",
     errorbar=True,
     text=True,
+    ax=None,
     data_plotkw={},
     data_errorbarkw={},
     model_plotkw={},
@@ -51,9 +52,10 @@ def plot_with_model(
         kw.update(quantity="residuals_plus_one")
     elif quantity == "flux":
         kw.update(quantity="flux")
-    self.plot_lightcurves(
+    ax = self.plot_lightcurves(
         errorbar=errorbar,
         text=text,
+        ax=ax,
         plotkw=plotkw,
         errorbarkw=errorbarkw,
         minimum_acceptable_ok=minimum_acceptable_ok,
@@ -72,6 +74,7 @@ def plot_with_model(
         text=False,
         plotkw=plotkw,
         minimum_acceptable_ok=minimum_acceptable_ok,
+        ax=ax,
         **kw,
     )
 
@@ -101,11 +104,11 @@ def plot_with_model_and_residuals(self, figsize=(8, 6), **kw):
         constrained_layout=True,
     )
 
-    self.plot_with_model(ax=ax[0], spacing=0.01, **kw)
+    self.plot_with_model(ax=ax[0], **kw)
+    kw.update(spacing=ax[0]._most_recent_chromatic_plot_spacing)
     self.plot_with_model(
         quantity="residuals",
         ax=ax[1],
-        spacing=ax[0]._most_recent_chromatic_plot_spacing,
         **kw,
     )
     ax[1].set_ylabel("Residuals (+ offsets)")
