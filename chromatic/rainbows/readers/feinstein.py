@@ -80,13 +80,12 @@ def from_feinstein(rainbow, filepath):
         The path to the file to load.
     """
 
-    wavelength, spectra, err = np.load(filepath, allow_pickle=True)
+    wavelength, spectra, err, time = np.load(filepath, allow_pickle=True)
 
     rainbow.wavelike["wavelength"] = wavelength * u.micron * 1
 
     # populate a 1D array of times (with astropy units of time)
-    times = np.arange(spectra.shape[0]) * u.minute
-    warnings.warn("The times are totally made up!")
+    times = time * u.day
     rainbow.timelike["time"] = times * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes
