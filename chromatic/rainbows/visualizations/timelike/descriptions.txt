@@ -1,2 +1,3 @@
 cartoon | name | description
-🎨⏰🔭 | plot_average_lightcurve   | Plot the weighted average flux per time.
+🎨⏰🐋 | plot_average_lightcurve   | Plot the weighted average flux per time.
+🎨⏰🖖 | plot_median_lightcurve   | Plot the median flux per time.

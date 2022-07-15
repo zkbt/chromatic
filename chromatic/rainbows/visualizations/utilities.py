@@ -4,6 +4,7 @@ __all__ = [
     "_add_panel_labels",
     "_get_animation_writer_and_displayer",
     "_scatter_timelike_or_wavelike",
+    "_get_unit_string",
 ]
 
 
@@ -94,6 +95,8 @@ def _scatter_timelike_or_wavelike(
     t_unit="day",
     w_unit="micron",
     wavelength_for_color=None,
+    percentiles=(1, 99),
+    ylim=(None, None),
     scatterkw={},
     **kw,
 ):
@@ -133,7 +136,7 @@ def _scatter_timelike_or_wavelike(
 
         # make sure ax is set up
         if ax is None:
-            ax = plt.gca()
+            ax = plt.subplot()
         plt.sca(ax)
 
         if x.unit.is_equivalent("m"):
@@ -161,5 +164,21 @@ def _scatter_timelike_or_wavelike(
         assert np.shape(x) == np.shape(y)
 
         plt.scatter(x, y, **scatterkw)
+        ylim = list(ylim)
+        for i in [0, 1]:
+            if ylim[i] is None:
+                ylim[i] = np.percentile(y, percentiles[i])
+        ylim[0] = np.minimum(ylim[0], 0)
+        print(ylim)  #
+        plt.ylim(*ylim)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
+
+
+def _get_unit_string(y):
+    y_unit = u.Quantity(y).unit
+    if y_unit == u.Unit(""):
+        unit_string = "unitless"
+    else:
+        unit_string = y_unit.to_string("latex_inline")
+    return unit_string

@@ -98,7 +98,7 @@ def plot_lightcurves(
             figsize=plt.matplotlib.rcParams["figure.figsize"][::-1],
             constrained_layout=True,
         )
-        ax = plt.gca()
+        ax = plt.subplot()
     plt.sca(ax)
 
     # figure out the spacing to use

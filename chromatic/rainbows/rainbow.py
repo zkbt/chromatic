@@ -941,6 +941,7 @@ class Rainbow:
     # import summary statistics for each wavelength
     from .get.wavelike import (
         get_average_spectrum,
+        get_median_spectrum,
         get_spectral_resolution,
         get_expected_uncertainty,
         get_measured_scatter,
@@ -951,6 +952,7 @@ class Rainbow:
     # import summary statistics for each wavelength
     from .get.timelike import (
         get_average_lightcurve,
+        get_median_lightcurve,
         get_for_time,
         get_ok_data_for_time,
         get_times_as_astropy,
@@ -982,9 +984,10 @@ class Rainbow:
         plot_spectral_resolution,
         plot_noise_comparison,
         plot_average_spectrum,
+        plot_median_spectrum,
     )
 
-    from .visualizations.timelike import plot_average_lightcurve
+    from .visualizations.timelike import plot_average_lightcurve, plot_median_lightcurve
 
     from .converters import (
         to_nparray,
