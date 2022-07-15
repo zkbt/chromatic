@@ -337,8 +337,11 @@ def bin_in_time(
             time_is_bad = ok[w, :] < minimum_acceptable_ok
             if (self.uncertainty is None) or np.all(self.uncertainty == 0):
                 uncertainty_for_binning = np.ones(self.ntime).astype(bool)
-            else:
+            elif k in self._keys_that_get_uncertainty_weighting:
                 uncertainty_for_binning = self.uncertainty[w, :] * 1
+            else:
+                uncertainty_for_binning = np.ones(self.ntime).astype(bool)
+
             if k != "ok":
                 uncertainty_for_binning[time_is_bad] = np.inf
 
@@ -563,8 +566,10 @@ def bin_in_wavelength(
 
             if (self.uncertainty is None) or np.all(self.uncertainty == 0):
                 uncertainty_for_binning = np.ones(self.nwave).astype(bool)
-            else:
+            elif k in self._keys_that_get_uncertainty_weighting:
                 uncertainty_for_binning = self.uncertainty[:, t] * 1
+            else:
+                uncertainty_for_binning = np.ones(self.nwave).astype(bool)
             if k != "ok":
                 uncertainty_for_binning[wavelength_is_bad] = np.inf
 
