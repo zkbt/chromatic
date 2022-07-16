@@ -69,7 +69,11 @@ def from_kirk_fitted_light_curves(self, filepath):
         filled with wavelength-binned light curves. It will
         expect there to also be a transmission spectrum
         file called 'transmission_spectrum.data' at the
-        same directory level as 'wb_lcs'
+        same directory level as 'wb_lcs'.
+
+            some-directory/
+                wb_lcs/
+                transmission_spectrum.dat
     """
 
     # the directory that contains the light curve
@@ -165,16 +169,22 @@ def from_kirk_stellar_spectra(self, filepath):
         and expects there to be at the same directory level two
         other files called '*error_resampled_*.pickle' and
         'wavelengths.pickle'.
+
+            some-directory/
+                star1_flux_resampled_unsmoothed.pickle
+                star1_erro_resampled_unsmoothed.pickle
+                wavelengths.pickle
     """
 
-    filepath = "kirk-data/star1_flux_resampled_unsmoothed.pickle"
-
+    # load the flux pickle
     flux_file = filepath
     self.fluxlike["flux"] = pickle.load(open(flux_file, "rb")).T
 
+    # load the uncertainty pickle
     uncertainty_file = filepath.replace("_flux_resampled_", "_error_resampled_")
     self.fluxlike["uncertainty"] = pickle.load(open(uncertainty_file, "rb")).T
 
+    # load the wavelength pickle
     wavelength_file = flux_file.replace(
         os.path.basename(flux_file), "wavelengths.pickle"
     )
