@@ -23,6 +23,7 @@ from .dossantos import *
 from .feinstein import *
 from .schlawin import *
 from .coulombe import *
+from .kirk import *
 
 
 # construct a dictionary of available readers
@@ -95,6 +96,10 @@ def guess_reader(filepath, format=None):
         return from_eureka_S5
     elif fnmatch(f, "*extract1dstep.fits"):
         return from_atoca
+    elif fnmatch(f, "*wb_lcs*"):
+        return from_kirk_fitted_light_curves
+    elif fnmatch(f, "*_flux_resampled_*"):
+        return from_kirk_stellar_spectra
     elif fnmatch(f, "*.txt") or fnmatch(f, "*.csv"):
         return from_text
     elif fnmatch(f, "*e92-1d.fits") or fnmatch(f, "*e92-1d.fits.fz"):
