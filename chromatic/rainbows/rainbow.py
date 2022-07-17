@@ -438,7 +438,7 @@ class Rainbow:
             else:
                 self.metadata["wscale"] = "?"
 
-    def _guess_tscale(self, relative_tolerance=0.01):
+    def _guess_tscale(self, relative_tolerance=0.05):
         """
         Try to guess the tscale from the times.
 

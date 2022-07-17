@@ -1,7 +1,7 @@
 from ....imports import *
 from ..utilities import _add_panel_labels
 
-__all__ = ["imshow_with_models"]
+__all__ = ["imshow_with_models", "pcolormesh_with_models"]
 
 
 def _create_title(s):
@@ -104,9 +104,14 @@ def imshow_with_models(
         constrained_layout=True,
     )
 
+    # decide whether to use imshow or pcolormesh
+    if (self.wscale in ["linear", "log"]) and (self.tscale in ["linear", "log"]):
+        show = self.imshow
+    else:
+        show = self.pcolormesh
     # plot the first three panels
     for i, k in enumerate(["flux"] + models):
-        self.imshow(
+        show(
             ax=ax[row_data, i],
             quantity=k,
             vmin=vlimits_data[0],
@@ -125,7 +130,7 @@ def imshow_with_models(
 
     # plot the residuals
     k = "residuals"
-    self.imshow(
+    show(
         ax[row_data, -1],
         k,
         vmin=-vspan_residuals,
