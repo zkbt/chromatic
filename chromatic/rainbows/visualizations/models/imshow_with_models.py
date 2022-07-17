@@ -1,7 +1,7 @@
 from ....imports import *
 from ..utilities import _add_panel_labels
 
-__all__ = ["imshow_with_models", "pcolormesh_with_models"]
+__all__ = ["imshow_with_models"]
 
 
 def _create_title(s):
