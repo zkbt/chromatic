@@ -26,7 +26,7 @@ class Rainbow:
     _keys_that_respond_to_math = ["flux"]
 
     # which keys get uncertainty weighting during binning
-    _keys_that_get_uncertainty_weighting = ["flux"]
+    _keys_that_get_uncertainty_weighting = ["flux", "uncertainty"]
 
     def __init__(
         self,
