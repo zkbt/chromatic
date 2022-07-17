@@ -13,7 +13,7 @@ class RainbowWithModel(Rainbow):
     _keys_that_respond_to_math = ["flux", "model"]
 
     # which keys get uncertainty weighting during binning
-    _keys_that_get_uncertainty_weighting = ["flux", "model"]
+    _keys_that_get_uncertainty_weighting = ["flux", "model", "uncertainty"]
 
     @property
     def residuals(self):
