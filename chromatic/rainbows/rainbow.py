@@ -921,6 +921,7 @@ class Rainbow:
         inject_systematics,
         inject_noise,
         inject_spectrum,
+        flag_outliers,
         fold,
         compare,
         get_average_lightcurve_as_rainbow,

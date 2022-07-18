@@ -29,6 +29,7 @@ warnings.formatwarning = custom_formatwarning
 from astropy.io import ascii, fits
 from astropy.table import Table, QTable
 from astropy.time import Time
+from astropy.stats import sigma_clip
 
 # import astropy.units as u
 import astropy.constants as con
