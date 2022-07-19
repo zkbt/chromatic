@@ -42,7 +42,8 @@ def plot_histogram(self, i=0, bins=None, rwidth=None, expected=False):
         mu, std = norm.fit(new.flux)
 
         xmin, xmax = plt.xlim()
-        x = np.linspace(xmin, xmax)
+        x = np.arange(0.98, 1.08, 0.1)
+        #x = np.linspace(xmin, xmax)
         p = norm.pdf(x, mu, std)
         plt.plot(x, p, 'k', linewidth=2)
 
