@@ -104,6 +104,8 @@ def guess_reader(filepath, format=None):
         return from_text
     elif fnmatch(f, "*e92-1d.fits") or fnmatch(f, "*e92-1d.fits.fz"):
         return from_nres
+    elif fnmatch(f, "*spec_*.fits"):
+        return from_schlawin
     else:
         raise ValueError(
             f"""
