@@ -1,4 +1,4 @@
-from ...imports import *
+from ....imports import *
 
 __all__ = ["plot_histogram"]
 
