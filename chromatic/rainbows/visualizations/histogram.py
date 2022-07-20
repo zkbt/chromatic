@@ -21,7 +21,6 @@ def plot_histogram(self, i_wavelength=0, expected=False, color="auto", **kw):
         Please see the documentation for that function for options.
         (https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.hist.html)
 
-
     Returns
     -------
         A plotted histogram of flux values for one wavelength, with flux bin
@@ -29,30 +28,34 @@ def plot_histogram(self, i_wavelength=0, expected=False, color="auto", **kw):
         flux values within a particular bin on the y-axis.
 
     """
+    # importing norm so we can plot normal distribution over histogram
     from scipy.stats import norm
 
-    # pick the color based on the wavelength
+    # pick the color of the histogram based on the wavelength
     if color == "auto":
         self._make_sure_cmap_is_defined()
         color = self.get_wavelength_color(self.wavelength[i_wavelength])
 
     # get the quantity for which we want to plot the histogram
-    x, y, sigma = self.get_ok_data_for_wavelength(i_wavelength)
-
-    # option to plot normal distribution over histogram
-    # This doesn't really work right now but I'm working on it.  I need to
-    # straighten out 'x' because it's causing problems with scaling of the plot
-    if expected == True:
-        warnings.warn(f"The `expected=True` option doesn't quite work yet.")
-        mu, std = norm.fit(new.flux)
-
-        xmin, xmax = plt.xlim()
-        x = np.arange(0.98, 1.08, 0.1)
-        #x = np.linspace(xmin, xmax)
-        p = norm.pdf(x, mu, std)
-        plt.plot(x, p, "k", linewidth=2)
+    time, flux, uncertainty = self.get_ok_data_for_wavelength(i_wavelength)
 
     # plotting histogram of row 'i' of data (wavelength 'i')
-    plt.hist(y, color=color, density=True, **kw)
+    plt.hist(flux, color=color, density=True, **kw)
     plt.xlabel("Flux")
     plt.ylabel("Histogram of Flux Values")
+
+    # option to plot expected normal distribution over histogram
+    if expected == True:
+        # mu (middle of the normal distribution) corresponds to the middle
+        # of the flux array
+        mu = np.median(flux)
+        # expected std corresponds to the middle of our true uncertainty
+        std = np.median(uncertainty)
+
+        # setting min/max values for scale of normal distribution
+        xmin = np.min(flux)
+        xmax = np.max(flux)
+
+        x = np.linspace(xmin, xmax, 500)
+        p = norm.pdf(x, mu, std)
+        plt.plot(x, p, "k", linewidth=2)
