@@ -978,6 +978,7 @@ class Rainbow:
         imshow_interact,
         plot_spectra,
         plot,
+        plot_histogram,
         _scatter_timelike_or_wavelike,
     )
 
