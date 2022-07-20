@@ -245,3 +245,15 @@ def test_pcolormesh():
     b.imshow(ax=ax[1, 0])
     b.pcolormesh(ax=ax[1, 1])
     plt.savefig(os.path.join(test_directory, "test-pcolormesh-vs-imshow.png"))
+
+
+def test_plot_histogram():
+    s = SimulatedRainbow(R=5).inject_noise()
+    fi, ax = plt.subplots(
+        s.nwave, 1, figsize=(4, 12), sharex=True, sharey=True, constrained_layout=True
+    )
+    for i in range(s.nwave):
+        s.plot_histogram(i, ax=ax[i], expected=True)
+        if i < (s.nwave - 1):
+            plt.xlabel("")
+    plt.savefig(os.path.join(test_directory, "test-histogram.png"))
