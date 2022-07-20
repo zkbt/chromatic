@@ -16,9 +16,9 @@ would be to do something like the following
     load a chromatic light curve file in your format and,
     for some Rainbow object `rainbow`, populate at least:
 
-        + rainbow.timelike['time']
-        + rainbow.wavelike['wavelength']
-        + rainbow.fluxlike['flux']
+        + self.timelike['time']
+        + self.wavelike['wavelength']
+        + self.fluxlike['flux']
 
     You'll need to replace the cartoon functions on each
     line with the actual code needed to load your file.
@@ -53,7 +53,7 @@ from ...imports import *
 __all__ = ["from_abcdefgh"]
 
 
-def from_abcdefgh(rainbow, filepath):
+def from_abcdefgh(self, filepath):
     """
     Populate a Rainbow from a file in the abcdefgh format.
 
@@ -68,13 +68,13 @@ def from_abcdefgh(rainbow, filepath):
         dictionaries `timelike`, `wavelike`, `fluxlike`, and
         `metadata`. This function should, at a minimum, add
         the following items
-            + `rainbow.timelike['time']`
-            + `rainbow.wavelike['wavelength']`
-            + `rainbow.fluxlike['flux']`
+            + `self.timelike['time']`
+            + `self.wavelike['wavelength']`
+            + `self.fluxlike['flux']`
         and optionally, additional entries like
-            + `rainbow.metadata['some-useful-parameter']`
-            + `rainbow.fluxlike['uncertainty']`
-            + `rainbow.fluxlike['ok']`
+            + `self.metadata['some-useful-parameter']`
+            + `self.fluxlike['uncertainty']`
+            + `self.fluxlike['ok']`
 
     filepath : str
         The path to the file to load.
@@ -84,13 +84,13 @@ def from_abcdefgh(rainbow, filepath):
     file = do_something_to_load_abcdefgh(filepath)
 
     # populate a 1D array of wavelengths (with astropy units of length)
-    rainbow.wavelike["wavelength"] = the_1D_array_of_wavelengths()
+    self.wavelike["wavelength"] = the_1D_array_of_wavelengths()
 
     # populate a 1D array of times (with astropy units of time)
-    rainbow.timelike["time"] = the_1D_array_of_times()
+    self.timelike["time"] = the_1D_array_of_times()
 
     # populate a 2D (row = wavelength, col = time) array of fluxes
-    rainbow.fluxlike["flux"] = the_2D_array_of_fluxes()
+    self.fluxlike["flux"] = the_2D_array_of_fluxes()
 
     # add some warnings if there's any funny business
     if something_goes_wonky():

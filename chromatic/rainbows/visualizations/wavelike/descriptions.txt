@@ -1,0 +1,4 @@
+cartoon | name | description
+🎨🌊🔭 | plot_average_spectrum    | Plot the weighted average flux per wavelength.
+🎨🌊💎 | plot_spectral_resolution | Plot the spectral resolution per wavelength.
+🎨🌊🎧 | plot_noise_comparison    | Plot the measured and expected scatter per wavelength.

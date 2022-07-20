@@ -1,0 +1,5 @@
+cartoon | name | description
+🎨📺🎢 | imshow_with_models | Paint a flux map with model components.
+🎨🖌🎢 | plot_one_wavelength_with_models | Plot one wavelength's light curve with model components.
+🎨📽🎢 | animate_with_models | Animate all wavelengths' light curves with model components.
+🎨🧶🎢 | plot_with_model | Plot a sequence of light curves with their models.

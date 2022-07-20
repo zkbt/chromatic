@@ -1,0 +1,2 @@
+cartoon | name | description
+🎨⏰🔭 | plot_average_lightcurve   | Plot the weighted average flux per time.

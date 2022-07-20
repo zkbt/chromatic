@@ -68,14 +68,6 @@ class SimulatedRainbow(RainbowWithModel):
             An array of fluxes corresponding to the supplied wavelengths.
             If left blank, the code assumes a normalized flux of
             flux(wavelength) = 1 for all wavelengths.
-        planet : boolean
-            Set to True to add a transiting planet.
-        planet_params: Dictionary
-            Stores planetary parameters to model, read description for
-            Rainbow.add_planet transit() for more details.
-        planet_radius: float or 1D numpy array
-            Planet Radius/Stellar Radius of planet.  Use 1D if wavelength-
-            dependent.  Must be same shape as wavelength array.
         """
         Rainbow.__init__(self)
 

@@ -3,11 +3,19 @@ from .setup_tests import *
 
 
 def test_multi():
-    a = SimulatedRainbow().inject_transit().inject_noise(signal_to_noise=400)
-    b = SimulatedRainbow().inject_transit().inject_noise(signal_to_noise=800)
+    a = (
+        SimulatedRainbow(R=3, dt=20 * u.minute)
+        .inject_transit()
+        .inject_noise(signal_to_noise=400)
+    )
+    b = (
+        SimulatedRainbow(R=3, dt=20 * u.minute)
+        .inject_transit()
+        .inject_noise(signal_to_noise=800)
+    )
 
     m = MultiRainbow([a, b])
-    m.bin(R=5).plot(spacing=0.02)
+    m.plot(spacing=0.02)
     plt.savefig(os.path.join(test_directory, "multi-plot-demonstration.png"))
 
     m.imshow()
@@ -23,8 +31,8 @@ def test_multi():
     )
 
     m.normalize()
-    m.align_wavelengths().wavelength
-    m[:, :]
+    # m.align_wavelengths().wavelength
+    # m[:, :]
     plt.close("all")
 
 

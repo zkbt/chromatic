@@ -112,9 +112,9 @@ def _create_history_entry(self, name, inputs={}):
         call = f"[{w},{t}]"
     elif name in "+-*/":
         try:
-            other = f'\n{textwrap.indent(inputs["object"].history(), " ")}'
+            other = f'\n{textwrap.indent(inputs["other"].history(), " ")}'
         except AttributeError:
-            other = represent_as_copypasteable(inputs["object"])
+            other = represent_as_copypasteable(inputs["other"])
         call = f"{name}{other}"
     else:
         list_of_arguments = [

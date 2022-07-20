@@ -4,7 +4,7 @@ import batman
 __all__ = ["inject_transit"]
 
 
-def inject_transit(self, planet_params={}, planet_radius=0.1):
+def inject_transit(self, planet_radius=0.1, **planet_params):
 
     """
     Simulate a wavelength-dependent planetary transit using
@@ -13,7 +13,15 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
     Parameters
     ----------
 
-    planet_params : Dictionary
+    planet_radius : float, array
+        Two options:
+            1D array with same dimensions as wavelength array,
+                with each value corresponding to Rp/Rs at that wavelength.
+            float representing Rp/Rs if the radius is not wavelength-dependent.
+        example value: planet_radius = 0.01,
+
+    planet_params : dict
+        All other keywords will be interpreted as other planet parameters.
         Values for planetary parameters for use in batman modelling.
         Any values not supplied will be set to defaults:
             "t0" = time of inferior conjunction (days) (default 0)
@@ -38,19 +46,11 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
                 (such as hpparvi/PyLDTk and nespinoza/limb-darkening) which
                 can be used for this.
 
-        example value: planet_params = {"a":12, "inc":87}
-
-    planet_radius = Two options:
-            1D array with same dimensions as wavelength array,
-                each value corresponds to planet radius/stellar radius at that
-                wavelength.
-            float representing Rp/Rstar if the radius is not wavelength-dependent.
-        example value: planet_radius = 0.01,
-
     """
 
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("inject_transit", locals())
+    h = h.replace("planet_params={", "**{")
 
     # create a copy of the existing Rainbow
     new = self._create_copy()
@@ -129,6 +129,16 @@ def inject_transit(self, planet_params={}, planet_radius=0.1):
     new.flux *= new.planet_model
     new.model = new.fluxlike.get("model", 1) * new.planet_model
 
+    parameters = dict(**defaults)
+    parameters.update(rp_unbinned=rprs, u_unbinned=u_arr)
+    new.metadata["transit_parameters"] = parameters
+    new.metadata["transit_version"] = f"batman-package=={batman.__version__}"
+    if np.ndim(u) == 1:
+        new.wavelike["injected-u"] = u_arr
+    else:
+        for i in range(np.shape(u_arr)[1]):
+            new.wavelike[f"injected-transit-u{i+1}"] = u_arr[:, i]
+    new.wavelike["injected-transit-rp"] = rprs
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
 

@@ -14,6 +14,26 @@ def test_simulated_basics():
     f = SimulatedRainbow(wavelength=np.logspace(0, 1) * u.micron).inject_noise()
 
 
+def test_photon_noise(N=10000):
+
+    # inject noise in two different ways
+    noiseless = SimulatedRainbow().inject_transit()
+    gaussian = noiseless.inject_noise(signal_to_noise=np.sqrt(N)).normalize()
+    poisson = noiseless.inject_noise(number_of_photons=N).normalize()
+
+    # imshow the two ways
+    fi, ax = plt.subplots(1, 2, figsize=(8, 3), dpi=300, constrained_layout=True)
+    gaussian.imshow(ax=ax[0])
+    ax[0].set_title(f"Gaussian ($\sigma=${1/np.sqrt(N):.3f}=" + "$1/\sqrt{N}$)")
+    poisson.imshow(ax=ax[1])
+    ax[1].set_title(f"Poisson (N={N})")
+
+    # make sure the standard deviation is about right
+    # sigma = np.std(poisson.residuals / poisson.model)
+    # assert np.isclose(sigma, 1 / np.sqrt(N), rtol=0.1)
+    plt.savefig(os.path.join(test_directory, "poisson+gaussian-noise.png"))
+
+
 def test_star_flux():
     g = SimulatedRainbow(
         wavelength=np.logspace(0, 1) * u.micron, star_flux=np.logspace(0, 1)
@@ -22,19 +42,19 @@ def test_star_flux():
 
 def test_inject_transit():
     h = SimulatedRainbow(wavelength=np.logspace(0, 1) * u.micron).inject_noise()
-    h.inject_transit(planet_params={"per": 0.1})
+    h.inject_transit(per=0.1)
     h.inject_transit(planet_radius=np.zeros(50) + 0.1)
 
     i = SimulatedRainbow(dt=2 * u.minute).inject_noise(signal_to_noise=1000)
     fi, ax = plt.subplots(3, 1, sharex=True, figsize=(8, 8))
     i.imshow(ax=ax[0], vmin=0.975, vmax=1.005)
     plt.xlabel("")
-    i.inject_transit(
-        planet_params=dict(per=3), planet_radius=np.random.normal(0.1, 0.01, i.nwave)
-    ).imshow(ax=ax[1], vmin=0.975, vmax=1.005)
+    i.inject_transit(per=3, planet_radius=np.random.normal(0.1, 0.01, i.nwave)).imshow(
+        ax=ax[1], vmin=0.975, vmax=1.005
+    )
     # test the limb darkening
     i.inject_transit(
-        planet_params={
+        **{
             "per": 3,
             "limb_dark": "quadratic",
             "u": np.transpose(

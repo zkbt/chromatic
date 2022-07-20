@@ -251,5 +251,29 @@ def test_integrated_wrappers():
         fi, ax = plt.subplots(1, 3, figsize=(10, 3), constrained_layout=True)
         kw = dict(vmin=0.98, vmax=1.02)
         s.imshow(ax=ax[0], **kw)
-        s.get_spectrum_as_rainbow().imshow(ax=ax[1], **kw)
-        s.get_lightcurve_as_rainbow().imshow(ax=ax[2], **kw)
+        s.get_average_spectrum_as_rainbow().imshow(ax=ax[1], **kw)
+        s.get_average_lightcurve_as_rainbow().imshow(ax=ax[2], **kw)
+
+
+def test_uncertainty_weighting_during_binning():
+    fi, ax = plt.subplots(
+        4, 2, sharey="row", figsize=(10, 10), dpi=300, constrained_layout=True
+    )
+
+    for col, order in enumerate([1, -1]):
+        s = SimulatedRainbow()
+        t = s.inject_transit(planet_radius=np.linspace(0.1, 0.3, s.nwave)).inject_noise(
+            signal_to_noise=np.logspace(1, 2, s.nwave)[::order]
+        )
+        t.imshow(ax=ax[0, col])
+
+        b = t.bin(R=3, dt=20 * u.minute)
+        b.imshow(ax=ax[1, col])
+        b.plot_with_model(ax=ax[2, col])
+
+        lc = t.get_average_lightcurve_as_rainbow()
+        lc.plot_with_model(ax=ax[3, col])
+    plt.savefig(
+        os.path.join(test_directory, "uncertainty-weighting-during-binning.png"),
+        facecolor="white",
+    )

@@ -5,8 +5,8 @@ __all__ = [
     "bin",
     "bin_in_time",
     "bin_in_wavelength",
-    "get_lightcurve_as_rainbow",
-    "get_spectrum_as_rainbow",
+    "get_average_lightcurve_as_rainbow",
+    "get_average_spectrum_as_rainbow",
 ]
 
 
@@ -320,7 +320,8 @@ def bin_in_time(
     # TODO (think about cleverer bintogrid for 2D arrays?)
     new.fluxlike = {}
     ok = self.ok
-    for k in self.fluxlike:
+    # loop through wavelengths
+    for w in tqdm(np.arange(new.nwave)):
 
         '''
         if k == "uncertainty":
@@ -331,14 +332,16 @@ def bin_in_time(
             """
             )'''
 
-        # loop through wavelengths
-        for w in range(new.nwave):
+        for k in self.fluxlike:
             # mask out "bad" wavelengths
             time_is_bad = ok[w, :] < minimum_acceptable_ok
             if (self.uncertainty is None) or np.all(self.uncertainty == 0):
                 uncertainty_for_binning = np.ones(self.ntime).astype(bool)
-            else:
+            elif k in self._keys_that_get_uncertainty_weighting:
                 uncertainty_for_binning = self.uncertainty[w, :] * 1
+            else:
+                uncertainty_for_binning = np.ones(self.ntime).astype(bool)
+
             if k != "ok":
                 uncertainty_for_binning[time_is_bad] = np.inf
 
@@ -354,7 +357,8 @@ def bin_in_time(
             if k not in new.fluxlike:
                 new_shape = (new.nwave, new.ntime)
                 new.fluxlike[k] = np.zeros(new_shape)
-                # FIXME make this more robust to units
+                if isinstance(self.fluxlike[k], u.Quantity):
+                    new.fluxlike[k] *= self.fluxlike[k].unit
 
             # store the binned array in the appropriate place
             if k == "uncertainty":
@@ -553,24 +557,26 @@ def bin_in_wavelength(
 
     # get a fluxlike array of what's OK to include in the bins
     ok = self.ok
-    for k in self.fluxlike:
+    for t in tqdm(np.arange(new.ntime)):
 
-        for t in range(new.ntime):
+        for k in self.fluxlike:
 
             # mask out "bad" wavelengths
             wavelength_is_bad = ok[:, t] < minimum_acceptable_ok
 
             if (self.uncertainty is None) or np.all(self.uncertainty == 0):
                 uncertainty_for_binning = np.ones(self.nwave).astype(bool)
-            else:
+            elif k in self._keys_that_get_uncertainty_weighting:
                 uncertainty_for_binning = self.uncertainty[:, t] * 1
+            else:
+                uncertainty_for_binning = np.ones(self.nwave).astype(bool)
             if k != "ok":
                 uncertainty_for_binning[wavelength_is_bad] = np.inf
 
             if starting_wavelengths.upper() == "1D":
                 w = self.wavelike["wavelength"][:]
             elif starting_wavelengths.upper() == "2D":
-                w = self.fluxlike["wavelength"][:, t]
+                w = self.fluxlike["wavelength_2d"][:, t]
             # bin the quantities for this time
             binned = binning_function(
                 x=w,
@@ -583,7 +589,8 @@ def bin_in_wavelength(
             if k not in new.fluxlike:
                 new_shape = (new.nwave, new.ntime)
                 new.fluxlike[k] = np.zeros(new_shape)
-                # FIXME make this more robust to units
+                if isinstance(self.fluxlike[k], u.Quantity):
+                    new.fluxlike[k] *= self.fluxlike[k].unit
 
             # store the binned array in the appropriate place
             if k == "uncertainty":
@@ -632,7 +639,7 @@ def bin_in_wavelength(
         return new
 
 
-def get_lightcurve_as_rainbow(self):
+def get_average_lightcurve_as_rainbow(self):
     """
     Produce a wavelength-integrated light curve.
 
@@ -641,7 +648,7 @@ def get_lightcurve_as_rainbow(self):
     lc : Rainbow
         A Rainbow object with just one wavelength.
     """
-    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+    h = self._create_history_entry("get_average_spectrum_as_rainbow", locals())
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -651,7 +658,7 @@ def get_lightcurve_as_rainbow(self):
     return new
 
 
-def get_spectrum_as_rainbow(self):
+def get_average_spectrum_as_rainbow(self):
     """
     Produce a time-integrated spectrum.
 
@@ -660,7 +667,7 @@ def get_spectrum_as_rainbow(self):
     lc : Rainbow
         A Rainbow object with just one time.
     """
-    h = self._create_history_entry("get_spectrum_as_rainbow", locals())
+    h = self._create_history_entry("get_average_spectrum_as_rainbow", locals())
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

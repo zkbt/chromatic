@@ -15,6 +15,8 @@ def pcolormesh(
     mask_ok=True,
     color_ok="tomato",
     alpha_ok=0.8,
+    vmin=None,
+    vmax=None,
     **kw,
 ):
     """
@@ -43,7 +45,7 @@ def pcolormesh(
     kw : dict
         All other keywords will be passed on to `plt.pcolormesh`,
         so you can have more detailed control over the plot
-        appearance. Common keyword arguments might include:
+        appearance. Common keyword argumentsvli might include:
         `[cmap, norm, alpha, vmin, vmax]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.pcolormesh.html
@@ -99,8 +101,12 @@ def pcolormesh(
             "Please specify either `xaxis='time'` or `xaxis='wavelength'` for `.plot()`"
         )
 
+    # figure out a good shared color limits (unless already supplied)
+    vmin = vmin or np.nanpercentile(u.Quantity(z.flatten()).value, 1)
+    vmax = vmax or np.nanpercentile(u.Quantity(z.flatten()).value, 99)
+
     # define some default keywords
-    pcolormesh_kw = dict(shading="flat")
+    pcolormesh_kw = dict(shading="flat", vmin=vmin, vmax=vmax)
     pcolormesh_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)

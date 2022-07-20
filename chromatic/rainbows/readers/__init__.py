@@ -1,4 +1,6 @@
 from .x1dints import *
+from .x1dints_kludge import *
+
 from .eureka_txt import *
 from .eureka_specdata import *
 from .eureka_lcdata import *
@@ -6,6 +8,10 @@ from .eureka_channels import *
 from .rainbow_npy import *
 from .rainbow_FITS import *
 from .text import *
+
+from .xarray_stellar_spectra import *
+from .xarray_raw_light_curves import *
+from .xarray_fitted_light_curves import *
 
 # some particular instruments
 from .nres import *
@@ -16,7 +22,8 @@ from .espinoza import *
 from .dossantos import *
 from .feinstein import *
 from .schlawin import *
-from .coloumbe import *
+from .coulombe import *
+from .kirk import *
 
 
 # construct a dictionary of available readers
@@ -55,15 +62,27 @@ def guess_reader(filepath, format=None):
         return from_rainbow_npy
     elif fnmatch(f.lower(), "*.rainbow.fits") or fnmatch(f.lower(), "*.rainbow.fit"):
         return from_rainbow_FITS
+    # does it look like an ERS-xarray format?
+    elif fnmatch(f, "*stellar-spec*.xc"):
+        return from_xarray_stellar_spectra
+    # does it look like an ERS-xarray format?
+    elif fnmatch(f, "*raw-light-curve*.xc"):
+        return from_xarray_raw_light_curves
+    # does it look like an ERS-xarray format?
+    elif fnmatch(f, "*fitted-light-curve*.xc"):
+        return from_xarray_fitted_light_curves
     # does it look like a .rainbow.npy chromatic file?
     elif fnmatch(f, "*order*.npy"):
         return from_espinoza
     # does it look like a STScI x1dints.fits file?
-    elif fnmatch(f, "*x1dints.fits") or fnmatch(f, "*extract_1d.fits"):
+    elif fnmatch(f, "*x1dints.fits"):
         return from_x1dints
+    # does it look like a STScI x1dints.fits file?
+    elif fnmatch(f, "*extract_1d.fits"):
+        return from_x1dints_kludge
     # does it look like an Eureka! S3 text file?
     elif fnmatch(f, "*S3_*_Save.dat") or fnmatch(f, "*S3_*_Save.txt"):
-        return from_eureka_SpecData
+        return from_eureka_S3_txt
     # does it look like an Eureka! S3 SpecData hdf5 file?
     elif fnmatch(f, "*S3_*_SpecData.h5"):
         return from_eureka_S3
@@ -77,9 +96,21 @@ def guess_reader(filepath, format=None):
         return from_eureka_S5
     elif fnmatch(f, "*extract1dstep.fits"):
         return from_atoca
+    elif fnmatch(f, "*wb_lcs*"):
+        return from_kirk_fitted_light_curves
+    elif fnmatch(f, "*_flux_resampled_*.pickle"):
+        return from_kirk_stellar_spectra
     elif fnmatch(f, "*.txt") or fnmatch(f, "*.csv"):
         return from_text
     elif fnmatch(f, "*e92-1d.fits") or fnmatch(f, "*e92-1d.fits.fz"):
         return from_nres
+    elif fnmatch(f, "*spec_*.fits"):
+        return from_schlawin
     else:
-        raise RuntimeError(f"🌈 Failed to guess a good reader for {filenames}.")
+        raise ValueError(
+            f"""
+        We're having trouble guessing the input format from the filename
+        {f}
+        Please try specifying a `format=` keyword to your call.
+        """
+        )

@@ -1,9 +1,9 @@
-from ...imports import *
+from ....imports import *
 
-__all__ = ["get_typical_uncertainty"]
+__all__ = ["get_expected_uncertainty"]
 
 
-def get_typical_uncertainty(self, function=np.nanmedian, *args, **kwargs):
+def get_expected_uncertainty(self, function=np.nanmedian, *args, **kwargs):
     """
     Get the typical per-wavelength uncertainty.
 
