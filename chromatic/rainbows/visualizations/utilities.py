@@ -47,7 +47,7 @@ def _get_animation_writer_and_displayer(filename="animation.html", **kw):
         raise ValueError(
             f"""
         The writer {writer} needed for your `.{suffix}` file is not available.
-        {warnings[k]}
+        {warnings[suffix]}
         """
         )
 

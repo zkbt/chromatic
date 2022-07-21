@@ -254,7 +254,10 @@ def animate_lightcurves(
     # display the animation
     from IPython.display import display
 
-    display(displayer(filename))
+    try:
+        display(displayer(filename, embed=True))
+    except TypeError:
+        display(displayer(filename))
 
 
 def _setup_animate_spectra(

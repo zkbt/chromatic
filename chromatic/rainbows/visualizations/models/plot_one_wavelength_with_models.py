@@ -354,4 +354,7 @@ def animate_with_models(
     # display the animation
     from IPython.display import display
 
-    display(displayer(filename))
+    try:
+        display(displayer(filename, embed=True))
+    except TypeError:
+        display(displayer(filename))
