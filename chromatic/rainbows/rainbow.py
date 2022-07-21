@@ -25,6 +25,9 @@ class Rainbow:
     # which fluxlike keys will respond to math between objects
     _keys_that_respond_to_math = ["flux"]
 
+    # which keys get uncertainty weighting during binning
+    _keys_that_get_uncertainty_weighting = ["flux", "uncertainty"]
+
     def __init__(
         self,
         filepath=None,
@@ -435,7 +438,7 @@ class Rainbow:
             else:
                 self.metadata["wscale"] = "?"
 
-    def _guess_tscale(self, relative_tolerance=0.01):
+    def _guess_tscale(self, relative_tolerance=0.05):
         """
         Try to guess the tscale from the times.
 
@@ -977,6 +980,7 @@ class Rainbow:
         imshow_interact,
         plot_spectra,
         plot,
+        plot_histogram,
         _scatter_timelike_or_wavelike,
     )
 
