@@ -33,7 +33,7 @@ def from_nres(rainbow, filepath, order=52):
 
     order_index = order - 52  # the 0th order is order 52
 
-    for i, f in tqdm(enumerate(filenames)):
+    for i, f in tqdm(enumerate(filenames), leave=False):
 
         # open this
         hdu = fits.open(f)

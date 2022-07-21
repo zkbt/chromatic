@@ -321,7 +321,7 @@ def bin_in_time(
     new.fluxlike = {}
     ok = self.ok
     # loop through wavelengths
-    for w in tqdm(np.arange(new.nwave)):
+    for w in tqdm(np.arange(new.nwave), leave=False):
 
         '''
         if k == "uncertainty":
@@ -557,7 +557,7 @@ def bin_in_wavelength(
 
     # get a fluxlike array of what's OK to include in the bins
     ok = self.ok
-    for t in tqdm(np.arange(new.ntime)):
+    for t in tqdm(np.arange(new.ntime), leave=False):
 
         for k in self.fluxlike:
 

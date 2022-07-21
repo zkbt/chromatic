@@ -10,7 +10,6 @@ def plot_noise_comparison(
     minimum_acceptable_ok=1e-10,
     w_unit="micron",
     cmap=None,
-    norm=None,
     vmin=None,
     vmax=None,
     legend=False,
@@ -38,6 +37,10 @@ def plot_noise_comparison(
         The unit for plotting wavelengths.
     cmap : str, matplotlib.colors.Colormap
         The color map to use for expressing wavelength.
+    vmin : astropy.units.Quantity
+        The wavelength at the bottom of the cmap.
+    vmax : astropy.units.Quantity
+        The wavelength at the top of the cmap.
     scatterkw : dict
         A dictionary of keywords passed to `plt.scatter`
         so you can have more detailed control over the text
@@ -117,7 +120,6 @@ def plot_noise_comparison(
         this_scatterkw = dict(
             c=scatter_colors[i],
             cmap=cmap,
-            norm=norm,
             marker="o",
             linestyle="-",
         )
@@ -135,3 +137,4 @@ def plot_noise_comparison(
         this_legendkw = dict(frameon=False)
         this_legendkw.update(**legendkw)
         plt.legend(**legendkw)
+    plt.title(self.get("title"))

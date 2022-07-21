@@ -107,7 +107,7 @@ def plot_spectra(
             figsize=plt.matplotlib.rcParams["figure.figsize"][::-1],
             constrained_layout=True,
         )
-        ax = plt.gca()
+        ax = plt.subplot()
     plt.sca(ax)
 
     # figure out the spacing to use
@@ -189,4 +189,5 @@ def plot_spectra(
         plt.ylabel("Relative Flux (+ offsets)")
         if self.get("wscale") == "log":
             plt.xscale("log")
+        plt.title(self.get("title"))
     return ax

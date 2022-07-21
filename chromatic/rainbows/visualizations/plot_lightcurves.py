@@ -98,7 +98,7 @@ def plot_lightcurves(
             figsize=plt.matplotlib.rcParams["figure.figsize"][::-1],
             constrained_layout=True,
         )
-        ax = plt.gca()
+        ax = plt.subplot()
     plt.sca(ax)
 
     # figure out the spacing to use
@@ -121,7 +121,7 @@ def plot_lightcurves(
             Be aware that the baseline flux levels may therefore
             be a little bit funny in .plot()."""
         )
-        ylim = [None, None]
+        ylim = None
     with quantity_support():
 
         #  loop through wavelengths
@@ -176,5 +176,8 @@ def plot_lightcurves(
         # add text labels to the plot
         plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")
-        plt.ylim(*ylim)
+        if ylim is not None:
+            plt.ylim(*ylim)
+        plt.title(self.get("title"))
+
     return ax
