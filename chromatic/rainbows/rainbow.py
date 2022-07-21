@@ -359,7 +359,7 @@ class Rainbow:
         elif np.shape(v) == (self.ntime,):
             self.timelike[k] = v * 1
         else:
-            raise ValueError("'{k}' doesn't fit anywhere!")
+            raise ValueError(f"'{k}' doesn't fit anywhere!")
 
     def _initialize_from_file(self, filepath=None, format=None, **kw):
         """
@@ -685,6 +685,16 @@ class Rainbow:
             return len(self.time)
 
     @property
+    def dt(self):
+        """
+        The typical timestep.
+        """
+        if self.time is None:
+            return None
+        else:
+            return np.nanmedian(np.diff(self.time))
+
+    @property
     def nflux(self):
         """
         The total number of fluxes.
@@ -931,6 +941,7 @@ class Rainbow:
         inject_noise,
         inject_spectrum,
         fold,
+        mask_transit,
         compare,
         get_average_lightcurve_as_rainbow,
         get_average_spectrum_as_rainbow,
@@ -948,6 +959,7 @@ class Rainbow:
         get_spectral_resolution,
         get_expected_uncertainty,
         get_measured_scatter,
+        get_measured_scatter_in_bins,
         get_for_wavelength,
         get_ok_data_for_wavelength,
     )
@@ -987,6 +999,7 @@ class Rainbow:
     from .visualizations.wavelike import (
         plot_spectral_resolution,
         plot_noise_comparison,
+        plot_noise_comparison_in_bins,
         plot_average_spectrum,
         plot_median_spectrum,
     )

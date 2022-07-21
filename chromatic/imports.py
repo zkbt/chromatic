@@ -156,3 +156,14 @@ def one2another(bottom="white", top="red", alpha_bottom=1.0, alpha_top=1.0, N=25
 
     # return the colormap
     return cmap
+
+
+def remove_unit(x):
+    """
+    Quick wrapper to remove the unit from a quantity,
+    but not complain if it doesn't have one.
+    """
+    try:
+        return x.value
+    except AttributeError:
+        return x

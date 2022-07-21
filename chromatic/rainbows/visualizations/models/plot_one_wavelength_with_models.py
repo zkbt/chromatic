@@ -340,7 +340,7 @@ def animate_with_models(
     with writer.saving(figure, filename, dpi or figure.get_dpi()):
 
         # loop over exposures
-        for i in tqdm(range(self.nwave)):
+        for i in tqdm(range(self.nwave), leave=False):
 
             self.plot_one_wavelength_with_models(
                 i, animation=True, orientation=orientation, **kw

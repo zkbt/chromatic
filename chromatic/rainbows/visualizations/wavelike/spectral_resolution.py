@@ -28,3 +28,4 @@ def plot_spectral_resolution(
         ylabel=f"$R=\lambda/d\lambda$ ({pixels_per_resolution_element} pixel)",
         **kw,
     )
+    plt.title(self.get("title"))

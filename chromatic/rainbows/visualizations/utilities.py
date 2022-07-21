@@ -95,7 +95,7 @@ def _scatter_timelike_or_wavelike(
     t_unit="day",
     w_unit="micron",
     wavelength_for_color=None,
-    percentiles=(1, 99),
+    percentiles=(0.1, 99.9),
     ylim=(None, None),
     scatterkw={},
     **kw,
@@ -168,11 +168,10 @@ def _scatter_timelike_or_wavelike(
         for i in [0, 1]:
             if ylim[i] is None:
                 ylim[i] = np.percentile(y, percentiles[i])
-        ylim[0] = np.minimum(ylim[0], 0)
-        print(ylim)  #
         plt.ylim(*ylim)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
+        plt.title(self.get("title"))
 
 
 def _get_unit_string(y):

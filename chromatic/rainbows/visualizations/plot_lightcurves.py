@@ -178,4 +178,6 @@ def plot_lightcurves(
         plt.ylabel("Relative Flux (+ offsets)")
         if ylim is not None:
             plt.ylim(*ylim)
+        plt.title(self.get("title"))
+
     return ax

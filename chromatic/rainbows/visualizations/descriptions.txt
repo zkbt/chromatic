@@ -2,6 +2,6 @@ cartoon | name | description
 🎨📽⏰ | animate_lightcurves  | Animate a sequence of light curves across different wavelengths.
 🎨📽🌊 | animate_spectra      | Animate a sequence of spectra across different times.
 🎨🖼📺 | imshow               | Paint a map of flux across wavelength and time.
-🎨🕹📺 | imshow_interactive   | Show flux map and lightcurves with interactive wavelength selection.
+🎨🕹📺 | imshow_interact      | Show flux map and lightcurves with interactive wavelength selection.
 🎨🖌📺 | pcolormesh           | Paint a map of flux across wavelength and time (with non-uniform grids).
 🎨🖌🧶 | plot                 | Plot a sequence of light curves with vertical offsets.

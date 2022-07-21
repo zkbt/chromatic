@@ -270,6 +270,12 @@ def test_plot_noise_comparison():
     plt.savefig(os.path.join(test_directory, "test-plot_noise_comparison.png"))
 
 
+def test_plot_noise_comparison_in_bins():
+    s = SimulatedRainbow(dw=0.1 * u.micron).inject_systematics().inject_noise()
+    s.plot_noise_comparison_in_bins()
+    plt.savefig(os.path.join(test_directory, "test-plot_noise_comparison_in_bins.png"))
+
+
 def test_plot_histogram():
     s = SimulatedRainbow(R=5).inject_noise()
     fi, ax = plt.subplots(

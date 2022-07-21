@@ -189,4 +189,5 @@ def plot_spectra(
         plt.ylabel("Relative Flux (+ offsets)")
         if self.get("wscale") == "log":
             plt.xscale("log")
+        plt.title(self.get("title"))
     return ax

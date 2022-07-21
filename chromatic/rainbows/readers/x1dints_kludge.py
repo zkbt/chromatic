@@ -87,7 +87,7 @@ def from_x1dints_kludge(rainbow, filepath, **kw):
     rainbow.timelike.update(**timelike)
 
     # loop over file (each one a segment)
-    for i_file, f in enumerate(tqdm(filenames)):
+    for i_file, f in enumerate(tqdm(filenames, leave=False)):
 
         # open this fits file
         hdu = fits.open(f)

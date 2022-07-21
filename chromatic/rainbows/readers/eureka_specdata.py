@@ -59,12 +59,13 @@ def from_eureka_SpecData(rainbow, filepath, optimal=True):
 
     # populate a 1D array of times (with astropy units of time)
     k = "time"
-    t_without_unit = dataset[k].data
     if dataset[k].attrs["time_units"] == "BJD_TDB":
-        t_unit = u.day
+        astropy_times = Time(dataset[k].data, format="mjd", scale="tdb")
+        rainbow.set_times_from_astropy(astropy_times, is_barycentric=True)
     else:
         t_unit = u.Unit(dataset[t_key].attrs["time_units"])
-    rainbow.timelike["time"] = t_without_unit * t_unit
+        t_without_unit = dataset[k].data
+        rainbow.timelike["time"] = t_without_unit * t_unit
     keys_used.append(k)
 
     # populate a 2D (row = wavelength, col = time) array of fluxes
@@ -90,16 +91,22 @@ def from_eureka_SpecData(rainbow, filepath, optimal=True):
         rainbow.fluxlike["uncertainty"] = np.sqrt(rainbow.stdvar) * 1
 
     for k in dataset.keys():
-        if (shape in test_shapes) or (shape[::-1] in test_shapes):
-            if k not in keys_used:
+        if k not in keys_used:
+            shape = dataset[k].shape
+            values = dataset[k].data
+            try:
+                if shape in test_shapes:
+                    rainbow._put_array_in_right_dictionary(k, values)
+                elif shape[::-1] in test_shapes:
+                    rainbow._put_array_in_right_dictionary(k, values.T)
+            except ValueError:
                 warnings.warn(
                     f"""
                 While reading a Eureka S3 SpecData dataset, the key '{k}'
                 has not been stored as `fluxlike`, `wavelike`, or `timelike`,
-                yet its shape {shape} feels like it might match one
-                of those. If you'd like to read in that quantity,
-                please submit an Issue to the `chromatic` github
-                to make sure it gets added!
+                but its shape of {shape} feels like maybe it should fit.
+                If you'd like to read in that quantity, please submit an
+                Issue to the `chromatic` github to make sure it gets added!
                 """
                 )
 

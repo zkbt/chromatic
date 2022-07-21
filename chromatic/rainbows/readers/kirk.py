@@ -80,7 +80,7 @@ def from_kirk_fitted_light_curves(self, filepath):
 
     # loop through the files and load them into arrays (faster than tables)
     lcs = []
-    for f in tqdm(lc_filenames):
+    for f in tqdm(lc_filenames, leave=False):
         lc = np.loadtxt(f)
         lcs.append(lc)
     names = [

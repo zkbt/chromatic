@@ -80,7 +80,7 @@ def from_atoca(rainbow, filepath, order=1):
     filenames = expand_filenames(filepath)
 
     # Loop over all input filenames.
-    for i_file, f in enumerate(tqdm(filenames)):
+    for i_file, f in enumerate(tqdm(filenames, leave=False)):
         hdu_list = fits.open(f)
 
         # Useful initializations for later.

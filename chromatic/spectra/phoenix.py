@@ -212,7 +212,7 @@ class PHOENIXLibrary:
         self._current_raw_metallicity = metallicity
         self._raw_downloaded = {}
         for url, file in tqdm(
-            zip(self._raw_spectrum_urls, self._raw_spectrum_filenames)
+            zip(self._raw_spectrum_urls, self._raw_spectrum_filenames), leave=False
         ):
             self._raw_downloaded[file] = download_file_with_warning(
                 url, pkgname=self._cache_label, cache=cache
@@ -448,7 +448,7 @@ class PHOENIXLibrary:
             print(f"{k:>20} = {v}")
 
         d = {}
-        for k, v in tqdm(list(self._raw_downloaded.items())):
+        for k, v in tqdm(list(self._raw_downloaded.items()), leave=False):
 
             # load the unbinned spectrum
             unbinned_f = self._load_raw_spectrum(v)
@@ -919,7 +919,7 @@ class PHOENIXLibrary:
         ]:
             timings[k] = []
 
-        for R in tqdm(self._available_resolutions):
+        for R in tqdm(self._available_resolutions, leave=False):
             for i in range(iterations):
                 timings["R"].append(R)
 

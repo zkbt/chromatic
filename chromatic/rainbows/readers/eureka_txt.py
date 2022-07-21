@@ -36,7 +36,7 @@ def eureadka_txt(filename):
     fluxlike = {}
     i_time = np.arange(len(t))
     # loop through wavelengths, populating all times for each
-    for i_wavelength in tqdm(range(len(w))):
+    for i_wavelength in tqdm(range(len(w)), leave=False):
 
         for k in data.colnames[2:]:
             # if an array for this key doesn't exist, create it

@@ -51,6 +51,8 @@ def _setup_animated_scatter(self, ax=None, figurekw={}, scatterkw={}, textkw={})
     this_textkw.update(**textkw)
     text = plt.text(**this_textkw)
 
+    plt.title(self.get("title"))
+
     # return a dictionary with things that will be useful to hang onto
     return dict(fi=fig, ax=ax, scatter=scatter, text=text)
 
@@ -242,7 +244,7 @@ def animate_lightcurves(
     # set up to save frames directly into the animation
     figure = self._animate_lightcurves_components["fi"]
     with writer.saving(figure, filename, dpi or figure.get_dpi()):
-        for i in tqdm(range(self.nwave)):
+        for i in tqdm(range(self.nwave), leave=False):
             self._animate_lightcurves_components["update"](i)
             writer.grab_frame()
 
@@ -448,7 +450,7 @@ def animate_spectra(
     # set up to save frames directly into the animation
     figure = self._animate_spectra_components["fi"]
     with writer.saving(figure, filename, dpi or figure.get_dpi()):
-        for i in tqdm(range(self.ntime)):
+        for i in tqdm(range(self.ntime), leave=False):
             self._animate_spectra_components["update"](i)
             writer.grab_frame()
 
