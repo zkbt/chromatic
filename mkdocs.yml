@@ -13,7 +13,7 @@ nav:
         - models.ipynb
         #- multi.ipynb
     - Examples:
-        - quicklook-timeseries-spectra.ipynb
+        - example-timeseries-spectra.ipynb
     - Developer Guide:
         - designing.ipynb
         - documentation.ipynb
