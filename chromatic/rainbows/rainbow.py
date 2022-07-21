@@ -692,7 +692,7 @@ class Rainbow:
         if self.time is None:
             return None
         else:
-            return np.nanmedian(np.diff(self.time))
+            return np.nanmedian(np.diff(self.time)).to(u.minute)
 
     @property
     def nflux(self):
