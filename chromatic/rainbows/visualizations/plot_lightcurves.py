@@ -98,7 +98,7 @@ def plot_lightcurves(
             figsize=plt.matplotlib.rcParams["figure.figsize"][::-1],
             constrained_layout=True,
         )
-        ax = plt.gca()
+        ax = plt.subplot()
     plt.sca(ax)
 
     # figure out the spacing to use
@@ -178,4 +178,6 @@ def plot_lightcurves(
         plt.ylabel("Relative Flux (+ offsets)")
         if ylim is not None:
             plt.ylim(*ylim)
+        plt.title(self.get("title"))
+
     return ax

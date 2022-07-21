@@ -40,6 +40,12 @@ def remove_trends(
             `polyorder` = the order of the polynomial to use.
             Default is `2`.
 
+        `polyfit` is a wrapper for numpy.polyfit to use a weighted
+        linear least squares polynomial fit to remove smooth trends
+        in time. Required keywods:
+            `deg` = the polynomial degree, which must be a positive
+            integer. Default is `1`, meaning a line.
+
         `custom` allow users to pass any fluxlike array of model
         values for an astrophysical signal to remove it. Required
         keywords:
@@ -89,8 +95,9 @@ def remove_trends(
             {kw_to_use}
             """
             )
-        medfilt = median_filter(new.flux, **kw_to_use)
-        new.flux = new.flux / medfilt
+        medfilt = median_filter(self.flux, **kw_to_use)
+        new.flux = self.flux / medfilt
+        new.uncertainty = self.uncertainty / medfilt
 
     if method == "savgol_filter":
         kw_to_use = dict(window_length=11, polyorder=1)
@@ -104,8 +111,38 @@ def remove_trends(
             """
             )
         for i in range(new.nwave):
-            savgolfilter = savgol_filter(new.flux[i, :], **kw_to_use)
-            new.flux[i, :] = new.flux[i, :] / savgolfilter
+            savgolfilter = savgol_filter(self.flux[i, :], **kw_to_use)
+            new.flux[i, :] = self.flux[i, :] / savgolfilter
+            new.uncertainty[i, :] = self.uncertainty[i, :] / savgolfilter
+
+    if method == "polyfit":
+        kw_to_use = dict(deg=1)
+        kw_to_use.update(**kw)
+        if "deg" not in kw:
+            warnings.warn(
+                f"""
+            You didn't supply all expected keywords for '{method}'.
+            Relying on defaults, the values will be:
+            {kw_to_use}
+            """
+            )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            for i in range(new.nwave):
+                x, y, sigma = self.get_ok_data_for_wavelength(
+                    i, express_badness_with_uncertainty=True
+                )
+                ok = np.isfinite(y)
+                if np.sum(ok) >= 2:
+                    coefs = np.polyfit(
+                        x=remove_unit(x)[ok],
+                        y=remove_unit(y)[ok],
+                        w=1 / remove_unit(sigma)[ok],
+                        **kw_to_use,
+                    )
+                    poly = np.polyval(coefs, remove_unit(x))
+                    new.flux[i, :] = self.flux[i, :] / poly
+                    new.uncertainty[i, :] = self.uncertainty[i, :] / poly
 
     if method == "custom":
         if "model" not in kw:
@@ -114,6 +151,7 @@ def remove_trends(
             raise ValueError("Your model doesn't match flux shape")
         else:
             new.flux = new.flux / kw["model"]
+            new.uncertainty = new.uncertainty / kw["model"]
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)

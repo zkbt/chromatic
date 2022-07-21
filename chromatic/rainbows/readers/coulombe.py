@@ -41,7 +41,7 @@ def from_coulombe(rainbow, filepath, order=1):
     integration_counter = 0
 
     # loop over file (each one a segment)
-    for i_file, f in enumerate(tqdm(filenames)):
+    for i_file, f in enumerate(tqdm(filenames, leave=False)):
 
         # open this fits file
         hdu = fits.open(f)

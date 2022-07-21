@@ -144,4 +144,6 @@ def pcolormesh(
             )
         # emulate origin = upper for imshow (y starts at top)
         plt.ylim(y[-1], y[0])
+        plt.title(self.get("title"))
+
     return ax

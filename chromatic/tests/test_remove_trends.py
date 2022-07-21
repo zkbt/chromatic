@@ -11,7 +11,7 @@ def test_remove_trends():
     )
     fi, ax = plt.subplots(
         2,
-        5,
+        6,
         figsize=(12, 6),
         sharey="row",
         sharex=True,
@@ -21,7 +21,9 @@ def test_remove_trends():
     imkw = dict(vmin=0.98, vmax=1.02, xaxis="wavelength", colorbar=False)
     s.imshow(ax=ax[0, 0], **imkw)
     s.plot_noise_comparison(ax=ax[1, 0])
-    for i, method in enumerate(["median_filter", "savgol_filter", "differences"]):
+    for i, method in enumerate(
+        ["median_filter", "savgol_filter", "differences", "polyfit"]
+    ):
         x = s.remove_trends(method=method)
         x.imshow(ax=ax[0, 1 + i], **imkw)
         ax[0, i + 1].set_title(method)

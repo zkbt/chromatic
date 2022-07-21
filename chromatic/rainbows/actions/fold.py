@@ -1,6 +1,6 @@
 from ...imports import *
 
-__all__ = ["fold"]
+__all__ = ["fold", "mask_transit"]
 
 
 def fold(self, period=None, t0=None, event="Mid-Transit"):
@@ -52,3 +52,49 @@ def fold(self, period=None, t0=None, event="Mid-Transit"):
     new._record_history_entry(h)
 
     return new
+
+
+def mask_transit(self, period, t0, duration, event="Mid-Transit"):
+    """
+    Mask
+
+    Parameters
+    ----------
+    period : u.Quantity
+        The orbital period of the planet (with astropy units of time).
+    t0 : u.Quantity
+        Any mid-transit epoch (with astropy units of time).
+    duration : u.Quantity
+        The total duration of the transit to remove.
+    event : str
+        A description of the event that happens periodically.
+        For example, you might want to switch this to
+        'Mid-Eclipse' (as well as offsetting the `t0` by the
+        appropriate amount relative to transit). This description
+        may be used in plot labels.
+
+    Returns
+    -------
+    masked : Rainbow
+        The Rainbow with the transit masked as not `ok`.
+    """
+    # create a history entry for this action (before other variables are defined)
+    h = self._create_history_entry("mask_transit", locals())
+
+    if "fold" in self.history():
+        raise ValueError(
+            f"""
+        It looks like this Rainbow has already been folded.
+        Please run `.mask_transit` only on unfolded data.
+        (It will refold while masking.)
+        """
+        )
+
+    # fold and mask transit
+    folded = self.fold(period=period, t0=t0, event=event)
+    folded.timelike["ok"] = np.abs(folded.time) >= duration / 2
+
+    # append the history entry to the new Rainbow
+    folded._record_history_entry(h)
+
+    return folded

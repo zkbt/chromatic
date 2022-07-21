@@ -12,6 +12,8 @@ nav:
         - visualizing.ipynb
         - models.ipynb
         #- multi.ipynb
+    - Examples:
+        - quicklook-timeseries-spectra.ipynb
     - Developer Guide:
         - designing.ipynb
         - documentation.ipynb

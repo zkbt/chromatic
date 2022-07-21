@@ -179,7 +179,7 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
                 rainbow.set_times_from_astropy(astropy_times, is_barycentric=True)
 
             # loop through the integrations in this segment
-            for i in tqdm(np.arange(n_integrations_in_this_segment)):
+            for i in tqdm(np.arange(n_integrations_in_this_segment), leave=False):
                 e = 2 + i * n_orders + (order - 1)
 
                 # do this stuff only on the very first time through

@@ -34,7 +34,7 @@ def from_text(rainbow, filename, **kwargs):
     fluxlike_keys.remove("wavelength")
     for k in fluxlike_keys:
         fluxlike[k] = np.ones(shape=(len(w), len(t)))
-    for i in tqdm(range(len(data))):
+    for i in tqdm(range(len(data)), leave=False):
         # this is slow, but general
         i_time = t == data[i]["time"]
         i_wavelength = w == data[i]["wavelength"]

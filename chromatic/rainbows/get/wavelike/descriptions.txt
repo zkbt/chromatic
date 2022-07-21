@@ -1,7 +1,8 @@
 cartoon | name | description
+🌊🐋🌈 | get_average_spectrum | Get the weighted average spectrum.
 🌊🔎🌈 | get_for_wavelength | Get a quantity associated with a wavelength index.
 🌊🎯🌈 | get_measured_scatter | Get the measured scatter on the time series for each wavelength.
+🌊🖖🌈 | get_median_spectrum | Get the median spectrum.
 🌊👌🌈 | get_ok_data_for_wavelength | Get a quantity associated with a wavelength index.
-🌊🔭🌈 | get_average_spectrum | Get the weighted average spectrum.
 🌊💎🌈 | get_spectral_resolution | Get the spectral resolution (R=w/dw).
 🌊🃏🌈 | get_typical_uncertainty | Get the typical uncertainty for each wavelength.

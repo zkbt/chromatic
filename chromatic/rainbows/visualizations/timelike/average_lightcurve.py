@@ -6,7 +6,7 @@ __all__ = ["plot_average_lightcurve"]
 
 def plot_average_lightcurve(self, **kw):
     """
-    Plot the weighted average average_lightcurve as a function of time.
+    Plot the weighted average lightcurve as a function of time.
 
     Parameters
     ----------
@@ -16,16 +16,9 @@ def plot_average_lightcurve(self, **kw):
         docstrings for options about plot appearance and layout.
     """
     y = self.get_average_lightcurve()
-    y_unit = u.Quantity(y).unit
-    if y_unit == u.Unit(""):
-        unit_string = "unitless"
-    else:
-        unit_string = y_unit.to_string("latex_inline")
-    if y_unit == "":
-        y_unit = "unitless"
     self._scatter_timelike_or_wavelike(
         x=self.time,
         y=y,
-        ylabel=f"Flux ({unit_string})",
+        ylabel=f"Flux ({_get_unit_string(y)})",
         **kw,
     )
