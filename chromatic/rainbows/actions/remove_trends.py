@@ -126,21 +126,23 @@ def remove_trends(
             {kw_to_use}
             """
             )
-        for i in range(new.nwave):
-            x, y, sigma = self.get_ok_data_for_wavelength(
-                i, express_badness_with_uncertainty=True
-            )
-            ok = np.isfinite(y)
-            if np.sum(ok) >= 2:
-                coefs = np.polyfit(
-                    x=remove_unit(x)[ok],
-                    y=remove_unit(y)[ok],
-                    w=1 / remove_unit(sigma)[ok],
-                    **kw_to_use,
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            for i in range(new.nwave):
+                x, y, sigma = self.get_ok_data_for_wavelength(
+                    i, express_badness_with_uncertainty=True
                 )
-                poly = np.polyval(coefs, remove_unit(x))
-                new.flux[i, :] = self.flux[i, :] / poly
-                new.uncertainty[i, :] = self.uncertainty[i, :] / poly
+                ok = np.isfinite(y)
+                if np.sum(ok) >= 2:
+                    coefs = np.polyfit(
+                        x=remove_unit(x)[ok],
+                        y=remove_unit(y)[ok],
+                        w=1 / remove_unit(sigma)[ok],
+                        **kw_to_use,
+                    )
+                    poly = np.polyval(coefs, remove_unit(x))
+                    new.flux[i, :] = self.flux[i, :] / poly
+                    new.uncertainty[i, :] = self.uncertainty[i, :] / poly
 
     if method == "custom":
         if "model" not in kw:
