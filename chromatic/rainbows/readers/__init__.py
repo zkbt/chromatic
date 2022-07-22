@@ -24,6 +24,7 @@ from .feinstein import *
 from .schlawin import *
 from .coulombe import *
 from .kirk import *
+from .radica import *
 
 
 # construct a dictionary of available readers
