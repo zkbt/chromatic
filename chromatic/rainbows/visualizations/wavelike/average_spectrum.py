@@ -4,7 +4,7 @@ from ....imports import *
 __all__ = ["plot_average_spectrum"]
 
 
-def plot_average_spectrum(self, **kw):
+def plot_average_spectrum(self, filename=None, **kw):
     """
     Plot the weighted average spectrum as a function of wavelength.
 
@@ -22,3 +22,5 @@ def plot_average_spectrum(self, **kw):
         ylabel=f"Flux ({_get_unit_string(y)})",
         **kw,
     )
+    if filename is not None:
+        self.savefig(filename)

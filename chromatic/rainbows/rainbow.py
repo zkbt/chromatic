@@ -469,8 +469,8 @@ class Rainbow:
             # test the three options
             if np.allclose(dt, np.median(dt), rtol=relative_tolerance):
                 self.metadata["tscale"] = "linear"
-            elif np.allclose(dlogt, np.median(dlogt), rtol=relative_tolerance):
-                self.metadata["tscale"] = "log"
+            # elif np.allclose(dlogt, np.median(dlogt), rtol=relative_tolerance):
+            #    self.metadata["tscale"] = "log"
             else:
                 self.metadata["tscale"] = "?"
 
@@ -836,7 +836,7 @@ class Rainbow:
                 lower, upper = calculate_bin_leftright(np.log(self.time.value))
                 self.timelike["time_lower"] = np.exp(lower) * self.time.unit
                 self.timelike["time_upper"] = np.exp(upper) * self.time.unit
-            elif self.metadata.get("tscale", None) == "linear":
+            else:
                 lower, upper = calculate_bin_leftright(self.time)
                 self.timelike["time_lower"] = lower
                 self.timelike["time_upper"] = upper
@@ -996,6 +996,9 @@ class Rainbow:
         plot,
         plot_histogram,
         _scatter_timelike_or_wavelike,
+        _get_plot_directory,
+        _label_plot_file,
+        savefig,
     )
 
     from .visualizations.wavelike import (

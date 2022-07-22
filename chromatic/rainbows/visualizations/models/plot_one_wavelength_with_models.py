@@ -330,6 +330,8 @@ def animate_with_models(
         0, animation=False, orientation=orientation, **kw
     )
 
+    filename = self._label_plot_file(filename)
+
     # initialize the animator
     writer, displayer = _get_animation_writer_and_displayer(
         filename=filename, fps=fps, bitrate=bitrate

@@ -24,6 +24,7 @@ def imshow_interact(
     cmap="viridis",
     ylim=[],
     ylog=None,
+    filename=None,
 ):
     """
     Display interactive spectrum plot for chromatic Rainbow with a
@@ -193,3 +194,5 @@ def imshow_interact(
 
     # display the interactive Altair plot
     (spectrum_int | lightcurve).display()
+    if filename is not None:
+        (spectrum_int | lightcurve).save(self._label_plot_file(filename))

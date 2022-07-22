@@ -98,7 +98,7 @@ def guess_reader(filepath, format=None):
         return from_atoca
     elif fnmatch(f, "*wb_lcs*"):
         return from_kirk_fitted_light_curves
-    elif fnmatch(f, "*_flux_resampled_*.pickle"):
+    elif fnmatch(f, "*_flux_resampled*.pickle"):
         return from_kirk_stellar_spectra
     elif fnmatch(f, "*.txt") or fnmatch(f, "*.csv"):
         return from_text

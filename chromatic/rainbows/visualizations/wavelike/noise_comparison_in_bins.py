@@ -12,6 +12,7 @@ def plot_noise_comparison_in_bins(
     expected=True,
     measured_errorbarkw={},
     expected_plotkw={},
+    filename=None,
     **kw,
 ):
     """
@@ -73,4 +74,6 @@ def plot_noise_comparison_in_bins(
     plt.sca(ax)
     # plt.title(self.get("title"))
 
+    if filename is not None:
+        self.savefig(filename)
     return ax
