@@ -4,7 +4,7 @@ from ....imports import *
 __all__ = ["plot_median_lightcurve"]
 
 
-def plot_median_lightcurve(self, **kw):
+def plot_median_lightcurve(self, filename=None, **kw):
     """
     Plot the weighted median lightcurve as a function of time.
 
@@ -22,3 +22,5 @@ def plot_median_lightcurve(self, **kw):
         ylabel=f"Flux ({_get_unit_string(y)})",
         **kw,
     )
+    if filename is not None:
+        self.savefig(filename)

@@ -236,6 +236,8 @@ def animate_lightcurves(
     """
     self._setup_animate_lightcurves(**kwargs)
 
+    filename = self._label_plot_file(filename)
+
     # initialize the animator
     writer, displayer = _get_animation_writer_and_displayer(
         filename=filename, fps=fps, bitrate=bitrate
@@ -445,6 +447,7 @@ def animate_spectra(
 
     self._setup_animate_spectra(**kwargs)
 
+    filename = self._label_plot_file(filename)
     # initialize the animator
     writer, displayer = _get_animation_writer_and_displayer(
         filename=filename, fps=fps, bitrate=bitrate

@@ -20,6 +20,7 @@ def plot_spectra(
     errorbarkw={},
     plotkw={},
     textkw={},
+    filename=None,
     **kw,
 ):
     """
@@ -190,4 +191,6 @@ def plot_spectra(
         if self.get("wscale") == "log":
             plt.xscale("log")
         plt.title(self.get("title"))
+    if filename is not None:
+        self.savefig(filename)
     return ax

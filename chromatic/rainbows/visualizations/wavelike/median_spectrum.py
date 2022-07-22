@@ -4,7 +4,7 @@ from ....imports import *
 __all__ = ["plot_median_spectrum"]
 
 
-def plot_median_spectrum(self, **kw):
+def plot_median_spectrum(self, filename=None, **kw):
     """
     Plot the weighted median spectrum as a function of wavelength.
 
@@ -22,3 +22,5 @@ def plot_median_spectrum(self, **kw):
         ylabel=f"Flux ({_get_unit_string(y)})",
         **kw,
     )
+    if filename is not None:
+        self.savefig(filename)

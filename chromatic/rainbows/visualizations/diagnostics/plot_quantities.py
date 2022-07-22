@@ -10,6 +10,7 @@ def plot_quantities(
     maxcol=1,
     panel_size=(6, 2),
     what_is_x="index",
+    filename=None,
     **kw,
 ):
     """
@@ -111,3 +112,5 @@ def plot_quantities(
     if k + 1 <= len(ax):
         for axi in ax[k + 1 :]:
             axi.axis("Off")
+    if filename is not None:
+        self.savefig(filename)

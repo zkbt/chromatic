@@ -3,7 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 plt.matplotlib.rcParams["figure.dpi"] = 300
-plt.rcParams["figure.constrained_layout.use"] = True
+plt.matplotlib.rcParams["figure.constrained_layout.use"] = True
+plt.matplotlib.rcParams["figure.facecolor"] = "white"
+plt.matplotlib.rcParams["savefig.facecolor"] = "white"
 
 import matplotlib.animation as ani
 import matplotlib.colors as col

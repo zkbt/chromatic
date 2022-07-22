@@ -996,6 +996,9 @@ class Rainbow:
         plot,
         plot_histogram,
         _scatter_timelike_or_wavelike,
+        _get_plot_directory,
+        _label_plot_file,
+        savefig,
     )
 
     from .visualizations.wavelike import (

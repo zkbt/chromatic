@@ -19,6 +19,7 @@ def plot_noise_comparison(
     measured_label="Measured",
     scatterkw={},
     plotkw={},
+    filename=None,
     **kw,
 ):
     """
@@ -138,3 +139,7 @@ def plot_noise_comparison(
         this_legendkw.update(**legendkw)
         plt.legend(**legendkw)
     plt.title(self.get("title"))
+
+    if filename is not None:
+        self.savefig(filename)
+    return ax

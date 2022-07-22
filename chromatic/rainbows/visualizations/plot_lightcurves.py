@@ -19,6 +19,7 @@ def plot_lightcurves(
     plotkw={},
     errorbarkw={},
     textkw={},
+    filename=None,
     **kw,
 ):
     """
@@ -180,4 +181,6 @@ def plot_lightcurves(
             plt.ylim(*ylim)
         plt.title(self.get("title"))
 
+    if filename is not None:
+        self.savefig(filename)
     return ax
