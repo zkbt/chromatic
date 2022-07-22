@@ -197,10 +197,11 @@ def _get_plot_directory(self):
                 directory = x.replace("|", "-").replace(" ", "")
                 break
         self._plot_directory = directory
-        try:
-            os.mkdir(self._plot_directory)
-        except FileExistsError:
-            pass
+        if self._plot_directory != "":
+            try:
+                os.mkdir(self._plot_directory)
+            except FileExistsError:
+                pass
         return self._plot_directory
 
 
