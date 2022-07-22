@@ -4,6 +4,7 @@ cartoon | name | description
 🌈🚧🌊 | align_wavelengths | Align spectra with different wavelength grids onto one shared axis.
 🌈🧺🧱 | bin | Bin to a new wavelength or time grid.
 🌈🧑‍🤝‍🧑🌈 | compare | Connect to other 🌈 objects for easy comparison.
+🌈🚩👀 | flag_outliers | Flag outlier data points.
 🌈⏲🎞 | fold | Fold times relative to a particular period and epoch.
 🌈🧺⏰ | get_average_lightcurve_as_rainbow | Bin down to a single integrated light curve.
 🌈🧺🌊 | get_average_spectrum_as_rainbow | Bin down to a single integrated spectrum.
