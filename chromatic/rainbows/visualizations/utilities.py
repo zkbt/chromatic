@@ -209,5 +209,5 @@ def _label_plot_file(self, filename):
     return os.path.join(directory, filename.replace(".", f"-{directory}."))
 
 
-def savefig(self, filename="test.png", **kw):
-    plt.savefig(self._label_plot_file(filename), **kw)
+def savefig(self, filename="test.png", dpi=300, **kw):
+    plt.savefig(self._label_plot_file(filename), dpi=dpi, **kw)
