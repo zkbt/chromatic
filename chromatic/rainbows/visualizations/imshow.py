@@ -17,6 +17,7 @@ def imshow(
     alpha_ok=0.8,
     vmin=None,
     vmax=None,
+    filename=None,
     **kw,
 ):
     """
@@ -207,4 +208,6 @@ def imshow(
             )
         plt.title(self.get("title"))
 
+    if filename is not None:
+        self.savefig(filename)
     return ax

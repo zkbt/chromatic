@@ -12,6 +12,8 @@ def plot_noise_comparison_in_bins(
     expected=True,
     measured_errorbarkw={},
     expected_plotkw={},
+    filename=None,
+    ylim=[1e-5, 1e-1],
     **kw,
 ):
     """
@@ -56,7 +58,7 @@ def plot_noise_comparison_in_bins(
     # set good plot appearance default
     plt.yscale("log")
     plt.xscale("log")
-    plt.ylim(np.nanmin(x["expectation"], None))
+    plt.ylim(*ylim)
     plt.xlim(1, np.nanmax(x["N"]))
     plt.xlabel("# of Times in Bin")
 
@@ -73,4 +75,6 @@ def plot_noise_comparison_in_bins(
     plt.sca(ax)
     # plt.title(self.get("title"))
 
+    if filename is not None:
+        self.savefig(filename)
     return ax

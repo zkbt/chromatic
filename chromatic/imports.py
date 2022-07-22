@@ -1,9 +1,15 @@
+import matplotlib
+
+matplotlib.rcParams["figure.dpi"] = 300
+matplotlib.rcParams["figure.constrained_layout.use"] = True
+matplotlib.rcParams["figure.facecolor"] = "white"
+matplotlib.rcParams["savefig.facecolor"] = "white"
+matplotlib.rcParams["savefig.dpi"] = 300
+
 # basics
 import numpy as np
 import matplotlib.pyplot as plt
 
-plt.matplotlib.rcParams["figure.dpi"] = 300
-plt.rcParams["figure.constrained_layout.use"] = True
 
 import matplotlib.animation as ani
 import matplotlib.colors as col

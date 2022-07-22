@@ -5,6 +5,9 @@ __all__ = [
     "_get_animation_writer_and_displayer",
     "_scatter_timelike_or_wavelike",
     "_get_unit_string",
+    "_get_plot_directory",
+    "_label_plot_file",
+    "savefig",
 ]
 
 
@@ -181,3 +184,31 @@ def _get_unit_string(y):
     else:
         unit_string = y_unit.to_string("latex_inline")
     return unit_string
+
+
+def _get_plot_directory(self):
+    try:
+        return self._plot_directory
+    except AttributeError:
+        directory = ""
+        for option in ["title", "label", "name", "directory"]:
+            x = self.get(option)
+            if x is not None:
+                directory = x.replace("|", "-").replace(" ", "")
+                break
+        self._plot_directory = directory
+        if self._plot_directory != "":
+            try:
+                os.mkdir(self._plot_directory)
+            except FileExistsError:
+                pass
+        return self._plot_directory
+
+
+def _label_plot_file(self, filename):
+    directory = self._get_plot_directory()
+    return os.path.join(directory, filename.replace(".", f"-{directory}."))
+
+
+def savefig(self, filename="test.png", dpi=300, **kw):
+    plt.savefig(self._label_plot_file(filename), dpi=dpi, **kw)

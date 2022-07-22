@@ -6,6 +6,7 @@ __all__ = ["plot_spectral_resolution"]
 def plot_spectral_resolution(
     self,
     pixels_per_resolution_element=1,
+    filename=None,
     **kw,
 ):
     """
@@ -29,3 +30,5 @@ def plot_spectral_resolution(
         **kw,
     )
     plt.title(self.get("title"))
+    if filename is not None:
+        self.savefig(filename)

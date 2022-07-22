@@ -134,15 +134,18 @@ def remove_trends(
                 )
                 ok = np.isfinite(y)
                 if np.sum(ok) >= 2:
-                    coefs = np.polyfit(
-                        x=remove_unit(x)[ok],
-                        y=remove_unit(y)[ok],
-                        w=1 / remove_unit(sigma)[ok],
-                        **kw_to_use,
-                    )
-                    poly = np.polyval(coefs, remove_unit(x))
-                    new.flux[i, :] = self.flux[i, :] / poly
-                    new.uncertainty[i, :] = self.uncertainty[i, :] / poly
+                    try:
+                        coefs = np.polyfit(
+                            x=remove_unit(x)[ok],
+                            y=remove_unit(y)[ok],
+                            w=1 / remove_unit(sigma)[ok],
+                            **kw_to_use,
+                        )
+                        poly = np.polyval(coefs, remove_unit(x))
+                        new.flux[i, :] = self.flux[i, :] / poly
+                        new.uncertainty[i, :] = self.uncertainty[i, :] / poly
+                    except:
+                        pass
 
     if method == "custom":
         if "model" not in kw:

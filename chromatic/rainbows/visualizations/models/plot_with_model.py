@@ -14,6 +14,7 @@ def plot_with_model(
     data_errorbarkw={},
     model_plotkw={},
     minimum_acceptable_ok=1e-10,
+    filename=None,
     **kw,
 ):
     """
@@ -77,9 +78,11 @@ def plot_with_model(
         ax=ax,
         **kw,
     )
+    if filename is not None:
+        self.savefig(filename)
 
 
-def plot_with_model_and_residuals(self, figsize=(8, 6), **kw):
+def plot_with_model_and_residuals(self, figsize=(8, 6), filename=None, **kw):
     """
     Produce a plot of multiple light curves stacked with an offset,
     with models overplotted (like `plot_lightcurves` with model),
@@ -112,3 +115,5 @@ def plot_with_model_and_residuals(self, figsize=(8, 6), **kw):
         **kw,
     )
     ax[1].set_ylabel("Residuals (+ offsets)")
+    if filename is not None:
+        self.savefig(filename)

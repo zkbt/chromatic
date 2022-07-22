@@ -124,8 +124,9 @@ def from_kirk_stellar_spectra(self, filepath):
 
             some-directory/
                 star1_flux_resampled_unsmoothed.pickle
-                star1_erro_resampled_unsmoothed.pickle
-                wavelengths.pickle
+                star1_error_resampled_unsmoothed.pickle
+                wvl_solution.pickle
+                BJD_TDB_time.pickle
     """
 
     # load the flux pickle
@@ -133,19 +134,18 @@ def from_kirk_stellar_spectra(self, filepath):
     self.fluxlike["flux"] = pickle.load(open(flux_file, "rb")).T
 
     # load the uncertainty pickle
-    uncertainty_file = filepath.replace("_flux_resampled_", "_error_resampled_")
+    uncertainty_file = filepath.replace("_flux_resampled", "_error_resampled")
+    assert uncertainty_file != flux_file
     self.fluxlike["uncertainty"] = pickle.load(open(uncertainty_file, "rb")).T
 
     # load the wavelength pickle
     wavelength_file = flux_file.replace(
-        os.path.basename(flux_file), "wavelengths.pickle"
+        os.path.basename(flux_file), "wvl_solution.pickle"
     )
     self.wavelike["wavelength"] = pickle.load(open(wavelength_file, "rb")) * u.micron
 
-    warnings.warn(
-        f"""
-    We're not sure what the times look like for this dataset.
-    Making up some totally imaginary ones!
-    """
-    )
-    self.timelike["time"] = np.arange(self.flux.shape[1]) * u.s
+    # load the wavelength pickle
+    time_file = flux_file.replace(os.path.basename(flux_file), "BJD_TDB_time.pickle")
+    bjd_mjd = pickle.load(open(time_file, "rb"))
+    astropy_times = Time(bjd_mjd, format="mjd", scale="tdb")
+    self.set_times_from_astropy(astropy_times, is_barycentric=True)
