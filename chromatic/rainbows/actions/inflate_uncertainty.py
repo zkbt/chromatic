@@ -5,6 +5,7 @@ __all__ = ["inflate_uncertainty"]
 
 def inflate_uncertainty(
     self,
+    minimum_inflate_ratio = 1.0,
     **kw,
 ):  
     """
@@ -51,6 +52,11 @@ def inflate_uncertainty(
         keywords:
             `model` = the (nwavelengths, ntimes) model array
 
+    minimum_inflate_ratio : float
+	the minimum inflate_ratio that can be. We don't want people 
+	to deflate uncertainty unless a very specific case of unstable 
+	pipeline output.
+
     kw : dict
         Any additional keywords will be passed to the function
         that does the filtering. See `method` keyword for options.
@@ -62,20 +68,22 @@ def inflate_uncertainty(
     """
 
     # create a history entry for this action (before other variables are defined)
-    h = self._create_history_entry("remove_trends", locals())
+    h = self._create_history_entry("inflate_uncertainty", locals())
 
     # TODO, think about more careful treatment of uncertainties + good/bad data
     new = self._create_copy()
-    
+	    
     trend_removed = new.remove_trends(**kw)
-    measured_scatter = trend_removed.get_measured_scatter(method='standard-deviation',minimum_acceptable_ok=1e-10)
+    measured_scatter = trend_removed.get_measured_scatter(method='MAD',minimum_acceptable_ok=1e-10)
 
     expected_uncertainty = trend_removed.get_expected_uncertainty()
 
     inflate_ratio = measured_scatter/expected_uncertainty
-	
-    for iwave in range (new.nwave):
-    	new.uncertainty[iwave,:] = new.uncertainty[iwave,:]*inflate_ratio[iwave]
+    if np.min(inflate_ratio) < minimum_inflate_ratio:
+    	raise Exception(f"One or more inflate ratios are below the minimum_inflate_ratio = {minimum_inflate_ratio}, if you really want to proceed please consider lower minimum_inflate_ratio")
+
+    new.uncertainty = new.uncertainty*inflate_ratio[:,np.newaxis]  
+  
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
 
