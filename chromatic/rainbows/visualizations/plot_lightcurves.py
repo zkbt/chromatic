@@ -111,7 +111,7 @@ def plot_lightcurves(
     ax._most_recent_chromatic_plot_spacing = spacing
 
     # TO-DO: check if this Rainbow has been normalized
-    if self._is_probably_normalized():
+    if self._is_probably_normalized() or "model" in self.fluxlike:
         label_y = "1 - (0.5 + i) * spacing"
         ylim = 1 - np.array([self.nwave + 1, -1]) * spacing
     else:

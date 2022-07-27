@@ -91,7 +91,7 @@ def imshow_interact(
         """
         )
 
-    if self._is_probably_normalized() == False:
+    if (self._is_probably_normalized() == False) and "model" not in self.fluxlike:
         warnings.warn(
             """
         It looks like you might be trying to use `imshow_interact` with an

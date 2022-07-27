@@ -108,7 +108,8 @@ def plot_with_model_and_residuals(self, figsize=(8, 6), filename=None, **kw):
     )
 
     self.plot_with_model(ax=ax[0], **kw)
-    kw.update(spacing=ax[0]._most_recent_chromatic_plot_spacing)
+    if "spacing" not in kw:
+        kw.update(spacing=ax[0]._most_recent_chromatic_plot_spacing)
     self.plot_with_model(
         quantity="residuals",
         ax=ax[1],
