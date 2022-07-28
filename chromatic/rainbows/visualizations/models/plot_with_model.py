@@ -92,7 +92,7 @@ def plot_with_model_and_residuals(
     histogramkw={},
     residual_scaling=1,
     ax=None,
-    label_scatter=True,
+    label_scatter="{measured_rms[i]*1e6:.0f}ppm/({self.dt:.1f}) [{measured_rms[i]/expected_rms[i]:.1f}x]",
     **kw,
 ):
     """
@@ -136,8 +136,9 @@ def plot_with_model_and_residuals(
     spacing = ax[0]._most_recent_chromatic_plot_spacing
     if "spacing" not in kw:
         kw.update(spacing=spacing)
-    if label_scatter:
-        kw.update(label_scatter=True)
+    if label_scatter is not False:
+        kw.update(label_scatter=label_scatter)
+
     self.plot_with_model(
         quantity="residuals",
         scaling=residual_scaling,
