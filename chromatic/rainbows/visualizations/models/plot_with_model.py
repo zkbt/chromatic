@@ -115,7 +115,7 @@ def plot_with_model_and_residuals(
     """
     if histogram:
         N_columns = 3
-        gridspec_kw = dict(width_ratios=[1, 1, 0.15])
+        gridspec_kw = dict(width_ratios=[1, 1, 0.1])
     else:
         N_columns = 2
         gridspec_kw = dict()
