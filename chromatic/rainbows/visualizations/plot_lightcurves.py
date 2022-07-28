@@ -181,13 +181,13 @@ def plot_lightcurves(
                         **this_textkw,
                     )
 
-                if label_scatter:
+                if label_scatter is not False:
                     this_textkw.update(ha="right")
                     if text:
                         plt.text(
                             max_time,
                             eval(label_y),
-                            f"{measured_rms[i]*1e6:.0f}ppm/({self.dt:.1f}) [{measured_rms[i]/expected_rms[i]:.1f}x]",
+                            eval(f'f"{label_scatter}"'),
                             **this_textkw,
                         )
 
