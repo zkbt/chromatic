@@ -326,6 +326,11 @@ def animate_with_models(
     **kw,
 ):
 
+    try:
+        del self._animate_with_models_setup
+    except AttributeError:
+        pass
+
     self.plot_one_wavelength_with_models(
         0, animation=False, orientation=orientation, **kw
     )
