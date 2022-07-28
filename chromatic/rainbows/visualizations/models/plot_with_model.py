@@ -10,6 +10,7 @@ def plot_with_model(
     errorbar=True,
     text=True,
     ax=None,
+    scaling=1,
     data_plotkw={},
     data_errorbarkw={},
     model_plotkw={},
@@ -42,7 +43,7 @@ def plot_with_model(
     """
 
     # limit to flux or residuals
-    assert quantity in ["flux", "residuals"]
+    assert quantity in ["flux", "residuals", "scaled_residuals_plus_one"]
 
     # plot the data
     plotkw = dict(marker="o", linewidth=0, markeredgecolor="none", zorder=0)
@@ -60,6 +61,7 @@ def plot_with_model(
         plotkw=plotkw,
         errorbarkw=errorbarkw,
         minimum_acceptable_ok=minimum_acceptable_ok,
+        scaling=scaling,
         **kw,
     )
 
@@ -82,7 +84,17 @@ def plot_with_model(
         self.savefig(filename)
 
 
-def plot_with_model_and_residuals(self, figsize=(8, 6), filename=None, **kw):
+def plot_with_model_and_residuals(
+    self,
+    figsize=(8, 6),
+    filename=None,
+    histogram=True,
+    histogramkw={},
+    residual_scaling=1,
+    ax=None,
+    label_scatter="{measured_rms[i]*1e6:.0f}ppm/({self.dt:.1f}) [{measured_rms[i]/expected_rms[i]:.1f}x]",
+    **kw,
+):
     """
     Produce a plot of multiple light curves stacked with an offset,
     with models overplotted (like `plot_lightcurves` with model),
@@ -92,28 +104,68 @@ def plot_with_model_and_residuals(self, figsize=(8, 6), filename=None, **kw):
     ----------
     figsize : tuple
         The figure size for the two-panel side-by-side plot.
+    histogram : bool
+        Should histograms be plotted for the residuals?
+    histogramkw : dict
+        Keywords to be passed to plot histograms.
     **kw : dict
         All additional keywords will be passed along
         to `.plot_with_models. Please see the docstring
         for that function for the full set of options.
     """
-    fi, ax = plt.subplots(
-        1,
-        2,
-        figsize=figsize,
-        dpi=300,
-        sharey=True,
-        sharex=True,
-        constrained_layout=True,
-    )
+    if histogram:
+        N_columns = 3
+        gridspec_kw = dict(width_ratios=[1, 1, 0.1])
+    else:
+        N_columns = 2
+        gridspec_kw = dict()
+
+    if ax is None:
+        fi, ax = plt.subplots(
+            1,
+            N_columns,
+            figsize=figsize,
+            dpi=300,
+            sharey=True,
+            # sharex=True,
+            constrained_layout=True,
+            gridspec_kw=gridspec_kw,
+        )
 
     self.plot_with_model(ax=ax[0], **kw)
-    kw.update(spacing=ax[0]._most_recent_chromatic_plot_spacing)
+    spacing = ax[0]._most_recent_chromatic_plot_spacing
+    if "spacing" not in kw:
+        kw.update(spacing=spacing)
+    if label_scatter is not False:
+        kw.update(label_scatter=label_scatter)
+
     self.plot_with_model(
         quantity="residuals",
+        scaling=residual_scaling,
         ax=ax[1],
         **kw,
     )
-    ax[1].set_ylabel("Residuals (+ offsets)")
+    if residual_scaling != 1:
+        ax[1].set_ylabel(
+            r"Residuals $\times$ " + f"{residual_scaling}" + " (+ offsets)"
+        )
+    else:
+        ax[1].set_ylabel("Residuals (+ offsets)")
+
+    if histogram:
+        kw = dict(
+            orientation="horizontal",
+            quantity="residuals",
+            expected=True,
+            color="auto",
+            scaling=residual_scaling,
+        )
+        kw.update(**histogramkw)
+        for i in range(self.nwave):
+            self.plot_histogram(i, offset=1 - i * spacing, ax=ax[2], **kw)
+        plt.axis("off")
+
+    return ax
+
     if filename is not None:
         self.savefig(filename)

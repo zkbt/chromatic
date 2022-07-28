@@ -73,9 +73,9 @@ def _add_panel_labels(axes, preset="inside", **kw):
 
     textkw = dict(x=0.02, y=0.98, va="top", ha="left")
     if preset == "inside":
-        textkw.update(x=0.02, y=0.98, va="top", color="white")
+        textkw.update(x=0.02, y=0.98, va="top")
     elif preset == "outside":
-        textkw.update(x=0, y=1.02, va="bottom", color="black")
+        textkw.update(x=0, y=1.02, va="bottom")
     textkw.update(**kw)
 
     letters = "abcdefghijklmnopqrstuvwxyz"

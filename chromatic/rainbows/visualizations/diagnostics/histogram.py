@@ -8,6 +8,8 @@ def plot_histogram(
     i_wavelength,
     ax=None,
     quantity="flux",
+    offset=0,
+    scaling=1,
     color="auto",
     cmap=None,
     vmin=None,
@@ -29,6 +31,8 @@ def plot_histogram(
     quantity : string
         The quantity for which we want a histogram.
         Currently available options are ['flux', 'residuals']
+    offset :
+        An offset to add to each value (needed for `plot_with_model_and_residuals`)
     color : string
         The color for the histogram. If 'auto', guess from wavelength.
     expected : Boolean
@@ -62,13 +66,19 @@ def plot_histogram(
         color = self.get_wavelength_color(self.wavelength[i_wavelength])
 
     # get the quantity for which we want to plot the histogram
-    assert quantity in ["flux", "residuals"]
+    assert quantity in ["flux", "residuals", "residuals_plus_one"]
     time, flux, uncertainty = self.get_ok_data_for_wavelength(i_wavelength, y=quantity)
 
     # plotting histogram of row 'i' of data (wavelength 'i')
     histkw = dict(alpha=0.5)
     histkw.update(**kw)
-    plt.hist(flux, color=color, density=True, orientation=orientation, **histkw)
+    plt.hist(
+        flux * scaling + offset,
+        color=color,
+        density=True,
+        orientation=orientation,
+        **histkw,
+    )
     if orientation == "vertical":
         plt.xlabel(f"{quantity}")
         plt.ylabel(f"P({quantity})")
@@ -95,9 +105,9 @@ def plot_histogram(
 
         x = np.linspace(xmin, xmax, 500)
         p = norm.pdf(x, mu, std)
-        plotkw = dict(color=color, alpha=0.5, linewidth=3)
+        plotkw = dict(color=color, alpha=0.5)
         plotkw.update(**expected_plotkw)
         if orientation == "vertical":
-            plt.plot(x, p, **plotkw)
+            plt.plot(x * scaling + offset, p / scaling, **plotkw)
         elif orientation == "horizontal":
-            plt.plot(p, x, **plotkw)
+            plt.plot(p / scaling, x * scaling + offset, **plotkw)
