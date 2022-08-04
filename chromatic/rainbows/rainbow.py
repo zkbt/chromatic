@@ -277,10 +277,16 @@ class Rainbow:
             individual parameters or comments.
         """
 
-        # update the four core dictionaries
-        self.wavelike.update(**wavelike)
-        self.timelike.update(**timelike)
-        self.fluxlike.update(**fluxlike)
+        # update the three core dictionaries of arrays
+        for k in wavelike:
+            self.wavelike[k] = wavelike[k] * 1
+        for k in timelike:
+            self.timelike[k] = timelike[k] * 1
+        for k in fluxlike:
+            self.fluxlike[k] = fluxlike[k] * 1
+        # multiplying by 1 is a kludge to prevent accidental links
+
+        # update the metadata
         self.metadata.update(**metadata)
 
         # validate that something reasonable got populated
@@ -321,17 +327,17 @@ class Rainbow:
         """
 
         # store the wavelength
-        self.wavelike["wavelength"] = wavelength
+        self.wavelike["wavelength"] = wavelength * 1
 
         # store the time
-        self.timelike["time"] = time
+        self.timelike["time"] = time * 1
 
         # store the flux and uncertainty
-        self.fluxlike["flux"] = flux
+        self.fluxlike["flux"] = flux * 1
         if uncertainty is None:
             self.fluxlike["uncertainty"] = np.ones_like(flux) * np.nan
         else:
-            self.fluxlike["uncertainty"] = uncertainty
+            self.fluxlike["uncertainty"] = uncertainty * 1
 
         # sort other arrays by shape
         for k, v in kw.items():
