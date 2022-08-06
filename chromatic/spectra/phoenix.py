@@ -970,7 +970,7 @@ class PHOENIXLibrary:
                 timings["get interpolated spectrum"].append(dt)
 
                 # how long does it take to retrieve a spectrum on a particular wavelength grid
-                wavelength = np.exp(np.arange(-1, 1, 1 / R)) * u.micron
+                wavelength = np.exp(np.arange(-1, 1, 1.01 / R)) * u.micron
                 start = get_current_seconds()
                 self.get_spectrum(
                     temperature=3456, logg=5.67, metallicity=0.0, wavelength=wavelength
@@ -986,7 +986,6 @@ class PHOENIXLibrary:
         plt.legend(bbox_to_anchor=(1, 1), frameon=False)
         plt.xlabel("R = $\lambda/\Delta\lambda$")
         plt.ylabel("Time Required")
-        plt.savefig("time-required-for-phoenix-stellar-library-tools.pdf")
         return t
 
 
