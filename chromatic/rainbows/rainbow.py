@@ -958,6 +958,7 @@ class Rainbow:
         _create_fake_fluxlike_quantity,
         remove_trends,
         attach_model,
+        inflate_uncertainty,
     )
 
     # import summary statistics for each wavelength
