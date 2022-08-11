@@ -772,7 +772,9 @@ class PHOENIXLibrary:
                 elif wavelength_edges is None:
                     necessary_R = self._wavelengths_to_R(wavelength)
 
-                if self.metadata.get("R", 0) < necessary_R:
+                try:
+                    assert self.metadata.get("R", 0) >= necessary_R
+                except (AttributeError, AssertionError):
                     R = self._find_smallest_R(necessary_R)
                     assert False
 
