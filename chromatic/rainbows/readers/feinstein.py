@@ -19,7 +19,7 @@ def from_feinstein_numpy(rainbow, filepath):
         The path to the file to load.
     """
 
-    wavelength, spectra, err, time = np.load(filepath, allow_pickle=True)
+    time, wavelength, spectra, err = np.load(filepath, allow_pickle=True)
 
     rainbow.wavelike["wavelength"] = wavelength * u.micron * 1
 
