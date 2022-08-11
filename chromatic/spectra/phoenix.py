@@ -674,9 +674,7 @@ class PHOENIXLibrary:
 
         return (np.min(w), np.max(w), len(w))
 
-    def _get_average_spectrum_from_grid(
-        self, key, wavelength=None, wavelength_edges=None
-    ):
+    def _get_spectrum_from_grid(self, key, wavelength=None, wavelength_edges=None):
         if (wavelength is None) and (wavelength_edges is None):
             return self.models[key]
         else:
@@ -707,7 +705,7 @@ class PHOENIXLibrary:
                 )["y"]
                 return self.wavelength_cached_models[wavelength_key][key]
 
-    def get_average_spectrum(
+    def get_spectrum(
         self,
         temperature=5780,
         logg=4.43,
@@ -774,7 +772,9 @@ class PHOENIXLibrary:
                 elif wavelength_edges is None:
                     necessary_R = self._wavelengths_to_R(wavelength)
 
-                if self.metadata.get("R", 0) < necessary_R:
+                try:
+                    assert self.metadata.get("R", 0) >= necessary_R
+                except (AttributeError, AssertionError):
                     R = self._find_smallest_R(necessary_R)
                     assert False
 
@@ -793,6 +793,10 @@ class PHOENIXLibrary:
                         self._find_smallest_R(R=R),
                         metallicity=m,
                     )
+
+        # strip units
+        if isinstance(temperature, u.Quantity):
+            temperature = temperature.value
 
         # store the inputs as a convenient dictionary to pass around
         inputs = dict(temperature=temperature, logg=logg, metallicity=metallicity)
@@ -818,7 +822,7 @@ class PHOENIXLibrary:
         if N == 1:
             weights = [1]
             key = (bounding_temperature[0], bounding_logg[0], bounding_metallicity[0])
-            spectrum = self._get_average_spectrum_from_grid(
+            spectrum = self._get_spectrum_from_grid(
                 key, wavelength=wavelength, wavelength_edges=wavelength_edges
             ).flatten()
         else:
@@ -838,7 +842,7 @@ class PHOENIXLibrary:
                         key = (t, g, z)
                         try:
                             this_log_spectrum = np.log(
-                                self._get_average_spectrum_from_grid(
+                                self._get_spectrum_from_grid(
                                     key,
                                     wavelength=wavelength,
                                     wavelength_edges=wavelength_edges,
@@ -872,7 +876,7 @@ class PHOENIXLibrary:
         if visualize:
             fi = plt.figure(figsize=(8, 3))
             for w, s in zip(weights, spectra):
-                plt.plot(wavelength, s, alpha=w)
+                plt.plot(wavelength, np.exp(s), alpha=w)
             plt.plot(wavelength, spectrum, color="black")
             plt.xlabel(
                 f"Wavelength ({self.units['wavelength'].to_string('latex_inline')})"
@@ -885,7 +889,19 @@ class PHOENIXLibrary:
         return wavelength, spectrum * self.units["spectrum"]
 
     def plot_available(self, temperature=None, logg=None, metallicity=None):
+        """
+        Make plots indicating the available grid points
+        in the loaded library of stellar spectra.
 
+        Parameters
+        ----------
+        temperature : float
+            Temperature, in K (with no astropy units attached).
+        logg : float
+            Surface gravity log10[g/(cm/s**2)] (with no astropy units attached).
+        metallicity : float
+            Metallicity log10[metals/solar] (with no astropy units attached).
+        """
         N = len(self._keys_for_indexing)
         fi, ax = plt.subplots(
             N, N, figsize=(8, 8), sharex="col", sharey="row", constrained_layout=True
@@ -910,12 +926,26 @@ class PHOENIXLibrary:
         plt.suptitle(f"R={self.metadata['R']}")
 
     def plot_time_required(self, iterations=5):
+        """
+        Run benchmarking tests to determine how long it takes
+        to perform different actions with the spectral library.
+
+        Parameters
+        ----------
+        iterations : int
+            How many times should we run each action?
+            (definitely do something more than 1, because
+            there are some overheads that behave differently
+            between the first time and subsequent times you
+            you generate a model spectrum)
+        """
         timings = {}
         for k in [
             "R",
             "load library",
             "get spectrum at grid point",
             "get interpolated spectrum",
+            "get interpolated spectrum at specific wavelengths",
         ]:
             timings[k] = []
 
@@ -931,15 +961,24 @@ class PHOENIXLibrary:
 
                 # how long does it take to retrieve a spectrum that exists?
                 start = get_current_seconds()
-                self.get_average_spectrum(temperature=3000, logg=4.5, metallicity=0.0)
+                self.get_spectrum(temperature=3000, logg=4.5, metallicity=0.0, R=R)
                 dt = get_current_seconds() - start
                 timings["get spectrum at grid point"].append(dt)
 
                 # how long does it take to retrieve a spectrum that needs to be interpolated?
                 start = get_current_seconds()
-                self.get_average_spectrum(temperature=3456, logg=5.67, metallicity=0.0)
+                self.get_spectrum(temperature=3456, logg=5.67, metallicity=0.0, R=R)
                 dt = get_current_seconds() - start
                 timings["get interpolated spectrum"].append(dt)
+
+                # how long does it take to retrieve a spectrum on a particular wavelength grid
+                wavelength = np.exp(np.arange(-1, 1, 1.01 / R)) * u.micron
+                start = get_current_seconds()
+                self.get_spectrum(
+                    temperature=3456, logg=5.67, metallicity=0.0, wavelength=wavelength
+                )
+                dt = get_current_seconds() - start
+                timings["get interpolated spectrum at specific wavelengths"].append(dt)
 
         t = Table(timings)
         plt.figure(figsize=(8, 4), dpi=300)
@@ -953,4 +992,4 @@ class PHOENIXLibrary:
 
 
 phoenix_library = PHOENIXLibrary(photons=True)
-get_phoenix_photons = phoenix_library.get_average_spectrum
+get_phoenix_photons = phoenix_library.get_spectrum
