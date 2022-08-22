@@ -1,4 +1,5 @@
 from ..utilities import *
+from ....imports import *
 
 __all__ = ["plot_spectral_resolution"]
 
@@ -6,6 +7,7 @@ __all__ = ["plot_spectral_resolution"]
 def plot_spectral_resolution(
     self,
     pixels_per_resolution_element=1,
+    filename=None,
     **kw,
 ):
     """
@@ -28,3 +30,6 @@ def plot_spectral_resolution(
         ylabel=f"$R=\lambda/d\lambda$ ({pixels_per_resolution_element} pixel)",
         **kw,
     )
+    plt.title(self.get("title"))
+    if filename is not None:
+        self.savefig(filename)

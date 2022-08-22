@@ -4,6 +4,10 @@ __all__ = [
     "_add_panel_labels",
     "_get_animation_writer_and_displayer",
     "_scatter_timelike_or_wavelike",
+    "_get_unit_string",
+    "_get_plot_directory",
+    "_label_plot_file",
+    "savefig",
 ]
 
 
@@ -46,7 +50,7 @@ def _get_animation_writer_and_displayer(filename="animation.html", **kw):
         raise ValueError(
             f"""
         The writer {writer} needed for your `.{suffix}` file is not available.
-        {warnings[k]}
+        {warnings[suffix]}
         """
         )
 
@@ -69,9 +73,9 @@ def _add_panel_labels(axes, preset="inside", **kw):
 
     textkw = dict(x=0.02, y=0.98, va="top", ha="left")
     if preset == "inside":
-        textkw.update(x=0.02, y=0.98, va="top", color="white")
+        textkw.update(x=0.02, y=0.98, va="top")
     elif preset == "outside":
-        textkw.update(x=0, y=1.02, va="bottom", color="black")
+        textkw.update(x=0, y=1.02, va="bottom")
     textkw.update(**kw)
 
     letters = "abcdefghijklmnopqrstuvwxyz"
@@ -94,6 +98,8 @@ def _scatter_timelike_or_wavelike(
     t_unit="day",
     w_unit="micron",
     wavelength_for_color=None,
+    percentiles=(0.1, 99.9),
+    ylim=(None, None),
     scatterkw={},
     **kw,
 ):
@@ -133,7 +139,7 @@ def _scatter_timelike_or_wavelike(
 
         # make sure ax is set up
         if ax is None:
-            ax = plt.gca()
+            ax = plt.subplot()
         plt.sca(ax)
 
         if x.unit.is_equivalent("m"):
@@ -161,5 +167,48 @@ def _scatter_timelike_or_wavelike(
         assert np.shape(x) == np.shape(y)
 
         plt.scatter(x, y, **scatterkw)
+        ylim = list(ylim)
+        for i in [0, 1]:
+            if ylim[i] is None:
+                ylim[i] = np.percentile(y, percentiles[i])
+        plt.ylim(*ylim)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
+        plt.title(self.get("title"))
+
+
+def _get_unit_string(y):
+    y_unit = u.Quantity(y).unit
+    if y_unit == u.Unit(""):
+        unit_string = "unitless"
+    else:
+        unit_string = y_unit.to_string("latex_inline")
+    return unit_string
+
+
+def _get_plot_directory(self):
+    try:
+        return self._plot_directory
+    except AttributeError:
+        directory = ""
+        for option in ["title", "label", "name", "directory"]:
+            x = self.get(option)
+            if x is not None:
+                directory = x.replace("|", "-").replace(" ", "")
+                break
+        self._plot_directory = directory
+        if self._plot_directory != "":
+            try:
+                os.mkdir(self._plot_directory)
+            except FileExistsError:
+                pass
+        return self._plot_directory
+
+
+def _label_plot_file(self, filename):
+    directory = self._get_plot_directory()
+    return os.path.join(directory, filename.replace(".", f"-{directory}."))
+
+
+def savefig(self, filename="test.png", dpi=300, **kw):
+    plt.savefig(self._label_plot_file(filename), dpi=dpi, **kw)

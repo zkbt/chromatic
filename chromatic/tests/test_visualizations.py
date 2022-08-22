@@ -268,3 +268,21 @@ def test_plot_noise_comparison():
     ax[0, 0].set_title("No Systematics")
     ax[0, 1].set_title("With Systematics")
     plt.savefig(os.path.join(test_directory, "test-plot_noise_comparison.png"))
+
+
+def test_plot_noise_comparison_in_bins():
+    s = SimulatedRainbow(dw=0.1 * u.micron).inject_systematics().inject_noise()
+    s.plot_noise_comparison_in_bins()
+    plt.savefig(os.path.join(test_directory, "test-plot_noise_comparison_in_bins.png"))
+
+
+def test_plot_histogram():
+    s = SimulatedRainbow(R=5).inject_noise()
+    fi, ax = plt.subplots(
+        s.nwave, 1, figsize=(4, 12), sharex=True, sharey=True, constrained_layout=True
+    )
+    for i in range(s.nwave):
+        s.plot_histogram(i, ax=ax[i], expected=True)
+        if i < (s.nwave - 1):
+            plt.xlabel("")
+    plt.savefig(os.path.join(test_directory, "test-histogram.png"))

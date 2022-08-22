@@ -12,3 +12,4 @@ from .flag_outliers import *
 from .compare import *
 from .remove_trends import *
 from .attach_model import *
+from .inflate_uncertainty import *

@@ -326,9 +326,16 @@ def animate_with_models(
     **kw,
 ):
 
+    try:
+        del self._animate_with_models_setup
+    except AttributeError:
+        pass
+
     self.plot_one_wavelength_with_models(
         0, animation=False, orientation=orientation, **kw
     )
+
+    filename = self._label_plot_file(filename)
 
     # initialize the animator
     writer, displayer = _get_animation_writer_and_displayer(
@@ -340,7 +347,7 @@ def animate_with_models(
     with writer.saving(figure, filename, dpi or figure.get_dpi()):
 
         # loop over exposures
-        for i in tqdm(range(self.nwave)):
+        for i in tqdm(range(self.nwave), leave=False):
 
             self.plot_one_wavelength_with_models(
                 i, animation=True, orientation=orientation, **kw
@@ -354,4 +361,7 @@ def animate_with_models(
     # display the animation
     from IPython.display import display
 
-    display(displayer(filename))
+    try:
+        display(displayer(filename, embed=True))
+    except TypeError:
+        display(displayer(filename))

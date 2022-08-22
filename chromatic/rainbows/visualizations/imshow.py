@@ -17,6 +17,7 @@ def imshow(
     alpha_ok=0.8,
     vmin=None,
     vmax=None,
+    filename=None,
     **kw,
 ):
     """
@@ -161,8 +162,8 @@ def imshow(
         )
 
     # figure out a good shared color limits (unless already supplied)
-    vmin = vmin or np.nanpercentile(u.Quantity(z.flatten()).value, 1)
-    vmax = vmax or np.nanpercentile(u.Quantity(z.flatten()).value, 99)
+    vmin = vmin or np.nanpercentile(u.Quantity(z.flatten()).value * 1.0, 1)
+    vmax = vmax or np.nanpercentile(u.Quantity(z.flatten()).value * 1.0, 99)
 
     # define some default keywords
     imshow_kw = dict(interpolation="nearest", vmin=vmin, vmax=vmax)
@@ -205,5 +206,8 @@ def imshow(
                 ax=ax,
                 label=u.Quantity(z).unit.to_string("latex_inline"),
             )
+        plt.title(self.get("title"))
 
+    if filename is not None:
+        self.savefig(filename)
     return ax

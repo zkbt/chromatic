@@ -3,7 +3,9 @@ from ....imports import *
 __all__ = ["imshow_quantities"]
 
 
-def imshow_quantities(self, quantities=None, maxcol=3, panel_size=(5, 4), **kw):
+def imshow_quantities(
+    self, quantities=None, maxcol=3, panel_size=(5, 4), filename=None, **kw
+):
     """
     imshow fluxlikes as a function of time (x = time, y = wavelength, color = flux).
 
@@ -83,3 +85,5 @@ def imshow_quantities(self, quantities=None, maxcol=3, panel_size=(5, 4), **kw):
     if k + 1 <= len(ax):
         for axi in ax[k + 1 :]:
             axi.axis("Off")
+    if filename is not None:
+        self.savefig(filename)

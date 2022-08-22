@@ -33,7 +33,7 @@ def from_nres(rainbow, filepath, order=52):
 
     order_index = order - 52  # the 0th order is order 52
 
-    for i, f in tqdm(enumerate(filenames)):
+    for i, f in tqdm(enumerate(filenames), leave=False):
 
         # open this
         hdu = fits.open(f)
@@ -63,7 +63,7 @@ def from_nres(rainbow, filepath, order=52):
         if i == 0:
             ntimes = len(filenames)
             nwaves = len(wavelengths)
-            for k in ["wavelength", "flux", "uncertainty", "ok"]:
+            for k in ["wavelength_2d", "flux", "uncertainty", "ok"]:
                 rainbow.fluxlike[k] = np.zeros((nwaves, ntimes))
             rainbow.fluxlike["wavelength_2d"] *= u.micron
             rainbow.fluxlike["ok"] = rainbow.fluxlike["ok"].astype(np.bool)

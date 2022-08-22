@@ -33,17 +33,20 @@ def get_measured_scatter(
         Please choose from ['MAD', 'standard-deviation'].
         """
         )
-    scatters = np.zeros(self.nwave)
-    for i in range(self.nwave):
-        x, y, sigma = self.get_ok_data_for_wavelength(
-            i, y=quantity, minimum_acceptable_ok=minimum_acceptable_ok
-        )
-        if u.Quantity(y).unit == u.Unit(""):
-            y_value, y_unit = y, 1
-        else:
-            y_value, y_unit = y.value, y.unit
-        if method == "standard-deviation":
-            scatters[i] = np.std(y_value)
-        elif method == "MAD":
-            scatters[i] = median_absolute_deviation(y_value, scale="normal")
-    return scatters * y_unit
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        scatters = np.zeros(self.nwave)
+        for i in range(self.nwave):
+            x, y, sigma = self.get_ok_data_for_wavelength(
+                i, y=quantity, minimum_acceptable_ok=minimum_acceptable_ok
+            )
+            if u.Quantity(y).unit == u.Unit(""):
+                y_value, y_unit = y, 1
+            else:
+                y_value, y_unit = y.value, y.unit
+            if method == "standard-deviation":
+                scatters[i] = np.nanstd(y_value)
+            elif method == "MAD":
+                scatters[i] = median_absolute_deviation(y_value, scale="normal")
+        return scatters * y_unit

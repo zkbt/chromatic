@@ -1,9 +1,15 @@
+import matplotlib
+
+matplotlib.rcParams["figure.dpi"] = 300
+matplotlib.rcParams["figure.constrained_layout.use"] = True
+matplotlib.rcParams["figure.facecolor"] = "white"
+matplotlib.rcParams["savefig.facecolor"] = "white"
+matplotlib.rcParams["savefig.dpi"] = 300
+
 # basics
 import numpy as np
 import matplotlib.pyplot as plt
 
-plt.matplotlib.rcParams["figure.dpi"] = 300
-plt.rcParams["figure.constrained_layout.use"] = True
 
 import matplotlib.animation as ani
 import matplotlib.colors as col
@@ -157,3 +163,14 @@ def one2another(bottom="white", top="red", alpha_bottom=1.0, alpha_top=1.0, N=25
 
     # return the colormap
     return cmap
+
+
+def remove_unit(x):
+    """
+    Quick wrapper to remove the unit from a quantity,
+    but not complain if it doesn't have one.
+    """
+    try:
+        return x.value
+    except AttributeError:
+        return x

@@ -22,6 +22,7 @@ def imshow_with_models(
     figsize=(8, 3),
     label="inside",
     label_textkw={},
+    filename=None,
     **kw,
 ):
     """
@@ -104,9 +105,14 @@ def imshow_with_models(
         constrained_layout=True,
     )
 
+    # decide whether to use imshow or pcolormesh
+    if (self.wscale in ["linear", "log"]) and (self.tscale in ["linear", "log"]):
+        show = self.imshow
+    else:
+        show = self.pcolormesh
     # plot the first three panels
     for i, k in enumerate(["flux"] + models):
-        self.imshow(
+        show(
             ax=ax[row_data, i],
             quantity=k,
             vmin=vlimits_data[0],
@@ -125,7 +131,7 @@ def imshow_with_models(
 
     # plot the residuals
     k = "residuals"
-    self.imshow(
+    show(
         ax[row_data, -1],
         k,
         vmin=-vspan_residuals,
@@ -154,3 +160,5 @@ def imshow_with_models(
     if label:
         _add_panel_labels(ax[row_data, :], preset=label, **label_textkw)
     plt.sca(ax[row_data, 0])
+    if filename is not None:
+        self.savefig(filename)

@@ -25,6 +25,9 @@ class Rainbow:
     # which fluxlike keys will respond to math between objects
     _keys_that_respond_to_math = ["flux"]
 
+    # which keys get uncertainty weighting during binning
+    _keys_that_get_uncertainty_weighting = ["flux", "uncertainty"]
+
     def __init__(
         self,
         filepath=None,
@@ -274,10 +277,16 @@ class Rainbow:
             individual parameters or comments.
         """
 
-        # update the four core dictionaries
-        self.wavelike.update(**wavelike)
-        self.timelike.update(**timelike)
-        self.fluxlike.update(**fluxlike)
+        # update the three core dictionaries of arrays
+        for k in wavelike:
+            self.wavelike[k] = wavelike[k] * 1
+        for k in timelike:
+            self.timelike[k] = timelike[k] * 1
+        for k in fluxlike:
+            self.fluxlike[k] = fluxlike[k] * 1
+        # multiplying by 1 is a kludge to prevent accidental links
+
+        # update the metadata
         self.metadata.update(**metadata)
 
         # validate that something reasonable got populated
@@ -318,17 +327,17 @@ class Rainbow:
         """
 
         # store the wavelength
-        self.wavelike["wavelength"] = wavelength
+        self.wavelike["wavelength"] = wavelength * 1
 
         # store the time
-        self.timelike["time"] = time
+        self.timelike["time"] = time * 1
 
         # store the flux and uncertainty
-        self.fluxlike["flux"] = flux
+        self.fluxlike["flux"] = flux * 1
         if uncertainty is None:
             self.fluxlike["uncertainty"] = np.ones_like(flux) * np.nan
         else:
-            self.fluxlike["uncertainty"] = uncertainty
+            self.fluxlike["uncertainty"] = uncertainty * 1
 
         # sort other arrays by shape
         for k, v in kw.items():
@@ -356,7 +365,7 @@ class Rainbow:
         elif np.shape(v) == (self.ntime,):
             self.timelike[k] = v * 1
         else:
-            raise ValueError("'{k}' doesn't fit anywhere!")
+            raise ValueError(f"'{k}' doesn't fit anywhere!")
 
     def _initialize_from_file(self, filepath=None, format=None, **kw):
         """
@@ -435,7 +444,7 @@ class Rainbow:
             else:
                 self.metadata["wscale"] = "?"
 
-    def _guess_tscale(self, relative_tolerance=0.01):
+    def _guess_tscale(self, relative_tolerance=0.05):
         """
         Try to guess the tscale from the times.
 
@@ -466,8 +475,8 @@ class Rainbow:
             # test the three options
             if np.allclose(dt, np.median(dt), rtol=relative_tolerance):
                 self.metadata["tscale"] = "linear"
-            elif np.allclose(dlogt, np.median(dlogt), rtol=relative_tolerance):
-                self.metadata["tscale"] = "log"
+            # elif np.allclose(dlogt, np.median(dlogt), rtol=relative_tolerance):
+            #    self.metadata["tscale"] = "log"
             else:
                 self.metadata["tscale"] = "?"
 
@@ -514,12 +523,18 @@ class Rainbow:
 
         # assemble from three possible arrays
         ok = self.fluxlike.get("ok", np.ones(self.shape).astype(bool))
-        ok *= self.wavelike.get("ok", np.ones(self.nwave).astype(bool))[:, np.newaxis]
-        ok *= self.timelike.get("ok", np.ones(self.ntime).astype(bool))[np.newaxis, :]
+        ok = (
+            ok
+            * self.wavelike.get("ok", np.ones(self.nwave).astype(bool))[:, np.newaxis]
+        )
+        ok = (
+            ok
+            * self.timelike.get("ok", np.ones(self.ntime).astype(bool))[np.newaxis, :]
+        )
 
         # make sure flux is finite
         if self.flux is not None:
-            ok *= np.isfinite(self.flux)
+            ok = ok * np.isfinite(self.flux)
 
         # weird kludge to deal with rounding errors (particularly in two-step .bin)
         if ok.dtype == bool:
@@ -676,6 +691,18 @@ class Rainbow:
             return len(self.time)
 
     @property
+    def dt(self):
+        """
+        The typical timestep.
+        """
+        if self.time is None:
+            return None
+        else:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                return np.nanmedian(np.diff(self.time)).to(u.minute)
+
+    @property
     def nflux(self):
         """
         The total number of fluxes.
@@ -815,7 +842,7 @@ class Rainbow:
                 lower, upper = calculate_bin_leftright(np.log(self.time.value))
                 self.timelike["time_lower"] = np.exp(lower) * self.time.unit
                 self.timelike["time_upper"] = np.exp(upper) * self.time.unit
-            elif self.metadata.get("tscale", None) == "linear":
+            else:
                 lower, upper = calculate_bin_leftright(self.time)
                 self.timelike["time_lower"] = lower
                 self.timelike["time_upper"] = upper
@@ -923,6 +950,7 @@ class Rainbow:
         inject_spectrum,
         flag_outliers,
         fold,
+        mask_transit,
         compare,
         get_average_lightcurve_as_rainbow,
         get_average_spectrum_as_rainbow,
@@ -931,14 +959,17 @@ class Rainbow:
         _create_fake_fluxlike_quantity,
         remove_trends,
         attach_model,
+        inflate_uncertainty,
     )
 
     # import summary statistics for each wavelength
     from .get.wavelike import (
         get_average_spectrum,
+        get_median_spectrum,
         get_spectral_resolution,
         get_expected_uncertainty,
         get_measured_scatter,
+        get_measured_scatter_in_bins,
         get_for_wavelength,
         get_ok_data_for_wavelength,
     )
@@ -946,6 +977,7 @@ class Rainbow:
     # import summary statistics for each wavelength
     from .get.timelike import (
         get_average_lightcurve,
+        get_median_lightcurve,
         get_for_time,
         get_ok_data_for_time,
         get_times_as_astropy,
@@ -970,16 +1002,22 @@ class Rainbow:
         imshow_interact,
         plot_spectra,
         plot,
+        plot_histogram,
         _scatter_timelike_or_wavelike,
+        _get_plot_directory,
+        _label_plot_file,
+        savefig,
     )
 
     from .visualizations.wavelike import (
         plot_spectral_resolution,
         plot_noise_comparison,
+        plot_noise_comparison_in_bins,
         plot_average_spectrum,
+        plot_median_spectrum,
     )
 
-    from .visualizations.timelike import plot_average_lightcurve
+    from .visualizations.timelike import plot_average_lightcurve, plot_median_lightcurve
 
     from .converters import (
         to_nparray,

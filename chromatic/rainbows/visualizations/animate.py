@@ -51,6 +51,8 @@ def _setup_animated_scatter(self, ax=None, figurekw={}, scatterkw={}, textkw={})
     this_textkw.update(**textkw)
     text = plt.text(**this_textkw)
 
+    plt.title(self.get("title"))
+
     # return a dictionary with things that will be useful to hang onto
     return dict(fi=fig, ax=ax, scatter=scatter, text=text)
 
@@ -234,6 +236,8 @@ def animate_lightcurves(
     """
     self._setup_animate_lightcurves(**kwargs)
 
+    filename = self._label_plot_file(filename)
+
     # initialize the animator
     writer, displayer = _get_animation_writer_and_displayer(
         filename=filename, fps=fps, bitrate=bitrate
@@ -242,7 +246,7 @@ def animate_lightcurves(
     # set up to save frames directly into the animation
     figure = self._animate_lightcurves_components["fi"]
     with writer.saving(figure, filename, dpi or figure.get_dpi()):
-        for i in tqdm(range(self.nwave)):
+        for i in tqdm(range(self.nwave), leave=False):
             self._animate_lightcurves_components["update"](i)
             writer.grab_frame()
 
@@ -252,7 +256,10 @@ def animate_lightcurves(
     # display the animation
     from IPython.display import display
 
-    display(displayer(filename))
+    try:
+        display(displayer(filename, embed=True))
+    except TypeError:
+        display(displayer(filename))
 
 
 def _setup_animate_spectra(
@@ -440,6 +447,7 @@ def animate_spectra(
 
     self._setup_animate_spectra(**kwargs)
 
+    filename = self._label_plot_file(filename)
     # initialize the animator
     writer, displayer = _get_animation_writer_and_displayer(
         filename=filename, fps=fps, bitrate=bitrate
@@ -448,7 +456,7 @@ def animate_spectra(
     # set up to save frames directly into the animation
     figure = self._animate_spectra_components["fi"]
     with writer.saving(figure, filename, dpi or figure.get_dpi()):
-        for i in tqdm(range(self.ntime)):
+        for i in tqdm(range(self.ntime), leave=False):
             self._animate_spectra_components["update"](i)
             writer.grab_frame()
 

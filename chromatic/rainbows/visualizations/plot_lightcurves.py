@@ -19,6 +19,9 @@ def plot_lightcurves(
     plotkw={},
     errorbarkw={},
     textkw={},
+    filename=None,
+    scaling=1,
+    label_scatter=False,
     **kw,
 ):
     """
@@ -91,6 +94,7 @@ def plot_lightcurves(
     w_unit, t_unit = u.Unit(w_unit), u.Unit(t_unit)
 
     min_time = np.nanmin(self.time.to_value(t_unit))
+    max_time = np.nanmax(self.time.to_value(t_unit))
 
     # make sure ax is set up
     if ax is None:
@@ -98,7 +102,7 @@ def plot_lightcurves(
             figsize=plt.matplotlib.rcParams["figure.figsize"][::-1],
             constrained_layout=True,
         )
-        ax = plt.gca()
+        ax = plt.subplot()
     plt.sca(ax)
 
     # figure out the spacing to use
@@ -110,7 +114,7 @@ def plot_lightcurves(
     ax._most_recent_chromatic_plot_spacing = spacing
 
     # TO-DO: check if this Rainbow has been normalized
-    if self._is_probably_normalized():
+    if self._is_probably_normalized() or "model" in self.fluxlike:
         label_y = "1 - (0.5 + i) * spacing"
         ylim = 1 - np.array([self.nwave + 1, -1]) * spacing
     else:
@@ -121,8 +125,12 @@ def plot_lightcurves(
             Be aware that the baseline flux levels may therefore
             be a little bit funny in .plot()."""
         )
-        ylim = [None, None]
+        ylim = None
     with quantity_support():
+
+        if label_scatter:
+            measured_rms = self.get_measured_scatter(quantity="residuals")
+            expected_rms = self.get_expected_uncertainty()
 
         #  loop through wavelengths
         for i, w in enumerate(self.wavelength):
@@ -137,8 +145,8 @@ def plot_lightcurves(
                 plot_x = t.to_value(t_unit)
 
                 # add an offset to this quantity
-                plot_y = -i * spacing + u.Quantity(y).value
-                plot_sigma = u.Quantity(sigma).value
+                plot_y = -i * spacing + (u.Quantity(y).value - 1) * scaling + 1
+                plot_sigma = u.Quantity(sigma).value * scaling
 
                 # get the color for this quantity
                 color = self.get_wavelength_color(w)
@@ -173,8 +181,26 @@ def plot_lightcurves(
                         **this_textkw,
                     )
 
+                if label_scatter is not False:
+                    this_textkw.update(ha="right")
+                    measured = measured_rms[i]
+                    expected = expected_rms[i]
+                    cadence = self.dt
+                    if text:
+                        plt.text(
+                            max_time,
+                            eval(label_y),
+                            eval(f'f"{label_scatter}"'),
+                            **this_textkw,
+                        )
+
         # add text labels to the plot
         plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")
-        plt.ylim(*ylim)
+        if ylim is not None:
+            plt.ylim(*ylim)
+        plt.title(self.get("title"))
+
+    if filename is not None:
+        self.savefig(filename)
     return ax

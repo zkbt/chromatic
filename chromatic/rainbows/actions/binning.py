@@ -320,7 +320,8 @@ def bin_in_time(
     # TODO (think about cleverer bintogrid for 2D arrays?)
     new.fluxlike = {}
     ok = self.ok
-    for k in self.fluxlike:
+    # loop through wavelengths
+    for w in tqdm(np.arange(new.nwave), leave=False):
 
         '''
         if k == "uncertainty":
@@ -331,14 +332,16 @@ def bin_in_time(
             """
             )'''
 
-        # loop through wavelengths
-        for w in range(new.nwave):
+        for k in self.fluxlike:
             # mask out "bad" wavelengths
             time_is_bad = ok[w, :] < minimum_acceptable_ok
             if (self.uncertainty is None) or np.all(self.uncertainty == 0):
                 uncertainty_for_binning = np.ones(self.ntime).astype(bool)
-            else:
+            elif k in self._keys_that_get_uncertainty_weighting:
                 uncertainty_for_binning = self.uncertainty[w, :] * 1
+            else:
+                uncertainty_for_binning = np.ones(self.ntime).astype(bool)
+
             if k != "ok":
                 uncertainty_for_binning[time_is_bad] = np.inf
 
@@ -554,17 +557,19 @@ def bin_in_wavelength(
 
     # get a fluxlike array of what's OK to include in the bins
     ok = self.ok
-    for k in self.fluxlike:
+    for t in tqdm(np.arange(new.ntime), leave=False):
 
-        for t in range(new.ntime):
+        for k in self.fluxlike:
 
             # mask out "bad" wavelengths
             wavelength_is_bad = ok[:, t] < minimum_acceptable_ok
 
             if (self.uncertainty is None) or np.all(self.uncertainty == 0):
                 uncertainty_for_binning = np.ones(self.nwave).astype(bool)
-            else:
+            elif k in self._keys_that_get_uncertainty_weighting:
                 uncertainty_for_binning = self.uncertainty[:, t] * 1
+            else:
+                uncertainty_for_binning = np.ones(self.nwave).astype(bool)
             if k != "ok":
                 uncertainty_for_binning[wavelength_is_bad] = np.inf
 

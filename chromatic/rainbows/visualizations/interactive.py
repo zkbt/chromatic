@@ -24,6 +24,7 @@ def imshow_interact(
     cmap="viridis",
     ylim=[],
     ylog=None,
+    filename=None,
 ):
     """
     Display interactive spectrum plot for chromatic Rainbow with a
@@ -81,12 +82,16 @@ def imshow_interact(
 
     # if there are >10,000 data points Altair will be very laggy/slow. This is probably unbinned, therefore
     # encourage the user to bin the Rainbow before calling this function in future/
-    if len(source) > 10000:
+    N_warning = 100000
+    if len(source) > N_warning:
         warnings.warn(
-            ">10,000 data points - interactive plot will lag! You should try binning the Rainbow first!"
+            f"""
+        The dataset {self} has {N_warning} data points/
+        The interactive plot may lag. Try binning first!
+        """
         )
 
-    if self._is_probably_normalized() == False:
+    if (self._is_probably_normalized() == False) and "model" not in self.fluxlike:
         warnings.warn(
             """
         It looks like you might be trying to use `imshow_interact` with an
@@ -106,6 +111,11 @@ def imshow_interact(
         source[ylabel] = np.log10(source[ylabel])
         source = source.rename(columns={ylabel: f"log10({ylabel})"})
         ylabel = f"log10({ylabel})"
+
+    if len(ylim) > 0:
+        domain = ylim
+    else:
+        domain = [source[z].min() - 0.005, source[z].max() + 0.005]
 
     # Add interactive part
     brush = alt.selection(type="interval", encodings=["y"])
@@ -140,7 +150,7 @@ def imshow_interact(
                 scale=alt.Scale(
                     scheme=cmap,
                     zero=False,
-                    domain=[np.min(source[z]), np.max(source[z])],
+                    domain=domain,
                 ),
             ),
             tooltip=[f"{xlabel}", f"{ylabel}", f"{z}"],
@@ -155,11 +165,6 @@ def imshow_interact(
 
     # Layer the various plotting parts
     spectrum_int = alt.layer(background, highlight, data=source)
-
-    if len(ylim) > 0:
-        domain = ylim
-    else:
-        domain = [source[z].min() - 0.005, source[z].max() + 0.005]
 
     # Add the 2D averaged lightcurve (or uncertainty)
     lightcurve = (
@@ -189,3 +194,5 @@ def imshow_interact(
 
     # display the interactive Altair plot
     (spectrum_int | lightcurve).display()
+    if filename is not None:
+        (spectrum_int | lightcurve).save(self._label_plot_file(filename))
