@@ -79,6 +79,7 @@ def inflate_uncertainty(
     expected_uncertainty = trend_removed.get_expected_uncertainty()
 
     inflate_ratio = measured_scatter/expected_uncertainty
+    new.wavelike['inflate_ratio'] = inflate_ratio
     if np.min(inflate_ratio) < minimum_inflate_ratio:
     	raise Exception(f"One or more inflate ratios are below the minimum_inflate_ratio = {minimum_inflate_ratio}, if you really want to proceed please consider lower minimum_inflate_ratio")
 
