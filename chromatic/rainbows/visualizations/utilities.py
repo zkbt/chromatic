@@ -207,7 +207,10 @@ def _get_plot_directory(self):
 
 def _label_plot_file(self, filename):
     directory = self._get_plot_directory()
-    return os.path.join(directory, filename.replace(".", f"-{directory}."))
+    if directory == "":
+        return filename
+    else:
+        return os.path.join(directory, filename.replace(".", f"-{directory}."))
 
 
 def savefig(self, filename="test.png", dpi=300, **kw):
