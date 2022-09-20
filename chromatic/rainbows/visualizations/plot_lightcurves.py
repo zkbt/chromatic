@@ -183,6 +183,9 @@ def plot_lightcurves(
 
                 if label_scatter is not False:
                     this_textkw.update(ha="right")
+                    measured = measured_rms[i]
+                    expected = expected_rms[i]
+                    cadence = self.dt
                     if text:
                         plt.text(
                             max_time,

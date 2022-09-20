@@ -35,6 +35,7 @@ warnings.formatwarning = custom_formatwarning
 from astropy.io import ascii, fits
 from astropy.table import Table, QTable
 from astropy.time import Time
+from astropy.stats import sigma_clip
 
 # import astropy.units as u
 import astropy.constants as con
@@ -44,7 +45,7 @@ from astropy.visualization import quantity_support, simple_norm
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
 from scipy.interpolate import interp1d
-from scipy.stats import median_absolute_deviation
+from scipy.stats import median_abs_deviation
 
 # For modelling transits.
 import batman
@@ -59,7 +60,7 @@ from scipy.signal import savgol_filter, butter, filtfilt
 from scipy.signal import medfilt, convolve2d
 from scipy.ndimage import median_filter
 
-# define a driectory where we can put any necessary data files
+# define a directory where we can put any necessary data files
 data_directory = pkg_resources.resource_filename("chromatic", "data")
 
 
