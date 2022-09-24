@@ -48,5 +48,5 @@ def get_measured_scatter(
             if method == "standard-deviation":
                 scatters[i] = np.nanstd(y_value)
             elif method == "MAD":
-                scatters[i] = median_absolute_deviation(y_value, scale="normal")
+                scatters[i] = mad_std(y_value, ignore_nans=True)
         return scatters * y_unit

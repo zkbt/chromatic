@@ -35,7 +35,7 @@ warnings.formatwarning = custom_formatwarning
 from astropy.io import ascii, fits
 from astropy.table import Table, QTable
 from astropy.time import Time
-from astropy.stats import sigma_clip
+from astropy.stats import sigma_clip, median_absolute_deviation, mad_std
 
 # import astropy.units as u
 import astropy.constants as con
@@ -45,7 +45,6 @@ from astropy.visualization import quantity_support, simple_norm
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
 from scipy.interpolate import interp1d
-from scipy.stats import median_abs_deviation
 
 # For modelling transits.
 import batman
