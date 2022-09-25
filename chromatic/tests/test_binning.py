@@ -67,7 +67,6 @@ def test_bin():
     plt.title("Unbinned")
     b.imshow(ax=ax[1], **imshowkw)
     plt.title("Binned")
-    plt.tight_layout()
     plt.savefig(os.path.join(test_directory, "imshow-bin-demonstration.pdf"))
     plt.close("all")
 
@@ -277,3 +276,8 @@ def test_uncertainty_weighting_during_binning():
         os.path.join(test_directory, "uncertainty-weighting-during-binning.png"),
         facecolor="white",
     )
+
+
+def test_warning_about_binning_before_normalizing():
+    with pytest.warns(match="Please consider normalizing"):
+        SimulatedRainbow().inject_spectrum().inject_noise().bin(R=10)

@@ -509,6 +509,33 @@ def bin_in_wavelength(
     ):
         return self
 
+    if (
+        (self._is_probably_normalized() == False)
+        and (self.uncertainty is not None)
+        and np.any(self.uncertainty != 0)
+    ):
+
+        warnings.warn(
+            f"""
+        It looks like you're trying to bin in wavelength for a
+        Rainbow object that might not be normalized. In the
+        current version of `chromatic`, binning before normalizing
+        might give inaccurate results if the typical uncertainty
+        varies strongly with wavelength.
+
+        Please consider normalizing first, for example with
+        `rainbow.normalize().bin(...)`
+        so that all uncertainties will effectively be relative,
+        and the inverse variance weighting used for binning
+        wavelengths together will give more reasonable answers.
+
+        If you really need to bin before normalizing, please submit
+        an Issue at github.com/zkbt/chromatic/, and we'll try to
+        prioritize implementing a statistically sound solution as
+        soon as possible!
+        """
+        )
+
     # set up binning parameters
     binkw = dict(weighting="inversevariance", drop_nans=False)
 
