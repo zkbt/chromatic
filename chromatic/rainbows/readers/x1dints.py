@@ -39,7 +39,7 @@ def get_times_from_x1dints_files(filenames):
         cheerfully_suggest(
             f"""
         No `int_times` extension was found in the first file
-        {filenames[0]})
+        {filenames[0]}
         We're estimating the times from the `sci` extension
         using the TDB-BEG, TDB-END, and EFFINTTM keywords.
         """
@@ -70,8 +70,7 @@ def get_times_from_x1dints_files(filenames):
         Times were set by linearly interpolating between the exposure
         start and end points. It's very possible these times are off
         by at least a few seconds and possibly up to the duration
-        of one integration (= {hdu["primary"].header["EFFINTTM"]}s)
-        """
+        of one integration (= {hdu["primary"].header["EFFINTTM"]}s)."""
         )
         return {"int_mid_BJD_TDB": mjd_barycentric_integration_midpoints}
     except KeyError:

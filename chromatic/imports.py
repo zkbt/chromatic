@@ -25,7 +25,7 @@ from time import time as get_current_seconds
 
 
 def custom_formatwarning(message, *args, **kwargs):
-    return f"🌈 suggestion: {textwrap.dedent(str(message))}\n"
+    return f"🌈🤖 {textwrap.dedent(str(message)).strip().strip()}\n\n"
 
 
 original_warning_format = warnings.formatwarning
