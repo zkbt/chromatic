@@ -48,14 +48,14 @@ def _create_shared_wavelength_axis(
         plt.imshow(dw_per_time, aspect="auto", vmin=0)
         plt.xlabel("Time Index")
         plt.ylabel("Wavelength Index")
-        plt.title("$\Delta\lambda$")
+        plt.title(r"$\Delta\lambda$")
         plt.colorbar(orientation="horizontal", pad=0.25)
 
         plt.sca(ax[1])
         plt.imshow(R_per_time, aspect="auto", vmin=0)
         plt.xlabel("Time Index")
         plt.ylabel("Wavelength Index")
-        plt.title("R = $\lambda/\Delta\lambda$")
+        plt.title(r"R = $\lambda/\Delta\lambda$")
         plt.colorbar(orientation="horizontal", pad=0.25)
 
     min_w, max_w = np.nanmin(w).to("micron").value, np.nanmax(w).to("micron").value
@@ -79,9 +79,9 @@ def _create_shared_wavelength_axis(
             label=f"{supersampling}x(shared)",
             marker=".",
         )
-        plt.title("$\Delta\lambda$")
+        plt.title(r"$\Delta\lambda$")
         plt.xlabel(f"Wavelength ({w.unit})")
-        plt.ylabel("$\Delta\lambda$")
+        plt.ylabel(r"$\Delta\lambda$")
         plt.legend()
 
         plt.sca(ax[1])
@@ -93,9 +93,9 @@ def _create_shared_wavelength_axis(
             label=f"(shared)/{supersampling}",
             marker=".",
         )
-        plt.title("R = $\lambda/\Delta\lambda$")
+        plt.title(r"R = $\lambda/\Delta\lambda$")
         plt.xlabel(f"Wavelength ({w.unit})")
-        plt.ylabel("R = $\lambda/\Delta\lambda$")
+        plt.ylabel(r"R = $\lambda/\Delta\lambda$")
         plt.legend()
     return shared_w
 
@@ -165,13 +165,16 @@ def align_wavelengths(self, minimum_acceptable_ok=1, minimum_points_per_bin=0, *
         # create a shared wavelength array
         shared_wavelengths = self._create_shared_wavelength_axis(**kw)
 
-        # bin the rainbow onto that new grid, starting from 2D wavelengths
-        shifted = self.bin_in_wavelength(
-            wavelength=shared_wavelengths,
-            minimum_acceptable_ok=minimum_acceptable_ok,
-            starting_wavelengths="2D",
-            minimum_points_per_bin=minimum_points_per_bin,
-        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+
+            # bin the rainbow onto that new grid, starting from 2D wavelengths
+            shifted = self.bin_in_wavelength(
+                wavelength=shared_wavelengths,
+                minimum_acceptable_ok=minimum_acceptable_ok,
+                starting_wavelengths="2D",
+                minimum_points_per_bin=minimum_points_per_bin,
+            )
 
     # append the history entry to the new Rainbow
     shifted._record_history_entry(h)

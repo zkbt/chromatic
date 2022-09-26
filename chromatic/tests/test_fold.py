@@ -6,7 +6,7 @@ def test_fold(N=5):
 
     for i in range(5):
         original_time = (
-            np.linspace(np.random.uniform(-1, -0.2), np.random.uniform(0.2, 1), 500)
+            np.linspace(np.random.uniform(-0.5, -0.2), np.random.uniform(0.2, 0.5), 500)
             * u.day
         )
         period = np.random.uniform(1, 10) * u.day

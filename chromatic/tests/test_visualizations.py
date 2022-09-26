@@ -4,8 +4,11 @@ from ..rainbows.visualizations import _add_panel_labels
 
 
 def test_imshow():
+    plt.close("all")
+
     plt.figure()
-    SimulatedRainbow(R=10).imshow()
+    SimulatedRainbow(R=20).imshow()
+    plt.savefig(os.path.join(test_directory, "demonstration-of-imshow.pdf"))
 
     plt.figure()
     SimulatedRainbow(dw=0.2 * u.micron).imshow()
@@ -20,10 +23,12 @@ def test_imshow():
     fi, ax = plt.subplots(2, 1, sharex=True)
     SimulatedRainbow(R=10).inject_noise().imshow(w_unit="nm", ax=ax[0])
     SimulatedRainbow(dw=0.2 * u.micron).inject_noise().imshow(ax=ax[1], w_unit="nm")
-    plt.savefig(os.path.join(test_directory, "demonstration-of-imshow.pdf"))
+    plt.savefig(os.path.join(test_directory, "demonstration-of-imshow-units.pdf"))
 
 
 def test_imshow_quantities():
+    plt.close("all")
+
     s = SimulatedRainbow().inject_transit().inject_noise(signal_to_noise=500)
     for k in "abcde":
         s.fluxlike[k] = np.random.uniform(4, 5, s.shape)
@@ -32,11 +37,15 @@ def test_imshow_quantities():
 
 
 def test_plot():
+    plt.close("all")
+
     SimulatedRainbow(R=10).inject_noise().plot()
     plt.savefig(os.path.join(test_directory, "demonstration-of-plot.pdf"))
 
 
 def test_plot_unnormalized():
+    plt.close("all")
+
     w = np.logspace(0, 1, 5) * u.micron
     plt.figure()
     s = SimulatedRainbow(wavelength=w, star_flux=w.value**2).inject_noise(
@@ -52,6 +61,8 @@ def test_plot_unnormalized():
 
 
 def test_plot_quantities():
+    plt.close("all")
+
     r = SimulatedRainbow(R=10).inject_noise()
     for k in "abcdefg":
         r.timelike[f'timelike quantity "{k}"'] = np.random.normal(0, 1, r.ntime) * u.m
@@ -69,6 +80,8 @@ def test_plot_quantities():
 
 
 def test_animate():
+    plt.close("all")
+
     # test a transit, since along both dimensions
     d = SimulatedRainbow(dw=0.1 * u.micron, dt=5 * u.minute).inject_noise(
         signal_to_noise=1000
@@ -92,6 +105,8 @@ def test_animate():
 
 
 def test_animate_other_quantities():
+    plt.close("all")
+
     k = "some-imaginary-fluxlike-quantity"
     s = (
         SimulatedRainbow(R=5, dt=20 * u.minute)
@@ -116,6 +131,7 @@ def test_animate_other_quantities():
 
 
 def test_cmap():
+    plt.close("all")
 
     r = SimulatedRainbow(R=10).inject_noise()
 
@@ -128,16 +144,22 @@ def test_cmap():
 
 
 def test_imshow_interact():
+    plt.close("all")
+
     plt.figure()
     SimulatedRainbow(R=10).inject_noise().imshow_interact()
 
 
 def test_plot_one_wavelength():
+    plt.close("all")
+
     s = SimulatedRainbow(wavelength=[1] * u.micron).inject_noise()
     s.plot()
 
 
 def test_imshow_one_wavelength():
+    plt.close("all")
+
     with pytest.warns(match="hard to imshow "):
 
         s = SimulatedRainbow(wavelength=[1] * u.micron).inject_noise()
@@ -149,10 +171,17 @@ def test_imshow_one_wavelength():
         ax = b.imshow()
         assert "Wavelength (" in ax.get_ylabel()
         ylim = ax.get_ylim()
-        plt.close("all")
+    plt.savefig(
+        os.path.join(
+            test_directory,
+            f"demonstration-of-imshow-with-just-one-wavelength.pdf",
+        )
+    )
 
 
 def test_imshow_randomized_axes():
+    plt.close("all")
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -184,6 +213,8 @@ def test_imshow_randomized_axes():
 
 
 def test_imshow_both_orientations():
+    plt.close("all")
+
     s = (
         SimulatedRainbow(R=5, dt=10 * u.minute)
         .inject_transit(planet_radius=0.2)
@@ -204,6 +235,8 @@ def test_imshow_both_orientations():
 
 
 def test_pcolormesh_both_orientations():
+    plt.close("all")
+
     s = (
         SimulatedRainbow(R=5, dt=10 * u.minute)
         .inject_transit(planet_radius=0.2)
@@ -223,6 +256,8 @@ def test_pcolormesh_both_orientations():
 
 
 def test_both_types_of_plot():
+    plt.close("all")
+
     N, M = 10, 20
     r = (
         SimulatedRainbow(
@@ -254,11 +289,20 @@ def test_both_types_of_plot():
 
 
 def test_add_labels_to_panels():
+    plt.close("all")
+
     fi, ax = plt.subplots(3, 3)
     _add_panel_labels(ax, preset="inside", color="blue")
+    plt.savefig(
+        os.path.join(
+            test_directory, "demonstration-of-adding-abcde-labels-to-panels.pdf"
+        )
+    )
 
 
 def test_pcolormesh():
+    plt.close("all")
+
     s = (
         SimulatedRainbow(R=10, dt=10 * u.minute)
         .inject_transit()
@@ -304,6 +348,8 @@ def test_plot_noise_comparison():
 
 
 def test_plot_noise_comparison_in_bins():
+    plt.close("all")
+
     s = SimulatedRainbow(dw=0.1 * u.micron).inject_systematics().inject_noise()
     s.plot_noise_comparison_in_bins()
     plt.savefig(
@@ -314,6 +360,8 @@ def test_plot_noise_comparison_in_bins():
 
 
 def test_plot_histogram():
+    plt.close("all")
+
     s = SimulatedRainbow(R=5).inject_noise()
     fi, ax = plt.subplots(
         s.nwave, 1, figsize=(4, 12), sharex=True, sharey=True, constrained_layout=True

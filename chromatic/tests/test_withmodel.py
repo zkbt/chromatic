@@ -3,6 +3,8 @@ from .setup_tests import *
 
 
 def test_attach_model():
+    plt.close("all")
+
     simulated = SimulatedRainbow().inject_noise().inject_transit().inject_systematics()
     original = simulated._create_copy()
 
@@ -19,6 +21,8 @@ def test_attach_model():
 
 
 def test_imshow_with_models():
+    plt.close("all")
+
     s = (
         SimulatedRainbow()
         .inject_transit()
@@ -52,6 +56,8 @@ def test_imshow_with_models():
 
 
 def test_plot_with_model_and_residuals():
+    plt.close("all")
+
     s = SimulatedRainbow(R=3, dt=3 * u.minute)
     r = s.inject_transit(
         limb_dark="quadratic",
@@ -78,6 +84,7 @@ def test_plot_with_model_and_residuals():
 
 
 def test_plot_and_animate_with_models(output="gif"):
+    plt.close("all")
     s = (
         SimulatedRainbow(R=5)
         .inject_transit()
