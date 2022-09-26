@@ -22,7 +22,11 @@ def test_spectral_library_R(cmap=one2another("indigo", "tomato"), N=5):
             plt.text(0.98, 0.92, f"R={R}", transform=a.transAxes, ha="right", va="top")
     fi.supxlabel(f"Wavelength ({w.unit.to_string('latex_inline')})")
     fi.supylabel(f"Surface Flux ({f.unit.to_string('latex_inline')})")
-    plt.savefig(os.path.join(test_directory, "test-spectral-library-constant-R.png"))
+    plt.savefig(
+        os.path.join(
+            test_directory, "demonstration-of-spectral-library-with-constant-R.pdf"
+        )
+    )
 
 
 def test_spectral_library_wavelengths(cmap=one2another("indigo", "tomato"), N=5):
@@ -48,5 +52,28 @@ def test_spectral_library_wavelengths(cmap=one2another("indigo", "tomato"), N=5)
     fi.supxlabel(f"Wavelength ({w.unit.to_string('latex_inline')})")
     fi.supylabel(f"Surface Flux ({f.unit.to_string('latex_inline')})")
     plt.savefig(
-        os.path.join(test_directory, "test-spectral-library-custom_wavelengths.png")
+        os.path.join(
+            test_directory,
+            "demonstration-of-spectral-library-with-custom-wavelengths.pdf",
+        )
+    )
+
+
+def test_spectral_library_loads_correct_R():
+    for i in range(2):
+        w = np.linspace(0.7, 0.71, 1000) * u.micron
+        wamb, s_amb = get_phoenix_photons(
+            temperature=int(3900.0), wavelength=w, logg=4.4, metallicity=0.0
+        )
+        wspot, s_spot = get_phoenix_photons(
+            temperature=int(3100.0), wavelength=w, logg=4.4, metallicity=0.0
+        )
+        plt.figure()
+        plt.plot(wspot, s_spot)
+        plt.plot(wamb, s_amb)
+    plt.savefig(
+        os.path.join(
+            test_directory,
+            "demonstration-of-spectral-library-loading-minimum-necessary-resolution.pdf",
+        )
     )

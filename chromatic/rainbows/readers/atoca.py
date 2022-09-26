@@ -68,7 +68,7 @@ def from_atoca(rainbow, filepath, order=1):
     else:
         # Ensure that the user knows which order they are getting.
         other_order = {1: 2, 2: 1}[order]
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         You are loading NIRISS order {order} from the ATOCA file
         {filepath}
@@ -134,7 +134,7 @@ def from_atoca(rainbow, filepath, order=1):
     # expected amount.
     n_filled_times = rainbow.fluxlike["flux"].shape[1]
     if n_filled_times != nints:
-        warnings.warn(
+        cheerfully_suggest(
             f"""The extract1d header(s) indicate there should be
             {rainbow.ntime} integrations, but only {n_filled_times} columns of
             the flux array were populated. Are you perhaps missing some

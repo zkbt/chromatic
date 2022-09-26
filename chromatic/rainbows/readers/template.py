@@ -94,7 +94,7 @@ def from_abcdefgh(self, filepath):
 
     # add some warnings if there's any funny business
     if something_goes_wonky():
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         Here's a potential problem that the user should know about.
         """

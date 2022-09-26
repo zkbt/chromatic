@@ -36,10 +36,10 @@ def get_times_from_x1dints_files(filenames):
         return timelike
 
     except KeyError:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         No `int_times` extension was found in the first file
-        {filenames[0]})
+        {filenames[0]}
         We're estimating the times from the `sci` extension
         using the TDB-BEG, TDB-END, and EFFINTTM keywords.
         """
@@ -65,13 +65,12 @@ def get_times_from_x1dints_files(filenames):
             last_mjd_barycentric_integration_midpoint,
             n_integrations_total,
         )
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         Times were set by linearly interpolating between the exposure
         start and end points. It's very possible these times are off
         by at least a few seconds and possibly up to the duration
-        of one integration (= {hdu["primary"].header["EFFINTTM"]}s)
-        """
+        of one integration (= {hdu["primary"].header["EFFINTTM"]}s)."""
         )
         return {"int_mid_BJD_TDB": mjd_barycentric_integration_midpoints}
     except KeyError:
@@ -95,7 +94,7 @@ def get_wavelengths_from_x1dints_files(
         unit_string = hdu[e].columns["wavelength"].unit
         if unit_string is None:
             unit_string = "micron"
-            warnings.warn("No wavelength unit was found; assuming 'micron'.")
+            cheerfully_suggest("No wavelength unit was found; assuming 'micron'.")
         wavelength_unit = u.Unit(unit_string)
         return {"wavelength": hdu[e].data["wavelength"] * wavelength_unit * 1}
 
@@ -137,7 +136,7 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
 
                 if hdu["PRIMARY"].header["INSTRUME"] == "NIRISS":
                     n_orders = 3
-                    warnings.warn(
+                    cheerfully_suggest(
                         f"""
                     Loading NIRISS spectroscopic `order={order}``. Three orders are available,
                     and you can set which (1,2,3) you want to read with the `order=` option.
@@ -218,7 +217,7 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
 
     n_filled_times = np.sum(np.any(np.isfinite(rainbow.flux), rainbow.waveaxis))
     if n_filled_times != rainbow.ntime:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         The x1dints header(s) indicate there should be {rainbow.ntime} integrations,
         but only {n_filled_times} columns of the flux array were populated. Are you
@@ -246,4 +245,4 @@ def from_x1dints(rainbow, filepath, order=1, **kw):
 
         where `x` is the Rainbow you just created.
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)

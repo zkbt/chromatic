@@ -86,7 +86,7 @@ def plot_lightcurves(
         but this function doesn't know how to
         use them. Sorry!
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
 
     # make sure that the wavelength-based colormap is defined
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
@@ -119,7 +119,7 @@ def plot_lightcurves(
         ylim = 1 - np.array([self.nwave + 1, -1]) * spacing
     else:
         label_y = "np.median(plot_y) - 0.5 * spacing"
-        warnings.warn(
+        cheerfully_suggest(
             """
             It's not clear if/how this object has been normalized.
             Be aware that the baseline flux levels may therefore
@@ -183,6 +183,9 @@ def plot_lightcurves(
 
                 if label_scatter is not False:
                     this_textkw.update(ha="right")
+                    measured = measured_rms[i]
+                    expected = expected_rms[i]
+                    cadence = self.dt
                     if text:
                         plt.text(
                             max_time,
@@ -195,7 +198,8 @@ def plot_lightcurves(
         plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")
         if ylim is not None:
-            plt.ylim(*ylim)
+            if ylim[1] != ylim[0]:
+                plt.ylim(*ylim)
         plt.title(self.get("title"))
 
     if filename is not None:

@@ -137,7 +137,7 @@ def plot_one_wavelength_with_models(
     models_that_exist = []
     for m in models:
         if self.get(m) is None:
-            warnings.warn(f"'{m}' doesn't exist and will be skipped.")
+            cheerfully_suggest(f"'{m}' doesn't exist and will be skipped.")
         else:
             models_that_exist.append(m)
     models = models_that_exist

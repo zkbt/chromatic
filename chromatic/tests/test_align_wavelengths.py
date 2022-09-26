@@ -5,9 +5,10 @@ from .setup_tests import *
 
 def create_simulation_with_wobbly_wavelengths(
     fractional_shift=0.002,
-    signal_to_noise=10,
-    dw=0.0001 * u.micron,
-    wlim=[0.9, 1.0] * u.micron,
+    signal_to_noise=100,
+    dw=0.001 * u.micron,
+    wlim=[0.95, 1.05] * u.micron,
+    dt=30 * u.minute,
     **kw
 ):
 
@@ -27,7 +28,7 @@ def create_simulation_with_wobbly_wavelengths(
         return f
 
     # create
-    r = SimulatedRainbow(dw=dw, wlim=wlim, **kw).inject_noise(
+    r = SimulatedRainbow(dw=dw, wlim=wlim, dt=dt, **kw).inject_noise(
         signal_to_noise=signal_to_noise
     )
     wobbly_wavelengths = r.wavelength[:, np.newaxis] * np.random.normal(
@@ -40,7 +41,7 @@ def create_simulation_with_wobbly_wavelengths(
     return r
 
 
-def test_create_shared_wavelength_axis(fractional_shift=0.002, dw=0.0001 * u.micron):
+def test_create_shared_wavelength_axis(fractional_shift=0.002, dw=0.01 * u.micron):
     r = create_simulation_with_wobbly_wavelengths(
         fractional_shift=fractional_shift, dw=dw
     )
@@ -48,44 +49,59 @@ def test_create_shared_wavelength_axis(fractional_shift=0.002, dw=0.0001 * u.mic
     plt.savefig(
         os.path.join(
             test_directory,
-            "create-shared-wavelength-demonstration.pdf",
+            "demonstration-of-creating-shared-wavelength-axis.pdf",
         )
     )
 
 
-def test_align_wavelengths(fractional_shift=0.002, dw=0.0001 * u.micron):
+def test_align_wavelengths(fractional_shift=0.002, dw=0.001 * u.micron, **kw):
     r = create_simulation_with_wobbly_wavelengths(
-        fractional_shift=fractional_shift, dw=dw
+        fractional_shift=fractional_shift, dw=dw, **kw
     )
     a = r.align_wavelengths()
-
+    plt.close("all")
     fi, ax = plt.subplots(2, 2, dpi=300, figsize=(8, 6), constrained_layout=True)
     for i, x in enumerate([r, a]):
-        ax[0, i].imshow(x.flux, aspect="auto")
+        plt.sca(ax[0, i])
+        plt.imshow(x.flux, aspect="auto", cmap="gray")
         plt.title(["original", "aligned"][i] + " flux")
-        ax[1, i].imshow(x.fluxlike["wavelength_2d"], aspect="auto")
-        plt.title(["original", "aligned"][i] + " wavelength")
+        plt.xlabel("time index")
+        plt.ylabel("wavelength index")
+        plt.colorbar()
 
-    plt.savefig(os.path.join(test_directory, "wavelength-alignment-demonstration.pdf"))
-    plt.close("all")
+        plt.sca(ax[1, i])
+        plt.imshow(x.fluxlike["wavelength_2d"], aspect="auto")
+        plt.title(["original", "aligned"][i] + " wavelength")
+        plt.xlabel("time index")
+        plt.ylabel("wavelength index")
+        plt.colorbar()
+
+    plt.savefig(
+        os.path.join(
+            test_directory,
+            "demonstration-of-aligning-2D-wavelengths-to-shared-axis.pdf",
+        )
+    )
 
 
 def test_align_wavelengths_with_not_ok_data(visualize=False):
-    for ok_fraction in [0.25, 0.5, 0.75, 1.0]:
-        r = create_simulation_with_wobbly_wavelengths(
-            fractional_shift=0.0005,
-            wlim=[0.99, 1.01] * u.micron,
-            dw=0.001 * u.micron,
-            dt=20 * u.minute,
-        )
-        r.fluxlike["ok"] = np.random.uniform(size=r.shape) < ok_fraction
-        cautious = r.align_wavelengths(minimum_acceptable_ok=1)
-        carefree = r.align_wavelengths(minimum_acceptable_ok=0)
-        if visualize:
-            cautious.imshow_quantities()
-            plt.suptitle(ok_fraction)
-            carefree.imshow_quantities()
-            plt.suptitle(ok_fraction)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for ok_fraction in [0.25, 0.5, 0.75, 1.0]:
+            r = create_simulation_with_wobbly_wavelengths(
+                fractional_shift=0.0005,
+                wlim=[0.99, 1.01] * u.micron,
+                dw=0.001 * u.micron,
+                dt=20 * u.minute,
+            )
+            r.fluxlike["ok"] = np.random.uniform(size=r.shape) < ok_fraction
+            cautious = r.align_wavelengths(minimum_acceptable_ok=1)
+            carefree = r.align_wavelengths(minimum_acceptable_ok=0)
+            if visualize:
+                cautious.imshow_quantities()
+                plt.suptitle(ok_fraction)
+                carefree.imshow_quantities()
+                plt.suptitle(ok_fraction)
 
         # if np.any(r.ok == 0):
         #    assert np.any((carefree.ok != 1) & (carefree.ok != 0))

@@ -45,7 +45,7 @@ class MultiRainbow:
             or by supplying a list of unique names to the `names=`
             keyword argument when starting your comparison.
             """
-            warnings.warn(message)
+            cheerfully_suggest(message)
 
         # make sure the names and rainbows match up
         assert len(self.names) == len(self.rainbows)

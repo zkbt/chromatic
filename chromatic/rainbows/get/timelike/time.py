@@ -39,7 +39,7 @@ def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentri
     # give a format warning
     format = format or self.get("time_format")
     if format is None:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         `.metadata['time_details']['format']` is not set,
         nor was a `format=` keyword argument provided.
@@ -62,7 +62,7 @@ def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentri
         for s in now.SCALES:
             dt = ((getattr(now, s).jd - now.tdb.jd) * u.day).to(u.second)
             differences_string += f"{s:>15} - tdb = {dt:10.6f}\n"
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         .metadata['time_details']['scale'] is not set,
         nor was a `scale=` keyword argument provided.
@@ -82,7 +82,7 @@ def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentri
     # give some barycenter warnings
     is_barycentric = is_barycentric or self.get("time_is_barycentric")
     if is_barycentric == True and "ut" in scale.lower():
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         barycentic={is_barycentric} and scale={scale}
         It's a deeply weird combination to have a barycentric
@@ -92,7 +92,7 @@ def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentri
         """
         )
     if is_barycentric != True:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         The returned time is not known to be measured relative
         to the Solar System barycenter. It's probably therefore
@@ -110,7 +110,7 @@ def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentri
     if (astropy_time.min().decimalyear < 1000) or (
         astropy_time.max().decimalyear > 3000
     ):
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         The times, which span
         jd={astropy_time.min().jd} to jd={astropy_time.max().jd}

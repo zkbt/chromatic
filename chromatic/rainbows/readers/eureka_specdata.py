@@ -28,7 +28,7 @@ def from_eureka_SpecData(rainbow, filepath, optimal=True):
     try:
         import astraeus.xarrayIO as xrio
     except ModuleNotFoundError:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         You are trying import `astraeus`, which is needed for
         reading and writing `Eureka!` pipeline files. We're
@@ -100,7 +100,7 @@ def from_eureka_SpecData(rainbow, filepath, optimal=True):
                 elif shape[::-1] in test_shapes:
                     rainbow._put_array_in_right_dictionary(k, values.T)
             except ValueError:
-                warnings.warn(
+                cheerfully_suggest(
                     f"""
                 While reading a Eureka S3 SpecData dataset, the key '{k}'
                 has not been stored as `fluxlike`, `wavelike`, or `timelike`,

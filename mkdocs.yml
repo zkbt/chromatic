@@ -20,6 +20,8 @@ nav:
         - github.ipynb
     - Related Tools:
         - tools/spectra.ipynb
+        - tools/binning.ipynb
+        - tools/colormaps.ipynb
 theme:
   name: "material"
   features:

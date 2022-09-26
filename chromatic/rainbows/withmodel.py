@@ -53,7 +53,7 @@ class RainbowWithModel(Rainbow):
             `rainbow.model = np.ones(rainbow.shape)`
             ...or similarly with a more interesting array.
             """
-            warnings.warn(message)
+            cheerfully_suggest(message)
 
     from .visualizations import (
         plot_with_model,

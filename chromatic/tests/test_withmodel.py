@@ -3,6 +3,8 @@ from .setup_tests import *
 
 
 def test_attach_model():
+    plt.close("all")
+
     simulated = SimulatedRainbow().inject_noise().inject_transit().inject_systematics()
     original = simulated._create_copy()
 
@@ -19,6 +21,8 @@ def test_attach_model():
 
 
 def test_imshow_with_models():
+    plt.close("all")
+
     s = (
         SimulatedRainbow()
         .inject_transit()
@@ -27,9 +31,15 @@ def test_imshow_with_models():
         .bin(R=50, dt=5 * u.minute)
     )
     s.imshow_with_models(cmap="gray")
-    plt.savefig(os.path.join(test_directory, "imshow-data-with-model.pdf"))
+    plt.savefig(
+        os.path.join(test_directory, "demonstration-of-imshow-data-with-model.pdf")
+    )
     s.imshow_with_models(models=["systematics_model", "planet_model"], cmap="gray")
-    plt.savefig(os.path.join(test_directory, "imshow-data-with-model-components.pdf"))
+    plt.savefig(
+        os.path.join(
+            test_directory, "demonstration-of-imshow-data-with-model-components.pdf"
+        )
+    )
 
     s.imshow_with_models(models=["systematics_model", "planet_model"], cmap="gray")
     s.imshow_with_models(
@@ -46,6 +56,8 @@ def test_imshow_with_models():
 
 
 def test_plot_with_model_and_residuals():
+    plt.close("all")
+
     s = SimulatedRainbow(R=3, dt=3 * u.minute)
     r = s.inject_transit(
         limb_dark="quadratic",
@@ -65,12 +77,14 @@ def test_plot_with_model_and_residuals():
         r.plot_with_model_and_residuals(**options)
         plt.savefig(
             os.path.join(
-                test_directory, f"rainbow-of-lightcurves-and-residuals-example{i}.png"
+                test_directory,
+                f"demonstration-of-rainbow-of-lightcurves-and-residuals-example{i}.png",
             )
         )
 
 
 def test_plot_and_animate_with_models(output="gif"):
+    plt.close("all")
     s = (
         SimulatedRainbow(R=5)
         .inject_transit()
@@ -85,9 +99,13 @@ def test_plot_and_animate_with_models(output="gif"):
             s.plot_one_wavelength_with_models(0, errorbar=e, orientation=o)
             error_string = {True: "with", False: "without"}[e] + "-errorbars"
             filename = f"data-with-models-{o}-{error_string}"
-            plt.savefig(os.path.join(test_directory, f"plot-{filename}.png"))
+            plt.savefig(
+                os.path.join(test_directory, f"demonstration-of-plot-{filename}.png")
+            )
             s.animate_with_models(
-                os.path.join(test_directory, f"animate-{filename}.{output}"),
+                os.path.join(
+                    test_directory, f"demonstration-of-animate-{filename}.{output}"
+                ),
                 errorbar=e,
                 orientation=o,
             )
