@@ -70,7 +70,7 @@ def _make_sure_cmap_is_defined(self, cmap=None, vmin=None, vmax=None):
                 and (vmin != self.get("vmin"))
                 and (vmax != self.get("vmax"))
             ):
-                warnings.warn(
+                cheerfully_suggest(
                     """
                 It looks like you're trying to set up a new custom
                 cmap and/or wavelength normalization scheme. You

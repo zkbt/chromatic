@@ -112,7 +112,7 @@ def _setup_animate_lightcurves(
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
     if (quantity == "flux") and (self._is_probably_normalized() == False):
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         It's not 100% obvious that {self} has been normalized.
         If you're expecting your animation to wobble near 1,
@@ -320,7 +320,7 @@ def _setup_animate_spectra(
     """
 
     if (quantity == "flux") and (self._is_probably_normalized() == False):
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         It's not 100% obvious that {self} has been normalized.
         If you're expecting your animation to wobble near 1,

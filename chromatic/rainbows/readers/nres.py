@@ -91,7 +91,7 @@ def from_nres(rainbow, filepath, order=52):
 
     # add some warnings if there's any funny business
     if len(filenames) == 0:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         There are no files of that name in this folder!
         """

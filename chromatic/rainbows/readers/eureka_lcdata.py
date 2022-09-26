@@ -24,7 +24,7 @@ def from_eureka_LCData(rainbow, filepath):
     try:
         import astraeus.xarrayIO as xrio
     except ModuleNotFoundError:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         You are trying import `astraeus`, which is needed for
         reading and writing `Eureka!` pipeline files. We're
@@ -92,7 +92,7 @@ def from_eureka_LCData(rainbow, filepath):
     for k in dataset.keys():
         if (shape in test_shapes) or (shape[::-1] in test_shapes):
             if k not in keys_used:
-                warnings.warn(
+                cheerfully_suggest(
                     f"""
                 While reading a Eureka S4 LCData dataset, the key '{k}'
                 has not been stored as `fluxlike`, `wavelike`, or `timelike`,

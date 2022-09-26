@@ -46,7 +46,7 @@ def inject_spectrum(
 
     # warn if maybe we shouldn't inject anything
     if np.all(self.flux != 1):
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         None of the pre-existing flux values were 1,
         which hints at the possibility that there

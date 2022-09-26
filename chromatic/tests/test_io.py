@@ -13,7 +13,9 @@ def test_rainbow_npy():
 def test_rainbow_FITS():
     filename = os.path.join(test_directory, "test.rainbow.fits")
     a = SimulatedRainbow().inject_noise()
-    a.save(filename, overwrite=True)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        a.save(filename, overwrite=True)
     b = read_rainbow(filename)
     assert a == b
 
@@ -36,7 +38,9 @@ def test_xarray():
         filename = os.path.join(test_directory, f)
         print(filename)
         a = SimulatedRainbow().inject_transit().inject_systematics().inject_noise()
-        a.save(filename)
+
+        with pytest.warns(match="required metadata keyword"):
+            a.save(filename)
         b = read_rainbow(filename)
         assert a == b
 

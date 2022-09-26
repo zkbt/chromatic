@@ -15,7 +15,8 @@ def test_bin_in_time():
     imshowkw = dict(vmin=0.98, vmax=1.02)
     s.imshow(ax=ax[0], **imshowkw)
     b.imshow(ax=ax[1], **imshowkw)
-    plt.savefig(os.path.join(test_directory, "imshow-bin-time-demonstration.pdf"))
+    plt.savefig(os.path.join(test_directory, "demonstration-of-binning-in-time.pdf"))
+    plt.close("all")
 
 
 def test_bin_in_wavelength():
@@ -35,7 +36,9 @@ def test_bin_in_wavelength():
     imshowkw = dict(vmin=0.98, vmax=1.02)
     s.imshow(ax=ax[0], **imshowkw)
     b.imshow(ax=ax[1], **imshowkw)
-    plt.savefig(os.path.join(test_directory, "imshow-bin-wavelength-demonstration.pdf"))
+    plt.savefig(
+        os.path.join(test_directory, "demonstration-of-binning-in-wavelength.pdf")
+    )
     plt.close("all")
 
 
@@ -61,14 +64,17 @@ def test_bin():
         == s
     )
 
-    fi, ax = plt.subplots(2, 1, sharex=True)
+    fi, ax = plt.subplots(2, 1, sharex=True, constrained_layout=True)
     imshowkw = dict(vmin=0.98, vmax=1.02)
     s.imshow(ax=ax[0], **imshowkw)
     plt.title("Unbinned")
     b.imshow(ax=ax[1], **imshowkw)
     plt.title("Binned")
-    plt.tight_layout()
-    plt.savefig(os.path.join(test_directory, "imshow-bin-demonstration.pdf"))
+    plt.savefig(
+        os.path.join(
+            test_directory, "demonstration-of-binning-in-both-wavelength-and-time.pdf"
+        )
+    )
     plt.close("all")
 
 
@@ -166,6 +172,9 @@ def test_bin_bad_data(visualize=False):
         b.imshow(ax=ax[1, 1], vmin=0.97, vmax=1.03)
 
     assert np.any(np.isfinite(b.flux))
+    plt.savefig(
+        os.path.join(test_directory, "demonstration-of-binning-with-bad-data.pdf")
+    )
     plt.close("all")
     return s
 
@@ -175,44 +184,49 @@ def test_bin_both():
     binwave = 0.1
     w = np.logspace(0, 1) * u.micron
     r = SimulatedRainbow(dt=bintime * u.minute).inject_noise(signal_to_noise=1000)
-    b_withouttransit = r.bin(dw=binwave * u.micron, dt=bintime * u.minute)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        b = r.bin(dw=binwave * u.micron, dt=bintime * u.minute)
 
 
 def test_binning_to_one():
     """
     Are things OK even if we bin down to one wavelength or time?
     """
-    for N in np.random.randint(2, 100, 3):
-        for M in np.random.randint(2, 100, 3):
-            w = np.linspace(1, 2, N) * u.micron
-            t = np.linspace(-1, 1, M) * u.hour
-            s = SimulatedRainbow(wavelength=w, time=t).inject_noise()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
 
-            bw = s.bin(nwavelengths=s.nwave)
-            print(bw.uncertainty[0, 0], s.uncertainty[0, 0] / np.sqrt(s.nwave))
-            predicted = 1 / np.sqrt(np.sum(1 / s.uncertainty**2, axis=s.waveaxis))
-            assert np.all(
-                np.isclose(
-                    predicted,
-                    np.mean(bw.uncertainty, axis=s.waveaxis),
-                    rtol=1e-10,
-                    atol=1e-13,
-                )
-            )
-            assert bw.nwave == 1
+        for N in np.random.randint(2, 100, 3):
+            for M in np.random.randint(2, 100, 3):
+                w = np.linspace(1, 2, N) * u.micron
+                t = np.linspace(-1, 1, M) * u.hour
+                s = SimulatedRainbow(wavelength=w, time=t).inject_noise()
 
-            bt = s.bin(ntimes=s.ntime)
-            print(bt.uncertainty[0, 0], s.uncertainty[0, 0] / np.sqrt(s.ntime))
-            predicted = 1 / np.sqrt(np.sum(1 / s.uncertainty**2, axis=s.timeaxis))
-            assert np.all(
-                np.isclose(
-                    predicted,
-                    np.mean(bt.uncertainty, axis=s.timeaxis),
-                    rtol=1e-10,
-                    atol=1e-13,
+                bw = s.bin(nwavelengths=s.nwave)
+                print(bw.uncertainty[0, 0], s.uncertainty[0, 0] / np.sqrt(s.nwave))
+                predicted = 1 / np.sqrt(np.sum(1 / s.uncertainty**2, axis=s.waveaxis))
+                assert np.all(
+                    np.isclose(
+                        predicted,
+                        np.mean(bw.uncertainty, axis=s.waveaxis),
+                        rtol=1e-10,
+                        atol=1e-13,
+                    )
                 )
-            )
-            assert bt.ntime == 1
+                assert bw.nwave == 1
+
+                bt = s.bin(ntimes=s.ntime)
+                print(bt.uncertainty[0, 0], s.uncertainty[0, 0] / np.sqrt(s.ntime))
+                predicted = 1 / np.sqrt(np.sum(1 / s.uncertainty**2, axis=s.timeaxis))
+                assert np.all(
+                    np.isclose(
+                        predicted,
+                        np.mean(bt.uncertainty, axis=s.timeaxis),
+                        rtol=1e-10,
+                        atol=1e-13,
+                    )
+                )
+                assert bt.ntime == 1
 
 
 def test_bin_with_minimum_points_per_bin():
@@ -236,16 +250,22 @@ def test_bin_with_minimum_points_per_bin():
             )
             b.imshow(ax=ax[i, j], colorbar=False)
             plt.ylim(5, 0.5)
-            plt.title(f"minimum_points_per_bin={t}, trim={trim}")
+            plt.title(f"minimum_points_per_bin={t},\ntrim={trim}")
 
-    plt.savefig(os.path.join(test_directory, "binning-with-minimum_points_per_bin.png"))
+    plt.savefig(
+        os.path.join(
+            test_directory,
+            "demonstration-of-binning-with-different-minimum-required-points-per-bin.pdf",
+        )
+    )
+    plt.close("all")
 
 
 def test_integrated_wrappers():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
-        s = SimulatedRainbow().inject_transit().inject_noise()
+        s = SimulatedRainbow(dt=5 * u.minute, R=20).inject_transit().inject_noise()
         s.fluxlike["flux"] += 0.003 * s.wavelength.value[:, np.newaxis]
 
         fi, ax = plt.subplots(1, 3, figsize=(10, 3), constrained_layout=True)
@@ -274,6 +294,13 @@ def test_uncertainty_weighting_during_binning():
         lc = t.get_average_lightcurve_as_rainbow()
         lc.plot_with_model(ax=ax[3, col])
     plt.savefig(
-        os.path.join(test_directory, "uncertainty-weighting-during-binning.png"),
+        os.path.join(
+            test_directory, "demonstration-of-binning-uncertainty-weighting.pdf"
+        ),
         facecolor="white",
     )
+
+
+def test_warning_about_binning_before_normalizing():
+    with pytest.warns(match="Please consider normalizing"):
+        SimulatedRainbow().inject_spectrum().inject_noise().bin(R=10)

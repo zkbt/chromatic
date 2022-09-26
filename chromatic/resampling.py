@@ -475,7 +475,7 @@ def bintogrid(
     # warn if multiple inputs are provided
     number_of_grid_options = np.sum([z is not None for z in [newx_edges, newx, dx, nx]])
     if number_of_grid_options > 1:
-        warnings.warn(
+        cheerfully_suggest(
             """More than one output grid sent to `bintogrid`.
                          The one being used is the first to appear in
                          [`newx_edges`, `newx`, `dx`, `nx`]

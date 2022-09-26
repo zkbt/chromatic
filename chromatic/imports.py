@@ -25,17 +25,29 @@ from time import time as get_current_seconds
 
 
 def custom_formatwarning(message, *args, **kwargs):
+    return f"🌈 suggestion: {textwrap.dedent(str(message))}\n"
+
+
+original_warning_format = warnings.formatwarning
+
+
+def cheerfully_suggest(*args, **kwargs):
+    warnings.formatwarning = custom_formatwarning
+    warnings.warn(*args, **kwargs)
+    warnings.formatwarning = original_warning_format
+
+
+"""def custom_formatwarning(message, *args, **kwargs):
     # ignore everything except the message
     return f"\n🌈 Warning: {textwrap.dedent(str(message))}"
 
-
 warnings.formatwarning = custom_formatwarning
-
+"""
 # astropy
 from astropy.io import ascii, fits
 from astropy.table import Table, QTable
 from astropy.time import Time
-from astropy.stats import sigma_clip
+from astropy.stats import sigma_clip, median_absolute_deviation, mad_std
 
 # import astropy.units as u
 import astropy.constants as con
@@ -45,7 +57,6 @@ from astropy.visualization import quantity_support, simple_norm
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
 from scipy.interpolate import interp1d
-from scipy.stats import median_abs_deviation
 
 # For modelling transits.
 import batman
@@ -76,7 +87,7 @@ from astropy.utils.data import download_file
 
 def download_file_with_warning(*args, **kwargs):
     if is_being_run_from_jupyter():
-        warnings.warn(
+        cheerfully_suggest(
             """
         The progress bar for this download is not being shown
         because `astropy.utils.data.download_file` is being run
@@ -120,7 +131,7 @@ def name2color(name):
         color_hex = col.cnames[name]
         return col.hex2color(color_hex)
     except KeyError:
-        warnings.warn(f"The color {name} can't be found. (Returning black.)")
+        cheerfully_suggest(f"The color {name} can't be found. (Returning black.)")
         return (0.0, 0.0, 0.0)
 
 
