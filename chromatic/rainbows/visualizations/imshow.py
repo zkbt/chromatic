@@ -96,7 +96,7 @@ def imshow(
         `rainbow.bin(R=...)` (for logarithmic wavelengths) or
         `rainbow.bin(dw=...)` (for linear wavelengths)
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
         wlower, wupper = -0.5, self.nwave - 0.5
         wlabel = "Wavelength Index"
 
@@ -129,7 +129,7 @@ def imshow(
         be to bin your times to a more uniform grid with
         `rainbow.bin(dt=...)` (for linear times).
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
         tlower, tupper = -0.5, self.ntime - 0.5
         tlabel = "Time Index"
 
@@ -157,7 +157,7 @@ def imshow(
         z = get_2D(quantity).T
         ok = get_2D("ok").T
     else:
-        warnings.warn(
+        cheerfully_suggest(
             "Please specify either `xaxis='time'` or `xaxis='wavelength'` for `.plot()`"
         )
 

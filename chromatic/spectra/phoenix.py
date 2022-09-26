@@ -155,7 +155,7 @@ class PHOENIXLibrary:
         self._raw_wavelengths_url = "/".join(
             [self._raw_base_url, self._raw_wavelengths_filename]
         )
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         Downloading (or finding locally) the shared wavelength grid from
         {self._raw_wavelengths_url}
@@ -174,7 +174,7 @@ class PHOENIXLibrary:
         ] = download_file_with_warning(
             self._raw_directory_url, pkgname=self._cache_label, cache=cache
         )
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         Downloading (or finding locally) the index of files from
         {self._raw_directory_url}
@@ -198,7 +198,7 @@ class PHOENIXLibrary:
             for f in self._raw_spectrum_filenames
         ]
         N = len(self._raw_spectrum_urls)
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         Downloading (or finding locally) {N} very large files from
         {self._raw_directory_url}
@@ -502,7 +502,7 @@ class PHOENIXLibrary:
         if np.any(ok):
             i = np.flatnonzero(ok)[0]
         else:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             Your request resolution of R={R} is higher than the maximum.
             It will be rounded down to R={np.max(self._available_resolutions)}.
@@ -513,7 +513,7 @@ class PHOENIXLibrary:
         if i is not None:
             smallest_sufficient_R = self._available_resolutions[i]
         else:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             Your requested resolution of R={R}
             is higher than the largest possible value

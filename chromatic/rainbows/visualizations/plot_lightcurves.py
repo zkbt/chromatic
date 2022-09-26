@@ -86,7 +86,7 @@ def plot_lightcurves(
         but this function doesn't know how to
         use them. Sorry!
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
 
     # make sure that the wavelength-based colormap is defined
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
@@ -119,7 +119,7 @@ def plot_lightcurves(
         ylim = 1 - np.array([self.nwave + 1, -1]) * spacing
     else:
         label_y = "np.median(plot_y) - 0.5 * spacing"
-        warnings.warn(
+        cheerfully_suggest(
             """
             It's not clear if/how this object has been normalized.
             Be aware that the baseline flux levels may therefore

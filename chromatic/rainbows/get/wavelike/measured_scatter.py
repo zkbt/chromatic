@@ -27,7 +27,7 @@ def get_measured_scatter(
     """
 
     if method not in ["standard-deviation", "MAD"]:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         '{method}' is not an available method.
         Please choose from ['MAD', 'standard-deviation'].

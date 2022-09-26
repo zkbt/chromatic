@@ -88,7 +88,7 @@ def remove_trends(
         kw_to_use = dict(size=(1, 11))
         kw_to_use.update(**kw)
         if "size" not in kw:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             You didn't supply all expected keywords for '{method}'.
             Relying on defaults, the values will be:
@@ -103,7 +103,7 @@ def remove_trends(
         kw_to_use = dict(window_length=11, polyorder=1)
         kw_to_use.update(**kw)
         if ("window_length" not in kw) or ("polyorder" not in kw):
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             You didn't supply all expected keywords for '{method}'.
             Relying on defaults, the values will be:
@@ -119,7 +119,7 @@ def remove_trends(
         kw_to_use = dict(deg=1)
         kw_to_use.update(**kw)
         if "deg" not in kw:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             You didn't supply all expected keywords for '{method}'.
             Relying on defaults, the values will be:

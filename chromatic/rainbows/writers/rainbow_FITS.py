@@ -35,7 +35,7 @@ def to_rainbow_FITS(self, filepath, overwrite=True):
         try:
             header[k] = self.metadata[k]
         except ValueError:
-            warnings.warn(f"metadata item '{k}' cannot be saved to FITS header")
+            cheerfully_suggest(f"metadata item '{k}' cannot be saved to FITS header")
 
     primary_hdu = fits.PrimaryHDU(header=header)
 

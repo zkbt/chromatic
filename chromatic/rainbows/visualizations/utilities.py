@@ -151,7 +151,7 @@ def _scatter_timelike_or_wavelike(
             xlabel = f'{self._time_label} ({t_unit.to_string("latex_inline")})'
             c = wavelength_for_color
         else:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             Your requested xaxis='{xaxis} is not allowed.
             Please choose 'time' or 'wavelength'.

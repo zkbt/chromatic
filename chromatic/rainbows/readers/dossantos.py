@@ -91,7 +91,7 @@ def from_dossantos(rainbow, filepath):
 
     # populate a 1D array of times (with astropy units of time)
     times = np.arange(len(spectra)) * u.minute
-    warnings.warn("The times are totally made up!")
+    cheerfully_suggest("The times are totally made up!")
     rainbow.timelike["time"] = times * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes

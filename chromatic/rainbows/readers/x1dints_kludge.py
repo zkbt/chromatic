@@ -37,7 +37,7 @@ def setup_integration_times(filenames):
     # if times are not in header, make up some imaginary ones!
     except:
         # alert the user to what we're doing
-        warnings.warn("No times found! Making up imaginary ones!")
+        cheerfully_suggest("No times found! Making up imaginary ones!")
         last_hdu = fits.open(filenames[-1])
 
         # figure out the total number of integrations (DOES THIS NEED THE -1?)
@@ -49,7 +49,9 @@ def setup_integration_times(filenames):
 
         # get the time per integration (DOES THIS INCLUDE OVERHEADS?)
         time_per_integration = last_hdu["PRIMARY"].header["EFFINTTM"] * u.s
-        warnings.warn(f"The imaginary times assume {time_per_integration}/integration.")
+        cheerfully_suggest(
+            f"The imaginary times assume {time_per_integration}/integration."
+        )
 
         # create a fake array of times
         fake_times = np.arange(N_integrations) * time_per_integration
@@ -168,7 +170,7 @@ def from_x1dints_kludge(rainbow, filepath, **kw):
         #  FIXME - it looks like different instruments may have different INTENDs?
     n_filled_times = np.sum(np.any(np.isfinite(rainbow.flux), rainbow.waveaxis))
     if n_filled_times != rainbow.ntime:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         The x1dints header(s) indicate there should be {rainbow.ntime} integrations,
         but only {n_filled_times} columns of the flux array were populated. Are you
@@ -196,7 +198,7 @@ def from_x1dints_kludge(rainbow, filepath, **kw):
 
         where `x` is the Rainbow you just created.
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
 
     # try to guess wscale (and then kludge and call it linear)
     # rainbow._guess_wscale()

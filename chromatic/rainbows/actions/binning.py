@@ -51,7 +51,7 @@ def _warn_about_weird_binning(N, dimension, fraction_that_can_be_bad=0.0):
         allow many bins to come from the same data point, so you
         should expect weird correlations.
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
 
 
 def bin(
@@ -325,7 +325,7 @@ def bin_in_time(
 
         '''
         if k == "uncertainty":
-            warnings.warn(
+            cheerfully_suggest(
                 """
             Uncertainties and/or data quality flags might
             not be handled absolutely perfectly yet...
@@ -379,7 +379,7 @@ def bin_in_time(
         which data you think are usable, (c) change the `minimum_acceptable_ok`
         keyword for `.bin` to a smaller value, and/or (d) try larger bins.
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
         raise RuntimeError("No good data to bin! (see above)")
 
     # make sure dictionaries are on the up and up
@@ -515,7 +515,7 @@ def bin_in_wavelength(
         and np.any(self.uncertainty != 0)
     ):
 
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         It looks like you're trying to bin in wavelength for a
         Rainbow object that might not be normalized. In the
@@ -638,7 +638,7 @@ def bin_in_wavelength(
         which data you think are usable, (c) change the `minimum_acceptable_ok`
         keyword for `.bin` to a smaller value, and/or (d) try larger bins.
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
         raise RuntimeError("No good data to bin! (see above)")
 
     # make sure dictionaries are on the up and up

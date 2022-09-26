@@ -34,7 +34,7 @@ def from_coulombe(rainbow, filepath, order=1):
 
     # populate a 1D array of times (with astropy units of time)
     fake_times = np.arange(n_integrations_predicted_by_header) * u.minute
-    warnings.warn("The times are totally made up!")
+    cheerfully_suggest("The times are totally made up!")
     rainbow.timelike["time"] = fake_times
 
     # keep track of integrations loaded yet
@@ -101,7 +101,7 @@ def from_coulombe(rainbow, filepath, order=1):
 
     n_filled_times = np.sum(np.any(np.isfinite(rainbow.flux), rainbow.waveaxis))
     if n_filled_times != rainbow.ntime:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         The x1dints header(s) indicate there should be {rainbow.ntime} integrations,
         but only {n_filled_times} columns of the flux array were populated. Are you
@@ -119,7 +119,7 @@ def from_coulombe(rainbow, filepath, order=1):
     Loading NIRISS order '{order}'. If you want the other order,
     trying `r = Rainbow(..., format='coulombe', order={other_order})`
     """
-    warnings.warn(message)
+    cheerfully_suggest(message)
 
     # try to guess wscale (and then kludge and call it linear)
     # rainbow._guess_wscale()

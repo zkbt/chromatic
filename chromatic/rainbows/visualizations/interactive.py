@@ -7,7 +7,7 @@ try:
     alt.data_transformers.disable_max_rows()
 except Exception as e:
     print(e)
-    warnings.warn(
+    cheerfully_suggest(
         "Issue importing Altair, cannot make interactive plot :(! \n \
                   You can install Altair using: pip install altair"
     )
@@ -74,7 +74,7 @@ def imshow_interact(
         z = "Flux Uncertainty"
     else:
         # if the quantity is not one of the predefined values:
-        warnings.warn("Unrecognised Quantity!")
+        cheerfully_suggest("Unrecognised Quantity!")
         return
 
     # convert rainbow object to pandas dataframe
@@ -84,7 +84,7 @@ def imshow_interact(
     # encourage the user to bin the Rainbow before calling this function in future/
     N_warning = 100000
     if len(source) > N_warning:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         The dataset {self} has {N_warning} data points/
         The interactive plot may lag. Try binning first!
@@ -92,7 +92,7 @@ def imshow_interact(
         )
 
     if (self._is_probably_normalized() == False) and "model" not in self.fluxlike:
-        warnings.warn(
+        cheerfully_suggest(
             """
         It looks like you might be trying to use `imshow_interact` with an
         unnormalized Rainbow object. You might consider normalizing first

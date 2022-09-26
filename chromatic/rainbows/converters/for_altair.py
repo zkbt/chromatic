@@ -45,7 +45,7 @@ def to_nparray(self, t_unit="d", w_unit="micron"):
         # Change time into the units requested by the user
         t_unit = u.Unit(t_unit)
     except:
-        warnings.warn("Unrecognised Time Format! Returning day by default")
+        cheerfully_suggest("Unrecognised Time Format! Returning day by default")
         t_unit = u.Unit("d")
     rtime = np.array(rtime.to(t_unit).value)
 
@@ -53,7 +53,9 @@ def to_nparray(self, t_unit="d", w_unit="micron"):
         # Change wavelength into the units requested by the user
         w_unit = u.Unit(w_unit)
     except:
-        warnings.warn("Unrecognised Wavelength Format! Returning micron by default")
+        cheerfully_suggest(
+            "Unrecognised Wavelength Format! Returning micron by default"
+        )
         w_unit = u.Unit("micron")
     rwavel = np.array(rwavel.to(w_unit).value)
 

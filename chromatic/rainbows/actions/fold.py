@@ -35,7 +35,7 @@ def fold(self, period=None, t0=None, event="Mid-Transit"):
         Folding to a transit period requires both
         `period` and `t0` be specified. Please try again.
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
         return self
 
     # create a copy of the existing rainbow

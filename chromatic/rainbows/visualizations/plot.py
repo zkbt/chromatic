@@ -28,4 +28,4 @@ def plot(self, xaxis="time", **kw):
     elif xaxis.lower()[0] == "w":
         return self.plot_spectra(**kw)
     else:
-        warnings.warn("Please specify either 'time' or 'wavelength' for `.plot()`")
+        cheerfully_suggest("Please specify either 'time' or 'wavelength' for `.plot()`")

@@ -35,7 +35,7 @@ def get_measured_scatter_in_bins(
     from ...rainbow import Rainbow
 
     if "remove_trends" in self.history():
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         The `remove_trends` function was applied to this `Rainbow`,
         making it very plausible that some long-timescale signals

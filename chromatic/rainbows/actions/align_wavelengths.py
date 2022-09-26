@@ -153,7 +153,7 @@ def align_wavelengths(self, minimum_acceptable_ok=1, minimum_points_per_bin=0, *
     h = self._create_history_entry("align_wavelengths", locals())
 
     if "wavelength_2d" not in self.fluxlike:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         No 2D wavelength information was found, so
         it's assumed wavelengths don't need to be aligned.

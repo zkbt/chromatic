@@ -93,7 +93,7 @@ def plot_spectra(
         but this function doesn't know how to
         use them. Sorry!
         """
-        warnings.warn(message)
+        cheerfully_suggest(message)
 
     # make sure that the wavelength-based colormap is defined
     self._make_sure_cmap_is_defined(cmap=cmap, vmin=vmin, vmax=vmax)
@@ -120,7 +120,7 @@ def plot_spectra(
     ax._most_recent_chromatic_plot_spacing = spacing
 
     # TO-DO: check if this Rainbow has been normalized
-    '''warnings.warn(
+    '''cheerfully_suggest(
         """
     It's not clear if/how this object has been normalized.
     Be aware that the baseline flux levels may therefore
