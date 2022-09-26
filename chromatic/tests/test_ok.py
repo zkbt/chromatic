@@ -23,7 +23,7 @@ def test_bin_with_not_ok_data():
         a.ok = np.random.uniform(size=a.shape) < ok_fraction
 
         if ok_fraction == 0:
-            with pytest.raises(RuntimeError):
+            with pytest.raises((RuntimeError, IndexError)):
                 should_fail = a.bin(
                     dw=0.7 * u.micron, dt=20 * u.minute, minimum_acceptable_ok=1
                 )

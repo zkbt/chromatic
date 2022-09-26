@@ -57,7 +57,6 @@ def _create_shared_wavelength_axis(
         plt.ylabel("Wavelength Index")
         plt.title("R = $\lambda/\Delta\lambda$")
         plt.colorbar(orientation="horizontal", pad=0.25)
-        plt.tight_layout()
 
     min_w, max_w = np.nanmin(w).to("micron").value, np.nanmax(w).to("micron").value
     if wscale == "linear":
@@ -78,6 +77,7 @@ def _create_shared_wavelength_axis(
             shared_dw * supersampling,
             color="black",
             label=f"{supersampling}x(shared)",
+            marker=".",
         )
         plt.title("$\Delta\lambda$")
         plt.xlabel(f"Wavelength ({w.unit})")
@@ -91,12 +91,12 @@ def _create_shared_wavelength_axis(
             shared_R / supersampling,
             color="black",
             label=f"(shared)/{supersampling}",
+            marker=".",
         )
         plt.title("R = $\lambda/\Delta\lambda$")
         plt.xlabel(f"Wavelength ({w.unit})")
         plt.ylabel("R = $\lambda/\Delta\lambda$")
         plt.legend()
-        plt.tight_layout()
     return shared_w
 
 

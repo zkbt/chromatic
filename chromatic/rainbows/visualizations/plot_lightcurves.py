@@ -198,7 +198,8 @@ def plot_lightcurves(
         plt.xlabel(f"{self._time_label} ({t_unit.to_string('latex_inline')})")
         plt.ylabel("Relative Flux (+ offsets)")
         if ylim is not None:
-            plt.ylim(*ylim)
+            if ylim[1] != ylim[0]:
+                plt.ylim(*ylim)
         plt.title(self.get("title"))
 
     if filename is not None:

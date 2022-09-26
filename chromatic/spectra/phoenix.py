@@ -841,13 +841,15 @@ class PHOENIXLibrary:
                         weights[i] = wt * wg * wz
                         key = (t, g, z)
                         try:
-                            this_log_spectrum = np.log(
-                                self._get_spectrum_from_grid(
-                                    key,
-                                    wavelength=wavelength,
-                                    wavelength_edges=wavelength_edges,
+                            with warnings.catch_warnings():
+                                warnings.simplefilter("ignore")
+                                this_log_spectrum = np.log(
+                                    self._get_spectrum_from_grid(
+                                        key,
+                                        wavelength=wavelength,
+                                        wavelength_edges=wavelength_edges,
+                                    )
                                 )
-                            )
                         except KeyError:
                             raise ValueError(
                                 f"""
@@ -986,7 +988,7 @@ class PHOENIXLibrary:
             if k != "R":
                 plt.loglog(timings["R"], timings[k], marker="o", label=k, alpha=0.3)
         plt.legend(bbox_to_anchor=(1, 1), frameon=False)
-        plt.xlabel("R = $\lambda/\Delta\lambda$")
+        plt.xlabel(r"R = $\lambda/\Delta\lambda$")
         plt.ylabel("Time Required")
         return t
 

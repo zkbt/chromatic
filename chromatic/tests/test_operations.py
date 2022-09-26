@@ -46,19 +46,20 @@ def test_rainbow_operations():
     assert (a / 1).fluxlike["flux"][0][0] == 1
 
     # make sure we raise an error if it's not obvious whether we're doing wavelength or time
-    c = Rainbow(
-        wavelength=np.linspace(0.5, 5, nw) * u.micron,
-        time=np.linspace(-1, 1, nw) * u.hour,
-        flux=np.ones((nw, nw)),
-    )
-    with pytest.raises(Exception):
-        c * wl_like
-    with pytest.raises(Exception):
-        c / wl_like
-    with pytest.raises(Exception):
-        c + wl_like
-    with pytest.raises(Exception):
-        c - wl_like
+    with pytest.warns(match="reconsider letting them have the same size"):
+        c = Rainbow(
+            wavelength=np.linspace(0.5, 5, nw) * u.micron,
+            time=np.linspace(-1, 1, nw) * u.hour,
+            flux=np.ones((nw, nw)),
+        )
+        with pytest.raises(Exception):
+            c * wl_like
+        with pytest.raises(Exception):
+            c / wl_like
+        with pytest.raises(Exception):
+            c + wl_like
+        with pytest.raises(Exception):
+            c - wl_like
 
 
 def test_operations_with_uncertainty():

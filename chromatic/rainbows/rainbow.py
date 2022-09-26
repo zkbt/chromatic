@@ -733,7 +733,7 @@ class Rainbow:
             )
 
         # warn if the times and wavelengths are the same size
-        if (self.nwave == self.ntime) and (self.ntime is not None):
+        if (self.nwave == self.ntime) and (self.ntime is not None) and (self.ntime > 1):
             warnings.warn(
                 f"""
             The number of wavelengths ({self.nwave}) is the same as the

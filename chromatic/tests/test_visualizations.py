@@ -20,7 +20,7 @@ def test_imshow():
     fi, ax = plt.subplots(2, 1, sharex=True)
     SimulatedRainbow(R=10).inject_noise().imshow(w_unit="nm", ax=ax[0])
     SimulatedRainbow(dw=0.2 * u.micron).inject_noise().imshow(ax=ax[1], w_unit="nm")
-    plt.savefig(os.path.join(test_directory, "imshow-demonstration.pdf"))
+    plt.savefig(os.path.join(test_directory, "demonstration-of-imshow.pdf"))
 
 
 def test_imshow_quantities():
@@ -28,12 +28,12 @@ def test_imshow_quantities():
     for k in "abcde":
         s.fluxlike[k] = np.random.uniform(4, 5, s.shape)
     s.imshow_quantities(maxcol=1, panel_size=(8, 2))
-    plt.savefig(os.path.join(test_directory, "imshow-multiples-demonstration.pdf"))
+    plt.savefig(os.path.join(test_directory, "demonstration-of-imshow-quantities.pdf"))
 
 
 def test_plot():
     SimulatedRainbow(R=10).inject_noise().plot()
-    plt.savefig(os.path.join(test_directory, "plot-demonstration.pdf"))
+    plt.savefig(os.path.join(test_directory, "demonstration-of-plot.pdf"))
 
 
 def test_plot_unnormalized():
@@ -43,7 +43,12 @@ def test_plot_unnormalized():
         signal_to_noise=5
     )
     s.plot(spacing=0)
-    plt.savefig(os.path.join(test_directory, "plot-demonstration-unnormalized.pdf"))
+    plt.savefig(
+        os.path.join(
+            test_directory,
+            "demonstration-of-plot-without-normalization.pdf",
+        )
+    )
 
 
 def test_plot_quantities():
@@ -58,7 +63,7 @@ def test_plot_quantities():
             plt.savefig(
                 os.path.join(
                     test_directory,
-                    f"plot_quantities-demonstration-data={k}-xaxis={x}.pdf",
+                    f"demonstration-of-plot-quantities-data={k}-xaxis={x}.pdf",
                 )
             )
 
@@ -73,11 +78,15 @@ def test_animate():
     e = d.inject_transit(planet_radius=planet_radius)
     scatterkw = dict()
     e.animate_lightcurves(
-        filename=os.path.join(test_directory, "animate-lightcurves-demonstration.gif"),
+        filename=os.path.join(
+            test_directory, "demonstration-of-animate-lightcurves.gif"
+        ),
         scatterkw=scatterkw,
     )
     e.animate_spectra(
-        filename=os.path.join(test_directory, "animate-spectra-demonstration.gif"),
+        filename=os.path.join(
+            test_directory, "demonstration-of-animate-spectra-demonstration.gif"
+        ),
         scatterkw=scatterkw,
     )
 
@@ -91,12 +100,16 @@ def test_animate_other_quantities():
         .inject_noise(signal_to_noise=1000)
     )
     s.animate_spectra(
-        os.path.join(test_directory, "test-animate-quantities-beside-flux-spectra.gif"),
+        os.path.join(
+            test_directory,
+            "demonstration-of-animate-quantities-beside-flux-spectra.gif",
+        ),
         quantity=k,
     )
     s.animate_lightcurves(
         os.path.join(
-            test_directory, "test-animate-quantities-beside-flux-lightcurves.gif"
+            test_directory,
+            "demonstration-of--animate-quantities-beside-flux-lightcurves.gif",
         ),
         quantity=k,
     )
@@ -125,18 +138,18 @@ def test_plot_one_wavelength():
 
 
 def test_imshow_one_wavelength():
-    s = SimulatedRainbow(wavelength=[1] * u.micron).inject_noise()
-    ax = s.imshow()
-    assert "Wavelength Index" in ax.get_ylabel()
+    with pytest.warns(match="hard to imshow "):
 
-    s = SimulatedRainbow().inject_noise()
-    b = s.bin(nwavelengths=s.nwave)
-    ax = b.imshow()
-    assert "Wavelength (" in ax.get_ylabel()
-    ylim = ax.get_ylim()
-    # assert max(ylim) > max(s.wavelength.value)
-    # assert min(ylim) < min(s.wavelength.value)
-    plt.close("all")
+        s = SimulatedRainbow(wavelength=[1] * u.micron).inject_noise()
+        ax = s.imshow()
+        assert "Wavelength Index" in ax.get_ylabel()
+
+        s = SimulatedRainbow().inject_noise()
+        b = s.bin(nwavelengths=s.nwave)
+        ax = b.imshow()
+        assert "Wavelength (" in ax.get_ylabel()
+        ylim = ax.get_ylim()
+        plt.close("all")
 
 
 def test_imshow_randomized_axes():
@@ -162,6 +175,12 @@ def test_imshow_randomized_axes():
             assert "Time Index" in ax[i].get_xlabel()
         for i in [0, 1]:
             assert "Wavelength Index" in ax[1].get_ylabel()
+        plt.savefig(
+            os.path.join(
+                test_directory,
+                f"demonstration-of-imshow-with-irregular-axes.pdf",
+            )
+        )
 
 
 def test_imshow_both_orientations():
@@ -176,7 +195,12 @@ def test_imshow_both_orientations():
     for i, k in enumerate(["time", "wavelength"]):
         s.plot(ax=ax[0, i], xaxis=k)
         s.imshow(ax=ax[1, i], xaxis=k, colorbar=False)
-    plt.savefig(os.path.join(test_directory, "imshow-both-orientations.png"))
+        plt.savefig(
+            os.path.join(
+                test_directory,
+                f"demonstration-of-imshow-with-both-orientations.pdf",
+            )
+        )
 
 
 def test_pcolormesh_both_orientations():
@@ -191,7 +215,11 @@ def test_pcolormesh_both_orientations():
     for i, k in enumerate(["time", "wavelength"]):
         s.plot(ax=ax[0, i], xaxis=k)
         s.pcolormesh(ax=ax[1, i], xaxis=k, colorbar=False)
-    plt.savefig(os.path.join(test_directory, "pcolormesh-both-orientations.png"))
+    plt.savefig(
+        os.path.join(
+            test_directory, "demonstration-of-pcolormesh-both-orientations.pdf"
+        )
+    )
 
 
 def test_both_types_of_plot():
@@ -215,12 +243,13 @@ def test_both_types_of_plot():
             spacing=0,
             errorbar=True,
             plotkw=dict(color="orchid"),
-            scatterkw=dict(),
             textkw=dict(color="orchid"),
             errorbarkw=dict(color="orchid"),
         )
     plt.savefig(
-        os.path.join(test_directory, "test-plot-lightcurve-and-spectra-many.png")
+        os.path.join(
+            test_directory, "demonstration-of-plot-lightcurves-and-plot-spectra.pdf"
+        )
     )
 
 
@@ -244,7 +273,9 @@ def test_pcolormesh():
     b = s.bin(dw=0.5 * u.micron)
     b.imshow(ax=ax[1, 0])
     b.pcolormesh(ax=ax[1, 1])
-    plt.savefig(os.path.join(test_directory, "test-pcolormesh-vs-imshow.png"))
+    plt.savefig(
+        os.path.join(test_directory, "demonstration-of-pcolormesh-vs-imshow.pdf")
+    )
 
 
 def test_plot_noise_comparison():
@@ -267,13 +298,19 @@ def test_plot_noise_comparison():
         s.plot_noise_comparison(ax=ax[1, i])
     ax[0, 0].set_title("No Systematics")
     ax[0, 1].set_title("With Systematics")
-    plt.savefig(os.path.join(test_directory, "test-plot_noise_comparison.png"))
+    plt.savefig(
+        os.path.join(test_directory, "demonstration-of-plot-noise-comparison.pdf")
+    )
 
 
 def test_plot_noise_comparison_in_bins():
     s = SimulatedRainbow(dw=0.1 * u.micron).inject_systematics().inject_noise()
     s.plot_noise_comparison_in_bins()
-    plt.savefig(os.path.join(test_directory, "test-plot_noise_comparison_in_bins.png"))
+    plt.savefig(
+        os.path.join(
+            test_directory, "demonstration-of-plot-noise-comparison-in-bins.pdf"
+        )
+    )
 
 
 def test_plot_histogram():
@@ -285,4 +322,4 @@ def test_plot_histogram():
         s.plot_histogram(i, ax=ax[i], expected=True)
         if i < (s.nwave - 1):
             plt.xlabel("")
-    plt.savefig(os.path.join(test_directory, "test-histogram.png"))
+    plt.savefig(os.path.join(test_directory, "demonstration-of-histogram.pdf"))

@@ -23,6 +23,12 @@ def test_shift():
         unshifted.imshow(ax=ax[0])
         shifted.imshow(ax=ax[1])
         shifted_and_then_shifted_back.imshow(ax=ax[2])
+        plt.savefig(
+            os.path.join(
+                test_directory,
+                "demonstration-of-shifting-wavelengths.pdf",
+            )
+        )
 
         assert np.all(
             np.isclose(unshifted.wavelength, shifted_and_then_shifted_back.wavelength)

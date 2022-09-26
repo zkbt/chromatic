@@ -24,14 +24,19 @@ def test_photon_noise(N=10000):
     # imshow the two ways
     fi, ax = plt.subplots(1, 2, figsize=(8, 3), dpi=300, constrained_layout=True)
     gaussian.imshow(ax=ax[0])
-    ax[0].set_title(f"Gaussian ($\sigma=${1/np.sqrt(N):.3f}=" + "$1/\sqrt{N}$)")
+    ax[0].set_title(r"Gaussian ($\sigma=$" + f"{1/np.sqrt(N):.3f}=" + r"$1/\sqrt{N}$)")
     poisson.imshow(ax=ax[1])
     ax[1].set_title(f"Poisson (N={N})")
 
     # make sure the standard deviation is about right
     # sigma = np.std(poisson.residuals / poisson.model)
     # assert np.isclose(sigma, 1 / np.sqrt(N), rtol=0.1)
-    plt.savefig(os.path.join(test_directory, "poisson+gaussian-noise.png"))
+    plt.savefig(
+        os.path.join(
+            test_directory,
+            "demonstration-of-injecting-noise-as-poisson-or-gaussian.pdf",
+        )
+    )
 
 
 def test_star_flux():
@@ -62,5 +67,14 @@ def test_inject_transit():
             ),
         },
     ).imshow(ax=ax[2], vmin=0.975, vmax=1.005)
-    plt.savefig(os.path.join(test_directory, "transit-injection-demonstration.pdf"))
+    plt.savefig(os.path.join(test_directory, "demonstration-of-injecting-transit.pdf"))
     plt.close("all")
+
+
+def test_inject_systematics():
+    SimulatedRainbow().inject_transit().inject_noise().inject_systematics().bin(
+        R=10, dt=10 * u.minute
+    ).imshow_with_models()
+    plt.savefig(
+        os.path.join(test_directory, "demonstration-of-injecting-fake-systematics.pdf")
+    )
