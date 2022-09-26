@@ -89,6 +89,7 @@ setup(
         "batman-package>=2.4.9",
         "altair",
         "xarray",
+        "h5py",
     ],
     # what version of Python is required?
     python_requires=">=3.7",  # f-strings are introduced in 3.6!
@@ -107,8 +108,7 @@ setup(
             "mkdocs-exclude",
             "twine",
             "pre-commit",
-        ],
-        "cartoons": ["rainbow-connection>=0.0.7"],
+        ]
     },
     # (I think just leave this set to False)
     zip_safe=False,
