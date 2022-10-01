@@ -948,6 +948,7 @@ class Rainbow:
         inject_systematics,
         inject_noise,
         inject_spectrum,
+        inject_outliers,
         flag_outliers,
         fold,
         mask_transit,

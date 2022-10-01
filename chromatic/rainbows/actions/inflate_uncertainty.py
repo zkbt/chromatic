@@ -5,9 +5,9 @@ __all__ = ["inflate_uncertainty"]
 
 def inflate_uncertainty(
     self,
-    minimum_inflate_ratio = 1.0,
+    minimum_inflate_ratio=1.0,
     **kw,
-):  
+):
     """
     A quick tool to inflate uncertainties to photon noise.
 
@@ -53,9 +53,9 @@ def inflate_uncertainty(
             `model` = the (nwavelengths, ntimes) model array
 
     minimum_inflate_ratio : float
-	the minimum inflate_ratio that can be. We don't want people 
-	to deflate uncertainty unless a very specific case of unstable 
-	pipeline output.
+        the minimum inflate_ratio that can be. We don't want people
+        to deflate uncertainty unless a very specific case of unstable
+        pipeline output.
 
     kw : dict
         Any additional keywords will be passed to the function
@@ -72,19 +72,27 @@ def inflate_uncertainty(
 
     # TODO, think about more careful treatment of uncertainties + good/bad data
     new = self._create_copy()
-	    
+
     trend_removed = new.remove_trends(**kw)
-    measured_scatter = trend_removed.get_measured_scatter(method='MAD',minimum_acceptable_ok=1e-10)
+    measured_scatter = trend_removed.get_measured_scatter(
+        method="MAD", minimum_acceptable_ok=1e-10
+    )
 
     expected_uncertainty = trend_removed.get_expected_uncertainty()
 
-    inflate_ratio = measured_scatter/expected_uncertainty
-    new.wavelike['inflate_ratio'] = inflate_ratio
+    inflate_ratio = measured_scatter / expected_uncertainty
+    new.wavelike["inflate_ratio"] = inflate_ratio
     if np.min(inflate_ratio) < minimum_inflate_ratio:
-    	raise Exception(f"One or more inflate ratios are below the minimum_inflate_ratio = {minimum_inflate_ratio}, if you really want to proceed please consider lower minimum_inflate_ratio")
+        cheerfully_suggest(
+            f"""
+        {np.sum(inflate_ratio < minimum_inflate_ratio)} uncertainty inflation ratios would be below
+        the `minimum_inflate_ratio` of {minimum_inflate_ratio}, so they have not been changed.
+        """
+        )
+        inflate_ratio = np.maximum(inflate_ratio, minimum_inflate_ratio)
 
-    new.uncertainty = new.uncertainty*inflate_ratio[:,np.newaxis]  
-  
+    new.uncertainty = new.uncertainty * inflate_ratio[:, np.newaxis]
+
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
 
