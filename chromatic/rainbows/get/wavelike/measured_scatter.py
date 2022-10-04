@@ -27,7 +27,7 @@ def get_measured_scatter(
     """
 
     if method not in ["standard-deviation", "MAD"]:
-        warnings.warn(
+        cheerfully_suggest(
             f"""
         '{method}' is not an available method.
         Please choose from ['MAD', 'standard-deviation'].
@@ -48,5 +48,5 @@ def get_measured_scatter(
             if method == "standard-deviation":
                 scatters[i] = np.nanstd(y_value)
             elif method == "MAD":
-                scatters[i] = median_absolute_deviation(y_value, scale="normal")
+                scatters[i] = mad_std(y_value, ignore_nan=True)
         return scatters * y_unit

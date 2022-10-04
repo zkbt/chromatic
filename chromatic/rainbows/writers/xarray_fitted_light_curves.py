@@ -56,7 +56,7 @@ def to_xarray_fitted_light_curves(self, filepath, overwrite=True):
     # warn about missing metadata
     for k in required_attrs:
         if k not in self.metadata:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             The required metadata keyword `{k}` was not found.
             Before saving, please set it with `rainbow.{k} = ?`
@@ -99,7 +99,7 @@ def to_xarray_fitted_light_curves(self, filepath, overwrite=True):
     # warn about missing data_vars
     for k in required_coords:
         if k not in coords_dict:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             The required coord keyword `{k}` was not found.
             Before saving, please set it with `rainbow.{k} = ?`
@@ -144,7 +144,7 @@ def to_xarray_fitted_light_curves(self, filepath, overwrite=True):
     # warn about missing data_vars
     for k in required_data_vars:
         if k not in ds:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             The required data_var keyword `{k}` was not found.
             Before saving, please set it with `rainbow.{k} = ?`

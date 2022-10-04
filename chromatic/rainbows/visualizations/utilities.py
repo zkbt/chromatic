@@ -151,7 +151,7 @@ def _scatter_timelike_or_wavelike(
             xlabel = f'{self._time_label} ({t_unit.to_string("latex_inline")})'
             c = wavelength_for_color
         else:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             Your requested xaxis='{xaxis} is not allowed.
             Please choose 'time' or 'wavelength'.
@@ -207,7 +207,10 @@ def _get_plot_directory(self):
 
 def _label_plot_file(self, filename):
     directory = self._get_plot_directory()
-    return os.path.join(directory, filename.replace(".", f"-{directory}."))
+    if directory == "":
+        return filename
+    else:
+        return os.path.join(directory, filename.replace(".", f"-{directory}."))
 
 
 def savefig(self, filename="test.png", dpi=300, **kw):

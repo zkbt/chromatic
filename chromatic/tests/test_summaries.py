@@ -7,12 +7,17 @@ def test_lightcurve_and_spectrum_summaries():
     s = SimulatedRainbow().inject_noise().inject_transit()
     ax[0].plot(s.time, s.get_average_lightcurve())
     ax[1].plot(s.wavelength, s.get_average_spectrum())
+    plt.savefig(
+        os.path.join(
+            test_directory, "demonstration-of-average-lightcurve-and-spectrum.pdf"
+        )
+    )
 
 
 def test_measured_scatter_summary():
     # make a fake Rainbow with known noise
     signal_to_noise = 100
-    s = SimulatedRainbow(signal_to_noise=signal_to_noise)
+    s = SimulatedRainbow().inject_noise(signal_to_noise=signal_to_noise)
 
     # mathematically, what do we expect?
     expected_sigma = 1 / signal_to_noise
@@ -66,4 +71,4 @@ def test_measured_scatter_summary():
             < uncertainty_on_expected_sigma * many_sigma
         )
 
-    plt.savefig(os.path.join(test_directory, "measured-scatter-demo.png"))
+    plt.savefig(os.path.join(test_directory, "demonstration-of-measured-scatter.pdf"))

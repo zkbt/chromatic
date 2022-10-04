@@ -120,7 +120,7 @@ class SimulatedRainbow(RainbowWithModel):
             You're getting away with it this time,
             but it won't work for much longer!
             """
-            warnings.warn(message)
+            cheerfully_suggest(message)
             new = self.inject_noise()
             for k in ["flux", "uncertainty", "model"]:
                 self.fluxlike[k] = new.fluxlike[k]

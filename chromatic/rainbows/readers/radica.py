@@ -21,7 +21,7 @@ def from_radica(self, filepath, order=1):
     hdu = fits.open(filepath)
 
     n_orders = 2
-    warnings.warn(
+    cheerfully_suggest(
         f"""
     Loading NIRISS spectroscopic `order={order}``. Two orders are available,
     and you can set which (1,2) you want to read with the `order=` option.

@@ -4,7 +4,7 @@ from .setup_tests import *
 
 def test_rainbow_basics():
 
-    nw, nt = 24, 48
+    nw, nt = 24, 72
     r = Rainbow(
         wavelength=np.linspace(1, 2, nw) * u.micron,
         time=np.linspace(-1, 1, nt) * u.hour,
@@ -109,25 +109,22 @@ def test_shape_warnings():
 def test_sort():
     w = np.linspace(2, 1) * u.micron
     t = np.linspace(1, -1) * u.day
-    r = SimulatedRainbow(wavelength=w, time=t).inject_noise()
-    print(r.wavelength)
-    print(r.time)
-    r._validate_core_dictionaries()
-    print(r.wavelength)
-    print(r.time)
-    assert np.all(r.wavelength == w[::-1])
-    assert np.all(r.time == t[::-1])
 
-    # test the warnings
     with pytest.warns(match="input times were not monotonically increasing"):
         r = SimulatedRainbow(time=t).inject_noise()
         r._validate_core_dictionaries()
-        r.original_time_index
+        print(r.wavelength)
+        print(r.time)
+        print(r.original_time_index)
+        assert np.all(r.time == t[::-1])
 
     with pytest.warns(match="input wavelengths were not monotonically increasing"):
         r = SimulatedRainbow(wavelength=w).inject_noise()
         r._validate_core_dictionaries()
-        r.original_wave_index
+        print(r.wavelength)
+        print(r.time)
+        print(r.original_wave_index)
+        assert np.all(r.wavelength == w[::-1])
 
 
 def test_help():

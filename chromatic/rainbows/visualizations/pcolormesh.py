@@ -98,7 +98,7 @@ def pcolormesh(
         z = get_2D(quantity).T
         ok = get_2D("ok").T
     else:
-        warnings.warn(
+        cheerfully_suggest(
             "Please specify either `xaxis='time'` or `xaxis='wavelength'` for `.plot()`"
         )
 

@@ -22,7 +22,11 @@ def test_spectral_library_R(cmap=one2another("indigo", "tomato"), N=5):
             plt.text(0.98, 0.92, f"R={R}", transform=a.transAxes, ha="right", va="top")
     fi.supxlabel(f"Wavelength ({w.unit.to_string('latex_inline')})")
     fi.supylabel(f"Surface Flux ({f.unit.to_string('latex_inline')})")
-    plt.savefig(os.path.join(test_directory, "test-spectral-library-constant-R.png"))
+    plt.savefig(
+        os.path.join(
+            test_directory, "demonstration-of-spectral-library-with-constant-R.pdf"
+        )
+    )
 
 
 def test_spectral_library_wavelengths(cmap=one2another("indigo", "tomato"), N=5):
@@ -48,7 +52,10 @@ def test_spectral_library_wavelengths(cmap=one2another("indigo", "tomato"), N=5)
     fi.supxlabel(f"Wavelength ({w.unit.to_string('latex_inline')})")
     fi.supylabel(f"Surface Flux ({f.unit.to_string('latex_inline')})")
     plt.savefig(
-        os.path.join(test_directory, "test-spectral-library-custom_wavelengths.png")
+        os.path.join(
+            test_directory,
+            "demonstration-of-spectral-library-with-custom-wavelengths.pdf",
+        )
     )
 
 
@@ -66,6 +73,7 @@ def test_spectral_library_loads_correct_R():
         plt.plot(wamb, s_amb)
     plt.savefig(
         os.path.join(
-            test_directory, "test-spectral-library-load-correct-resolution.png"
+            test_directory,
+            "demonstration-of-spectral-library-loading-minimum-necessary-resolution.pdf",
         )
     )

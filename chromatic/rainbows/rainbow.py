@@ -184,7 +184,7 @@ class Rainbow:
             Wavelength, time, and flux arrays don't match;
             the `._sort()` step is being skipped.
             """
-            warnings.warn(message)
+            cheerfully_suggest(message)
             return
 
         if np.any(np.diff(i_wavelength) < 0):
@@ -194,7 +194,7 @@ class Rainbow:
             If you want to recover the original wavelength order, the original
             wavelength indices are available in `rainbow.original_wave_index`.
             """
-            warnings.warn(message)
+            cheerfully_suggest(message)
 
         if np.any(np.diff(i_time) < 0):
             message = f"""
@@ -203,7 +203,7 @@ class Rainbow:
             If you want to recover the original time order, the original
             time indices are available in `rainbow.original_time_index`.
             """
-            warnings.warn(message)
+            cheerfully_suggest(message)
 
         # attach unsorted indices to this array, if the don't exist
         if "original_wave_index" not in self.wavelike:
@@ -241,12 +241,12 @@ class Rainbow:
 
             where `x` is the Rainbow you just created.
             """
-            warnings.warn(message)
+            cheerfully_suggest(message)
             return
 
         # kludge to replace zero uncertainties
         # if np.all(self.uncertainty == 0):
-        #    warnings.warn("\nUncertainties were all 0, replacing them with 1!")
+        #    cheerfully_suggest("\nUncertainties were all 0, replacing them with 1!")
         #        self.fluxlike["uncertainty"] = np.ones_like(self.flux)
 
     def _initialize_from_dictionaries(
@@ -720,21 +720,21 @@ class Rainbow:
 
         # make sure there are some times + wavelengths defined
         if self.ntime is None:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             No times are defined for this Rainbow.
             """
             )
         if self.nwave is None:
-            warnings.warn(
+            cheerfully_suggest(
                 f"""
             No wavelengths are defined for this Rainbow.
             """
             )
 
         # warn if the times and wavelengths are the same size
-        if (self.nwave == self.ntime) and (self.ntime is not None):
-            warnings.warn(
+        if (self.nwave == self.ntime) and (self.ntime is not None) and (self.ntime > 1):
+            cheerfully_suggest(
                 f"""
             The number of wavelengths ({self.nwave}) is the same as the
             number of times ({self.ntime}). This is fine, we suppose
@@ -766,13 +766,13 @@ class Rainbow:
             The time array has {self.ntime} times.
             """
             if self.shape == np.shape(self.flux)[::-1]:
-                warnings.warn(
+                cheerfully_suggest(
                     f"""{message}
                     Any chance your flux array is transposed?
                     """
                 )
             else:
-                warnings.warn(message)
+                cheerfully_suggest(message)
 
         for n in ["uncertainty", "ok"]:
             x = getattr(self, n)
@@ -783,7 +783,7 @@ class Rainbow:
                     a shape of {x.shape}, which doesn't match the
                     flux array's shape of {np.shape(self.flux)}.
                     """
-                    warnings.warn(message)
+                    cheerfully_suggest(message)
 
         # make sure 2D arrays are uniquely named from 1D
         for k in tuple(self.fluxlike.keys()):
@@ -948,6 +948,7 @@ class Rainbow:
         inject_systematics,
         inject_noise,
         inject_spectrum,
+        inject_outliers,
         flag_outliers,
         fold,
         mask_transit,
