@@ -22,7 +22,9 @@ nav:
     #     - tools/spectra.ipynb
     #     - tools/binning.ipynb
     #     - tools/colormaps.ipynb
-    - Detailed API: api.md
+    - Reference:
+        - Rainbow-api.md
+        - RainbowWithModel-api.md
 theme:
   name: "material"
   features:
@@ -43,7 +45,8 @@ plugins:
           selection:
             docstring_style: "numpy"
           rendering:
-            show_source: False
+            show_source: True
+            show_root_heading: True
       custom_templates: templates
       watch:
         - chromatic

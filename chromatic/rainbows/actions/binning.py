@@ -165,7 +165,7 @@ def bin(
     Returns
     -------
     binned : Rainbow
-        The binned Rainbow.
+        The binned `Rainbow`.
     """
 
     # bin first in time
@@ -229,7 +229,7 @@ def bin_in_time(
         if you just want to give an entirely custom array.
         The bins will span `time_edges[:-1]` to
         `time_edges[1:]`, so the resulting binned
-        Rainbow will have `len(time_edges) - 1`
+        `Rainbow` will have `len(time_edges) - 1`
         time bins associated with it.
     ntimes : int
         A fixed number of time to bin together.
@@ -270,7 +270,7 @@ def bin_in_time(
     Returns
     -------
     binned : Rainbow
-        The binned Rainbow.
+        The binned `Rainbow`.
     """
 
     # create a history entry for this action (before other variables are defined)
@@ -445,7 +445,7 @@ def bin_in_wavelength(
         if you just want to give an entirely custom array.
         The bins will span `wavelength_edges[:-1]` to
         `wavelength_edges[1:]`, so the resulting binned
-        Rainbow will have `len(wavelength_edges) - 1`
+        `Rainbow` will have `len(wavelength_edges) - 1`
         wavelength bins associated with it.
     nwavelengths : int
         A fixed number of wavelengths to bin together.
@@ -493,7 +493,7 @@ def bin_in_wavelength(
     Returns
     -------
     binned : Rainbow
-        The binned Rainbow.
+        The binned `Rainbow`.
     """
 
     # create a history entry for this action (before other variables are defined)
@@ -518,7 +518,7 @@ def bin_in_wavelength(
         cheerfully_suggest(
             f"""
         It looks like you're trying to bin in wavelength for a
-        Rainbow object that might not be normalized. In the
+        `Rainbow` object that might not be normalized. In the
         current version of `chromatic`, binning before normalizing
         might give inaccurate results if the typical uncertainty
         varies strongly with wavelength.
@@ -670,10 +670,16 @@ def get_average_lightcurve_as_rainbow(self):
     """
     Produce a wavelength-integrated light curve.
 
+    The average across wavelengths is uncertainty-weighted.
+
+    This uses `bin`, which is a horribly slow way of doing what is
+    fundamentally a very simply array calculation, because we
+    don't need to deal with partial pixels.
+
     Returns
     -------
     lc : Rainbow
-        A Rainbow object with just one wavelength.
+        A `Rainbow` object with just one wavelength.
     """
     h = self._create_history_entry("get_average_spectrum_as_rainbow", locals())
 
@@ -689,10 +695,16 @@ def get_average_spectrum_as_rainbow(self):
     """
     Produce a time-integrated spectrum.
 
+    The average across times is uncertainty-weighted.
+
+    This uses `bin`, which is a horribly slow way of doing what is
+    fundamentally a very simply array calculation, because we
+    don't need to deal with partial pixels.
+
     Returns
     -------
     lc : Rainbow
-        A Rainbow object with just one time.
+        A `Rainbow` object with just one time.
     """
     h = self._create_history_entry("get_average_spectrum_as_rainbow", locals())
 

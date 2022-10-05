@@ -18,15 +18,15 @@ def inject_spectrum(
 
     Parameters
     ----------
-    temperature : u.Quantity
+    temperature : Quantity
         Temperature, in K (with no astropy units attached).
     logg : float
         Surface gravity log10[g/(cm/s**2)] (with no astropy units attached).
     metallicity : float
         Metallicity log10[metals/solar] (with no astropy units attached).
-    radius : u.Quantity
+    radius : Quantity
         The radius of the star.
-    distance : u.Quantity
+    distance : Quantity
         The distance to the star.
     phoenix : bool
         If `True`, use PHOENIX surface flux.
@@ -35,7 +35,7 @@ def inject_spectrum(
     Returns
     -------
     rainbow : Rainbow
-        A new Rainbow object with the spectrum injected.
+        A new `Rainbow` object with the spectrum injected.
     """
 
     # create a history entry for this action (before other variables are defined)

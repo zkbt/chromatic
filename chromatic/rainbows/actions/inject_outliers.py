@@ -20,7 +20,7 @@ def inject_outliers(self, fraction=0.01, amplitude=10):
     Returns
     -------
     rainbow : Rainbow
-        A new Rainbow object with outliers injected.
+        A new `Rainbow` object with outliers injected.
     """
 
     # create a history entry for this action (before other variables are defined)

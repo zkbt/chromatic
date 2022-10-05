@@ -30,7 +30,39 @@ class Rainbow:
     metadata : dict
         A dictionary containing all other useful information
         that should stay connected to the `Rainbow`, in any format.
-
+    wavelength : Quantity
+        The 1D array of wavelengths for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    time : Quantity
+        The 1D array of times for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    flux : array, Quantity
+        The 2D array of fluxes for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    uncertainty : array, Quantity
+        The 2D array of flux uncertainties for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    ok : array
+        The 2D array of "ok-ness" for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    shape : tuple
+        The shape of this `Rainbow`'s flux array.
+        (This is a property, not an actual attribute.)
+    nwave : int
+        The number of wavelengths in this `Rainbow`'.
+        (This is a property, not an actual attribute.)
+    ntime : int
+        The number of times in this `Rainbow`'.
+        (This is a property, not an actual attribute.)
+    nflux : int
+        The total number of fluxes in this `Rainbow`' (= `nwave*ntime`).
+        (This is a property, not an actual attribute.)
+    dt : Quantity
+        The typical time offset between adjacent times in this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    name : array, Quantity
+        The name of this `Rainbow`, if one has been set.
+        (This is a property, not an actual attribute.)
     """
 
     # all Rainbows must contain these core dictionaries

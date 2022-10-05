@@ -5,13 +5,13 @@ __all__ = ["fold", "mask_transit"]
 
 def fold(self, period=None, t0=None, event="Mid-Transit"):
     """
-    Fold this Rainbow to a period and reference epoch.
+    Fold this `Rainbow` to a period and reference epoch.
 
     Parameters
     ----------
-    period : u.Quantity
+    period : Quantity
         The orbital period of the planet (with astropy units of time).
-    t0 : u.Quantity
+    t0 : Quantity
         Any mid-transit epoch (with astropy units of time).
     event : str
         A description of the event that happens periodically.
@@ -23,7 +23,7 @@ def fold(self, period=None, t0=None, event="Mid-Transit"):
     Returns
     -------
     folded : Rainbow
-        The folded Rainbow
+        The folded `Rainbow`.
     """
 
     # create a history entry for this action (before other variables are defined)
@@ -56,15 +56,15 @@ def fold(self, period=None, t0=None, event="Mid-Transit"):
 
 def mask_transit(self, period, t0, duration, event="Mid-Transit"):
     """
-    Mask
+    Mask a transit in this `Rainbow`, to focus on out-of-transit.
 
     Parameters
     ----------
-    period : u.Quantity
+    period : Quantity
         The orbital period of the planet (with astropy units of time).
-    t0 : u.Quantity
+    t0 : Quantity
         Any mid-transit epoch (with astropy units of time).
-    duration : u.Quantity
+    duration : Quantity
         The total duration of the transit to remove.
     event : str
         A description of the event that happens periodically.
@@ -76,7 +76,7 @@ def mask_transit(self, period, t0, duration, event="Mid-Transit"):
     Returns
     -------
     masked : Rainbow
-        The Rainbow with the transit masked as not `ok`.
+        The `Rainbow` with the transit masked as not `ok`.
     """
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("mask_transit", locals())
