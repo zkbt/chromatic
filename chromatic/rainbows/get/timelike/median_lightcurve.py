@@ -12,7 +12,8 @@ def get_median_lightcurve(self):
 
     Returns
     -------
-    median_lightcurve : np.array (wavelike)
+    median_lightcurve : array
+        Timelike array of fluxes.
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

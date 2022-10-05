@@ -351,9 +351,9 @@ class Rainbow:
             A 1D array of wavelengths, in any unit.
         time : astropy.unit.Quantity or astropy.unit.Time
             A 1D array of times, in any unit.
-        flux : np.array
+        flux : array
             A 2D array of flux values.
-        uncertainty : np.array
+        uncertainty : array
             A 2D array of uncertainties, associated with the flux.
         kw : dict
             Additional keywords will be interpreted as arrays
@@ -390,7 +390,7 @@ class Rainbow:
         ----------
         k : str
             The key for the (appropriate) dictionary.
-        v : np.array
+        v : array
             The quantity to sort.
         """
         if np.shape(v) == self.shape:
@@ -668,7 +668,7 @@ class Rainbow:
         ----------
         key : str
             The attribute we're trying to get.
-        value : np.array
+        value : array
             The quantity we're trying to attach to that name.
         """
         try:

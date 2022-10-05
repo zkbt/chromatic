@@ -109,10 +109,10 @@ def _scatter_timelike_or_wavelike(
 
     Parameters
     ----------
-    x : u.Quantity
+    x : Quantity
         Either time or wavelength, with units (which will
         used to set the xlabel and/or point colors).
-    y : np.array, u.Quantity
+    y : array, Quantity
         The values to plot on the y axis.
     ylabel : string
         The ylabel for the plot. (xlabel will be guessed)
@@ -120,15 +120,15 @@ def _scatter_timelike_or_wavelike(
         The axes into which this plot should go.
     cmap : str, matplotlib.colors.Colormap
         The color map to use for expressing wavelength.
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap.
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap.
     w_unit : str, astropy.unit.Unit
         The unit for plotting wavelengths (if needed).
     t_unit : str, astropy.unit.Unit
         The unit for plotting times (if needed).
-    wavelength_for_color : u.Quantity
+    wavelength_for_color : Quantity
         It you're plotting a timelike quantity, and you want
         to set the color automatically based on wavelength,
         supply the wavelength for that color here.

@@ -91,9 +91,9 @@ def _setup_animate_lightcurves(
         Custom ylimits for the plot
     cmap : str, matplotlib.colors.Colormap
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
@@ -214,9 +214,9 @@ def animate_lightcurves(
         Custom ylimits for the plot
     cmap : str, matplotlib.colors.Colormap
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
@@ -298,9 +298,9 @@ def _setup_animate_spectra(
         Custom ylimits for the plot
     cmap : str, matplotlib.colors.Colormap
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
@@ -424,9 +424,9 @@ def animate_spectra(
         Custom ylimits for the plot
     cmap : str, matplotlib.colors.Colormap
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`

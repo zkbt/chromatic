@@ -102,9 +102,9 @@ def plot_one_wavelength_with_models(
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     cmap : str, matplotlib.colors.Colormap
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap
     w_unit : str, astropy.unit.Unit
         The unit for plotting wavelengths.

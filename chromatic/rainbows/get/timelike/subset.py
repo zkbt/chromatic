@@ -21,7 +21,7 @@ def get_for_time(self, i, quantity="flux"):
 
     Returns
     -------
-    quantity : np.array, u.Quantity
+    quantity : array, Quantity
         The 1D array of 'quantity' corresponding to time 'i'.
     """
     z = self.get(quantity)
@@ -73,11 +73,11 @@ def get_ok_data_for_time(
 
     Returns
     -------
-    x : np.array
+    x : array
         The time.
-    y : np.array
+    y : array
         The desired quantity (default is `flux`)
-    sigma : np.array
+    sigma : array
         The uncertainty on the desired quantity
     """
 

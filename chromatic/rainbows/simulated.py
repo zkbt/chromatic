@@ -35,7 +35,7 @@ class SimulatedRainbow(RainbowWithModel):
         tlim : list or array of astropy.units.Quantity
             The pip install -e '.[develop]'[min, max] times for creating the time grid.
             These should have astropy units of time.
-        dt : astropy.units.Quantity
+        dt : Quantity
             The d(time) bin size for creating a grid
             that is uniform in linear space.
         time : array of astropy.units.Quantity
@@ -52,7 +52,7 @@ class SimulatedRainbow(RainbowWithModel):
         R : float
             The spectral resolution for creating a grid
             that is uniform in logarithmic space.
-        dw : astropy.units.Quantity
+        dw : Quantity
             The d(wavelength) bin size for creating a grid
             that is uniform in linear space.
         wavelength : array of astropy.units.Quantity
@@ -140,7 +140,7 @@ class SimulatedRainbow(RainbowWithModel):
         tlim : list or array of astropy.units.Quantity
             The [min, max] times for creating the time grid.
             These should have astropy units of time.
-        dt : astropy.units.Quantity
+        dt : Quantity
             The d(time) bin size for creating a grid
             that is uniform in linear space.
         time : array of astropy.units.Quantity
@@ -182,7 +182,7 @@ class SimulatedRainbow(RainbowWithModel):
         R : float
             The spectral resolution for creating a grid
             that is uniform in logarithmic space.
-        dw : astropy.units.Quantity
+        dw : Quantity
             The d(wavelength) bin size for creating a grid
             that is uniform in linear space.
         wavelength : array of astropy.units.Quantity

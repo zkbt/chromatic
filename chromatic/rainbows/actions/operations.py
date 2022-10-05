@@ -352,6 +352,3 @@ def diff(self, other):
                 # test that all elements match for both
                 if np.all(a.get(k) == b.get(k)) == False:
                     print(f"{a}.{d}[{k}] != {b}.{d}[{k}]")
-
-
-0

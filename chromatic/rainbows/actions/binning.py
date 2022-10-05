@@ -20,7 +20,7 @@ def _warn_about_weird_binning(N, dimension, fraction_that_can_be_bad=0.0):
 
     Parameters
     ----------
-    N : np.array
+    N : array
         The effective number of original bins going into each new bin.
     minimum_points_per_bin : float
         The threshold for the number of original bins to not be enough.
@@ -86,7 +86,7 @@ def bin(
 
     Parameters
     ----------
-    dt : astropy.units.Quantity
+    dt : Quantity
         The d(time) bin size for creating a grid
         that is uniform in linear space.
     time : array of astropy.units.Quantity
@@ -110,7 +110,7 @@ def bin(
     R : float
         The spectral resolution for creating a grid
         that is uniform in logarithmic space.
-    dw : astropy.units.Quantity
+    dw : Quantity
         The d(wavelength) bin size for creating a grid
         that is uniform in linear space.
     wavelength : array of astropy.units.Quantity
@@ -215,7 +215,7 @@ def bin_in_time(
 
     Parameters
     ----------
-    dt : astropy.units.Quantity
+    dt : Quantity
         The d(time) bin size for creating a grid
         that is uniform in linear space.
     time : array of astropy.units.Quantity
@@ -431,7 +431,7 @@ def bin_in_wavelength(
     R : float
         The spectral resolution for creating a grid
         that is uniform in logarithmic space.
-    dw : astropy.units.Quantity
+    dw : Quantity
         The d(wavelength) bin size for creating a grid
         that is uniform in linear space.
     wavelength : array of astropy.units.Quantity

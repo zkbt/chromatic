@@ -28,8 +28,8 @@ def get_measured_scatter_in_bins(
 
     Returns
     -------
-    scatter : np.array (wavelike)
-        The scatter wavelike array.
+    scatter_dictionary : dict
+        Dictionary with lots of information about scatter in bins per wavelength.
     """
 
     from ...rainbow import Rainbow

@@ -30,7 +30,7 @@ def create_covariance_matrix(x, correlated=1, length=3, uncorrelated=0.5):
 
     Parameters
     ----------
-    x : np.array or u.Quantity
+    x : array or u.Quantity
         The arry of values for generating the matrix.
     correlated : float
         The amplitude of the correlated noise component.
@@ -79,7 +79,7 @@ def _create_fake_timelike_quantity(
         (correlated and uncorrelated will be normalized to 1)
     Returns
     -------
-    timelike : np.array
+    timelike : array
         A timelike array with the requested noise properties.
     """
     x = self.time
@@ -112,7 +112,7 @@ def _create_fake_wavelike_quantity(
 
     Returns
     -------
-    wavelike : np.array
+    wavelike : array
         A wavelike array with the requested noise properties.
     """
     x = np.log(self.wavelength.value)
@@ -133,7 +133,7 @@ def _create_fake_fluxlike_quantity(self, timelike_kw={}, wavelike_kw={}):
 
     Returns
     -------
-    fluxlike : np.array
+    fluxlike : array
         A fluxlike array (with )
     """
 

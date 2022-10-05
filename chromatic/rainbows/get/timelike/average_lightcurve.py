@@ -12,6 +12,7 @@ def get_average_lightcurve(self):
 
     Returns
     -------
-    lightcurve : np.array (wavelike)
+    lightcurve : array
+        Timelike array of fluxes.
     """
     return self.get_average_lightcurve_as_rainbow().flux[0, :]

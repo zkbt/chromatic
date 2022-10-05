@@ -21,7 +21,7 @@ def get_expected_uncertainty(self, function=np.nanmedian, *args, **kwargs):
 
     Returns
     -------
-    uncertainty_per_wavelength : np.array (wavelike)
+    uncertainty_per_wavelength : array
         The uncertainty associated with each wavelength.
     """
     uncertainty_per_wavelength = function(

@@ -12,8 +12,8 @@ def get_spectral_resolution(self, pixels_per_resolution_element=1):
 
     Returns
     -------
-    R : np.array (wavelike)
-        The spectral resolution, at each wavelength.
+    R : array
+        The spectral resolution at each wavelength.
     """
 
     # calculate spectral resolution, for this pixels/element

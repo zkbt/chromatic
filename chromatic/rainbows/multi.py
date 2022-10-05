@@ -150,7 +150,7 @@ class MultiRainbow:
 
             Parameters
             ----------
-            w : np.array
+            w : array
                 Wavelength (with no units).
             """
 
@@ -494,9 +494,9 @@ class MultiRainbow:
             Custom ylimits for the plot
         cmap : str, matplotlib.colors.Colormap
             The color map to use for expressing wavelength
-        vmin : astropy.units.Quantity
+        vmin : Quantity
             The minimum value to use for the wavelength colormap
-        vmax : astropy.units.Quantity
+        vmax : Quantity
             The maximum value to use for the wavelength colormap
         scatterkw : dict
             A dictionary of keywords to be passed to `plt.scatter`
@@ -568,9 +568,9 @@ class MultiRainbow:
             Custom ylimits for the plot
         cmap : str, matplotlib.colors.Colormap
             The color map to use for expressing wavelength
-        vmin : astropy.units.Quantity
+        vmin : Quantity
             The minimum value to use for the wavelength colormap
-        vmax : astropy.units.Quantity
+        vmax : Quantity
             The maximum value to use for the wavelength colormap
         scatterkw : dict
             A dictionary of keywords to be passed to `plt.scatter`

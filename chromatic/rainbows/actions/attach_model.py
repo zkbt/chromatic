@@ -11,7 +11,7 @@ def attach_model(self, model, **kw):
 
     Parameters
     ----------
-    model : np.array, u.Quantity
+    model : array, u.Quantity
         An array of model values, with the same shape as 'flux'
     kw : dict
         All other keywords will be interpreted as items

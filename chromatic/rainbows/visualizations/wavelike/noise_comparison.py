@@ -38,9 +38,9 @@ def plot_noise_comparison(
         The unit for plotting wavelengths.
     cmap : str, matplotlib.colors.Colormap
         The color map to use for expressing wavelength.
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The wavelength at the bottom of the cmap.
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The wavelength at the top of the cmap.
     scatterkw : dict
         A dictionary of keywords passed to `plt.scatter`

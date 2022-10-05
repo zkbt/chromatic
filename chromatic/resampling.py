@@ -22,14 +22,14 @@ def calculate_bin_leftright(x):
 
     Parameters
     ----------
-    x : np.array
+    x : array
         The array of bin centers.
 
     Returns
     ----------
-    l : np.array
+    l : array
         The left edges of the bins.
-    r : np.array
+    r : array
         The right edges of the bins.
     """
 
@@ -60,12 +60,12 @@ def calculate_bin_widths(x):
 
     Parameters
     ----------
-    x : np.array
+    x : array
         The array of bin centers.
 
     Returns
     ----------
-    s : np.array
+    s : array
         The array of bin sizes (total size, from left to right).
     """
 
@@ -87,9 +87,9 @@ def plot_as_boxes(x, y, xleft=None, xright=None, **kwargs):
 
     Parameters
     ----------
-    x : np.array
+    x : array
         The original independent variable.
-    y : np.array
+    y : array
         The original dependent variable (same size as x).
     **kwargs : dict
         All additional keywords will be passed to plt.plot
@@ -147,16 +147,16 @@ def resample_while_conserving_flux(
     Parameters
     ----------
 
-    xin : np.array
+    xin : array
         The original independent variable.
-    yin : np.array
+    yin : array
         The original dependent variable (same size as x).
-    xout : np.array
+    xout : array
         The new grid of independent variables onto which
         you want to resample the y values. Refers to the
         center of each bin (use `xout_edges` for finer
         control over the exact edges of the bins)
-    xin_edges : np.array
+    xin_edges : array
         The edges of the original independent variable bins.
         The left and right edges of the bins are interpreted
         to be `xin_edges[:-1]` and `xin_edges[1:]`,
@@ -165,7 +165,7 @@ def resample_while_conserving_flux(
         control over the size of each bin in the input than
         simply supplying `xin`(still a little experimental)
         They should probably be sorted?
-    xout_edges : np.array
+    xout_edges : array
         The edges of the new grid of bins for the independent
         variable, onto which you want to resample the y
         values. The left and right edges of the bins will be,
@@ -379,25 +379,25 @@ def bintogrid(
     Parameters
     ----------
 
-    x : np.array
+    x : array
         The original independent variable.
         (For a spectrum example = wavelength)
-    y : np.array
+    y : array
         The original dependent variable (same size as x).
         (For a spectrum example = flux)
-    unc : np.array, or None
+    unc : array, or None
         The unceratinty on the dependent variable
         (For a spectrum example = the flux uncertainty)
-    nx : np.array
+    nx : array
         The number of bins from the original grid to
         bin together into the new one.
-    dx : np.array
+    dx : array
         The fixed spacing for creating a new, linearly uniform
         grid that start at the first value of x. This will
         be ignored if `newx` != None.
-    newx : np.array
+    newx : array
         A new custom grid onto which we should bin.
-    newx_edges : np.array
+    newx_edges : array
         The edges of the new grid of bins for the independent
         variable, onto which you want to resample the y
         values. The left and right edges of the bins will be,
@@ -417,7 +417,7 @@ def bintogrid(
     drop_nans : bool
         Should we skip any bins turn out to be nans?
         This most often happens when bins are empty.
-    x_edges : np.array
+    x_edges : array
         The edges of the original independent variable bins.
         The left and right edges of the bins are interpreted
         to be `x_edges[:-1]` and `x_edges[1:]`,
@@ -676,16 +676,16 @@ def bintoR(
     Parameters
     ----------
 
-    x : np.array
+    x : array
         The original independent variable.
         (For a spectrum example = wavelength)
-    y : np.array
+    y : array
         The original dependent variable (same size as x).
         (For a spectrum example = flux)
-    unc : np.array, or None
+    unc : array, or None
         The unceratinty on the dependent variable
         (For a spectrum example = the flux uncertainty)
-    R : np.array
+    R : array
         The spectral resolution R=x/dx for creating a new,
         logarithmically uniform grid that starts at the first
         value of x.

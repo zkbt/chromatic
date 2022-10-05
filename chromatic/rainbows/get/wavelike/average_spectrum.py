@@ -12,6 +12,7 @@ def get_average_spectrum(self):
 
     Returns
     -------
-    average_spectrum : np.array (wavelike)
+    average_spectrum : array
+        Wavelike array of average spectrum.
     """
     return self.get_average_spectrum_as_rainbow().flux[:, 0]

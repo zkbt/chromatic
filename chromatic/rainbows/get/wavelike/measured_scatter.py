@@ -22,8 +22,8 @@ def get_measured_scatter(
 
     Returns
     -------
-    scatter : np.array (wavelike)
-        The scatter wavelike array.
+    scatter : array
+        Wavelike array of measured scatters.
     """
 
     if method not in ["standard-deviation", "MAD"]:

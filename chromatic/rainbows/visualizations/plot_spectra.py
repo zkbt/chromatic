@@ -40,9 +40,9 @@ def plot_spectra(
         The unit for plotting times.
     cmap : str, matplotlib.colors.Colormap
         The color map to use for expressing wavelength.
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap.
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap.
     errorbar : boolean
         Should we plot errorbars?

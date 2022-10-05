@@ -12,7 +12,8 @@ def get_median_spectrum(self):
 
     Returns
     -------
-    median_spectrum : np.array (wavelike)
+    median_spectrum : array
+        Wavelike array of fluxes.
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

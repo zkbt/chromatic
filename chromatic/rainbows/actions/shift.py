@@ -11,7 +11,7 @@ def shift(self, velocity=0 * u.km / u.s):
 
     Parameters
     ----------
-    velocity : astropy.units.Quantity
+    velocity : Quantity
         the systemic velocity in question,
         with units of velocity (for example, u.km/u.s)
     """
