@@ -6,13 +6,31 @@ from ..resampling import *
 
 class Rainbow:
     """
-    Rainbow objects represent the flux of some astrophysical
-    object as a function of both wavelength and time.
+    `Rainbow` (🌈) objects represent brightness as a function
+    of both wavelength and time.
 
-    The general stucture of a Rainbow object contains a
-    1D array of wavelengths, a 1D array of times, and a
-    2D array of flux values (with row as wavelength and
-    column as time).
+    These objects are useful for reading or writing multiwavelength
+    time-series datasets in a variety of formats, visualizing these
+    data with simple commands, and performing basic calculations.
+    `RainbowWithModel` and `SimulatedRainbow` objects inherit from
+    `Rainbow`, so all basically all methods and attributes described
+    below are available for them too.
+
+    Attributes
+    ----------
+    wavelike : dict
+        A dictionary for quantities with shape `(nwave,),
+        for which there's one value for each wavelength.
+    timelike : dict
+        A dictionary for quantities with shape `(ntime,),
+        for which there's one value for each time.
+    fluxlike : dict
+        A dictionary for quantities with shape `(nwave,ntime),
+        for which there's one value for each wavelength and time.
+    metadata : dict
+        A dictionary containing all other useful information
+        that should stay connected to the `Rainbow`, in any format.
+
     """
 
     # all Rainbows must contain these core dictionaries
@@ -44,49 +62,47 @@ class Rainbow:
         **kw,
     ):
         """
-        Initialize a Rainbow object from a file, from arrays
-        with appropriate units, or from dictionaries with
-        appropriate ingredients.
+        Initialize a `Rainbow` object from a file, from arrays
+        with appropriate units, from dictionaries with appropriate
+        ingredients, or simply as an empty object if no arguments
+        are given.
 
         Parameters
         ----------
-
-        filepath : str
+        filepath : str, optional
             The filepath pointing to the file or group of files
             that should be read.
-        format : str
+        format : str, optional
             The file format of the file to be read. If None,
             the format will be guessed automatically from the
             filepath.
-
-        wavelength : astropy.unit.Quantity
+        wavelength : Quantity, optional
             A 1D array of wavelengths, in any unit.
-        time : astropy.unit.Quantity or astropy.unit.Time
+        time : Quantity, Time, optional
             A 1D array of times, in any unit.
-        flux : np.array
+        flux : array, optional
             A 2D array of flux values.
-        uncertainty : np.array
+        uncertainty : array, optional
             A 2D array of uncertainties, associated with the flux.
-
-        wavelike : dict
+        wavelike : dict, optional
             A dictionary containing 1D arrays with the same
             shape as the wavelength axis. It must at least
             contain the key 'wavelength', which should have
             astropy units of wavelength associated with it.
-        timelike : dict
+        timelike : dict, optional
             A dictionary containing 1D arrays with the same
             shape as the time axis. It must at least
             contain the key 'time', which should have
             astropy units of time associated with it.
-        fluxlike : dict
+        fluxlike : dict, optional
             A dictionary containing 2D arrays with the shape
             of (nwave, ntime), like flux. It must at least
             contain the key 'flux'.
-        metadata : dict
+        metadata : dict, optional
             A dictionary containing all other metadata
             associated with the dataset, generally lots of
             individual parameters or comments.
-        kw : dict
+        **kw : dict, optional
             Additional keywords will be passed along to
             the function that initializes the rainbow.
             If initializing from arrays (`time=`, `wavelength=`,
@@ -98,20 +114,39 @@ class Rainbow:
 
         Examples
         --------
+        Initialize from a file. While this works, a more robust
+        solution is probably to use `read_rainbow`, which will
+        automatically choose the best of `Rainbow` and `RainbowWithModel`
         ```
-        # initalize from a file
         r1 = Rainbow('my-neat-file.abc', format='abcdefgh')
+        ```
 
-        # initalize from arrays
-        r2 = Rainbow(wavelength=np.linspace(1, 5, 50)*u.micron,
-                     time=np.linspace(-0.5, 0.5, 100)*u.day,
-                     flux=np.random.normal(0, 1, (50, 100)))
-
-        # initialize from dictionaries
-        f3 = Rainbow(wavelike=dict(wavelength=np.linspace(1, 5, 50)*u.micron),
-                     timelike=dict(time=np.linspace(-0.5, 0.5, 100)*u.day),
-                     fluxlike=dict(flux=np.random.normal(0, 1, (50, 100))))
-
+        Initalize from arrays. The wavelength and time must have
+        appropriate units, and the shape of the flux array must
+        match the size of the wavelength and time arrays. Other
+        arrays that match the shape of any of these quantities
+        will be stored in the appropriate location. Other inputs
+        not matching any of these will be stored as `metadata.`
+        ```
+        r2 = Rainbow(
+                wavelength=np.linspace(1, 5, 50)*u.micron,
+                time=np.linspace(-0.5, 0.5, 100)*u.day,
+                flux=np.random.normal(0, 1, (50, 100)),
+                some_other_array=np.ones((50,100)),
+                some_metadata='wow!'
+        )
+        ```
+        Initialize from dictionaries. The dictionaries must contain
+        at least `wavelike['wavelength']`, `timelike['time']`, and
+        `fluxlike['flux']`, but any other additional inputs can be
+        provided.
+        ```
+        r3 = Rainbow(
+                wavelike=dict(wavelength=np.linspace(1, 5, 50)*u.micron),
+                timelike=dict(time=np.linspace(-0.5, 0.5, 100)*u.day),
+                fluxlike=dict(flux=np.random.normal(0, 1, (50, 100)))
+        )
+        ```
         """
         # create a history entry for this action (before other variables are defined)
         h = self._create_history_entry("Rainbow", locals())
@@ -483,7 +518,7 @@ class Rainbow:
     @property
     def name(self):
         """
-        The name of this Rainbow object.
+        The name of this `Rainbow` object.
         """
         return self.metadata.get("name", None)
 

@@ -103,6 +103,7 @@ setup(
             "mkdocs",
             "mkdocs-material",
             "mkdocstrings",
+            "mkdocstrings-python",
             "pytkdocs[numpy-style]",
             "mkdocs-jupyter",
             "mkdocs-exclude",
