@@ -20,7 +20,7 @@ def _setup_animated_scatter(self, ax=None, figurekw={}, scatterkw={}, textkw={})
 
     Parameters
     ----------
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which the plot should be drawn.
         If None, a new one will be created.
     figurekw : dict
@@ -81,7 +81,7 @@ def _setup_animate_lightcurves(
         Currently supports only .gif files.
     fps : float
         frames/second of animation
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which this animated plot should go.
     quantity : string
         Which fluxlike quantity should be retrieved? (default = 'flux')
@@ -89,7 +89,7 @@ def _setup_animate_lightcurves(
         Custom xlimits for the plot
     ylim : tuple
         Custom ylimits for the plot
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str,
         The color map to use for expressing wavelength
     vmin : Quantity
         The minimum value to use for the wavelength colormap
@@ -206,13 +206,13 @@ def animate_lightcurves(
         Currently supports only .gif files.
     fps : float
         frames/second of animation
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which this animated plot should go.
     xlim : tuple
         Custom xlimits for the plot
     ylim : tuple
         Custom ylimits for the plot
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str,
         The color map to use for expressing wavelength
     vmin : Quantity
         The minimum value to use for the wavelength colormap
@@ -284,7 +284,7 @@ def _setup_animate_spectra(
     filename : str
         Name of file you'd like to save results in.
         Currently supports only .gif files.
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which this animated plot should go.
     quantity : string
         Which fluxlike quantity should be retrieved? (default = 'flux')
@@ -296,7 +296,7 @@ def _setup_animate_spectra(
         Custom xlimits for the plot
     ylim : tuple
         Custom ylimits for the plot
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str,
         The color map to use for expressing wavelength
     vmin : Quantity
         The minimum value to use for the wavelength colormap
@@ -414,7 +414,7 @@ def animate_spectra(
     filename : str
         Name of file you'd like to save results in.
         Currently supports only .gif files.
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which this animated plot should go.
     fps : float
         frames/second of animation
@@ -422,7 +422,7 @@ def animate_spectra(
         Custom xlimits for the plot
     ylim : tuple
         Custom ylimits for the plot
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str,
         The color map to use for expressing wavelength
     vmin : Quantity
         The minimum value to use for the wavelength colormap

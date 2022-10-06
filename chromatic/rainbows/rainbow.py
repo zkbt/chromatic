@@ -1,6 +1,5 @@
 from ..imports import *
 from .readers import *
-from .writers import *
 from ..resampling import *
 
 
@@ -379,9 +378,9 @@ class Rainbow:
 
         Parameters
         ----------
-        wavelength : astropy.unit.Quantity
+        wavelength : Quantity
             A 1D array of wavelengths, in any unit.
-        time : astropy.unit.Quantity or astropy.unit.Time
+        time : Quantity, Time
             A 1D array of times, in any unit.
         flux : array
             A 2D array of flux values.
@@ -644,46 +643,6 @@ class Rainbow:
                     pass
         message = f"🌈.{key} does not exist for this Rainbow"
         raise AttributeError(message)
-
-    def save(self, filepath="test.rainbow.npy", format=None, **kw):
-        """
-        Save this Rainbow out to a file.
-
-        Parameters
-        ----------
-        filepath : str
-            The filepath pointing to the file to be written.
-            (For now, it needs a `.rainbow.npy` extension.)
-        format : str
-            The file format of the file to be written. If None,
-            the format will be guessed automatically from the
-            filepath."""
-
-        # figure out the best writer
-        writer = guess_writer(filepath, format=format)
-
-        # use that writer to save the file
-        writer(self, filepath, **kw)
-
-    def get(self, key, default=None):
-        """
-        Retrieve an attribute by its string name.
-        (This is a friendlier wrapper for `getattr()`).
-
-        `r.get('flux')` is identical to `r.flux`
-
-        This is different from indexing directly into
-        a core dictionary (for example, `r.fluxlike['flux']`),
-        because it can also be used to get the results of
-        properties that do calculations on the fly (for example,
-        `r.residuals` in the `RainbowWithModel` class).
-
-        This will default to None if the attribute can't be found.
-        """
-        try:
-            return getattr(self, key)
-        except AttributeError:
-            return default
 
     def __setattr__(self, key, value):
         """
@@ -1099,4 +1058,6 @@ class Rainbow:
         _create_history_entry,
         history,
         help,
+        save,
+        get,
     )

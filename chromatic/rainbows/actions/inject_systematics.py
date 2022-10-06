@@ -72,7 +72,7 @@ def _create_fake_timelike_quantity(
         matrix.
     correlated : float
         The amplitude of the correlated noise component.
-    dt : u.Quantity
+    dt : Quantity
         The time scale of the correlation (in units of time).
     uncorrelated : float
         The amplitude of the uncorrelated noise component.
@@ -104,7 +104,7 @@ def _create_fake_wavelike_quantity(
         matrix.
     correlated : float
         The amplitude of the correlated noise component.
-    dt : u.Quantity
+    dt : Quantity
         The time scale of the correlation (in units of time).
     uncorrelated : float
         The amplitude of the uncorrelated noise component.

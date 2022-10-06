@@ -10,7 +10,6 @@ def read_rainbow(filepath, **kw):
     multiwavelength light curves into a `chromatic` Rainbow
     object. It will try its best to pick the best reader
     and return the most useful kind of object.
-
     🦋🌅2️⃣🪜🎬👀🇮🇹📕🧑‍🏫🌈
 
     Parameters

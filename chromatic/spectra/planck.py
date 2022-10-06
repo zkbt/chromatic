@@ -10,16 +10,16 @@ def calculate_planck_flux(wavelength, temperature):
 
     Parameters
     ----------
-    wavelength : u.Quantity
+    wavelength : Quantity
         The wavelengths at which to calculate,
         with units of wavelength.
-    temperature : u.Quantity
+    temperature : Quantity
         The temperature of the thermal emitter,
         with units of K.
 
     Returns
     -------
-    surface_flux : u.Quantity
+    surface_flux : Quantity
         The surface flux, evaluated at the wavelengths.
     """
 
@@ -55,17 +55,17 @@ def get_planck_photons(
 
     Parameters
     ----------
-    temperature : u.Quantity
+    temperature : Quantity
         The temperature of the thermal emitter,
         with units of K.
-    wavelength : u.Quantity
+    wavelength : Quantity
         The wavelengths at which to calculate,
         with units of wavelength.
     R : float
         The spectroscopic resolution for creating a log-uniform
         grid that spans the limits set by `wlim`, only if
         `wavelength` is not defined.
-    wlim : u.Quantity
+    wlim : Quantity
         The two-element [lower, upper] limits of a wavelength
         grid that would be populated with resolution `R`, only if
         `wavelength` is not defined.
@@ -74,7 +74,7 @@ def get_planck_photons(
 
     Returns
     -------
-    photons : u.Quantity
+    photons : Quantity
         The surface flux in units of photons
     """
 

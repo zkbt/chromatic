@@ -32,13 +32,13 @@ class SimulatedRainbow(RainbowWithModel):
         Parameters
         ----------
 
-        tlim : list or array of astropy.units.Quantity
+        tlim : list or Quantity
             The pip install -e '.[develop]'[min, max] times for creating the time grid.
             These should have astropy units of time.
         dt : Quantity
             The d(time) bin size for creating a grid
             that is uniform in linear space.
-        time : array of astropy.units.Quantity
+        time : Quantity
             An array of times, if you just want to give
             it an entirely custom array.
 
@@ -46,7 +46,7 @@ class SimulatedRainbow(RainbowWithModel):
             1) time
             2) tlim + dt
 
-        wlim : list or array of astropy.units.Quantity
+        wlim : list or Quantity
             The [min, max] wavelengths for creating the grid.
             These should have astropy units of wavelength.
         R : float
@@ -55,7 +55,7 @@ class SimulatedRainbow(RainbowWithModel):
         dw : Quantity
             The d(wavelength) bin size for creating a grid
             that is uniform in linear space.
-        wavelength : array of astropy.units.Quantity
+        wavelength : Quantity
             An array of wavelengths, if you just want to give
             it an entirely custom array.
 
@@ -137,13 +137,13 @@ class SimulatedRainbow(RainbowWithModel):
         Parameters
         ----------
 
-        tlim : list or array of astropy.units.Quantity
+        tlim : list or Quantity
             The [min, max] times for creating the time grid.
             These should have astropy units of time.
         dt : Quantity
             The d(time) bin size for creating a grid
             that is uniform in linear space.
-        time : array of astropy.units.Quantity
+        time : Quantity
             An array of times, if you just want to give
             it an entirely custom array.
 
@@ -176,7 +176,7 @@ class SimulatedRainbow(RainbowWithModel):
         Parameters
         ----------
 
-        wlim : list or array of astropy.units.Quantity
+        wlim : list or Quantity
             The [min, max] wavelengths for creating the grid.
             These should have astropy units of wavelength.
         R : float
@@ -185,7 +185,7 @@ class SimulatedRainbow(RainbowWithModel):
         dw : Quantity
             The d(wavelength) bin size for creating a grid
             that is uniform in linear space.
-        wavelength : array of astropy.units.Quantity
+        wavelength : Quantity
             An array of wavelengths, if you just want to give
             it an entirely custom array.
 

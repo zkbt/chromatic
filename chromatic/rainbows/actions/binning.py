@@ -89,13 +89,13 @@ def bin(
     dt : Quantity
         The d(time) bin size for creating a grid
         that is uniform in linear space.
-    time : array of astropy.units.Quantity
+    time : Quantity
         An array of times, if you just want to give
         it an entirely custom array.
         The widths of the bins will be guessed from the centers
         (well, if the spacing is uniform constant; pretty well
         but not perfectly otherwise).
-    time_edges : array of astropy.units.Quantity
+    time_edges : Quantity
         An array of times for the edges of bins,
         if you just want to give an entirely custom array.
         The bins will span `time_edges[:-1]` to
@@ -113,13 +113,13 @@ def bin(
     dw : Quantity
         The d(wavelength) bin size for creating a grid
         that is uniform in linear space.
-    wavelength : array of astropy.units.Quantity
+    wavelength : Quantity
         An array of wavelengths for the centers of bins,
         if you just want to give an entirely custom array.
         The widths of the bins will be guessed from the centers
         (well, if the spacing is uniform constant; pretty well
         but not perfectly otherwise).
-    wavelength_edges : array of astropy.units.Quantity
+    wavelength_edges : Quantity
         An array of wavelengths for the edges of bins,
         if you just want to give an entirely custom array.
         The bins will span `wavelength_edges[:-1]` to
@@ -218,13 +218,13 @@ def bin_in_time(
     dt : Quantity
         The d(time) bin size for creating a grid
         that is uniform in linear space.
-    time : array of astropy.units.Quantity
+    time : Quantity
         An array of times, if you just want to give
         it an entirely custom array.
         The widths of the bins will be guessed from the centers
         (well, if the spacing is uniform constant; pretty well
         but not perfectly otherwise).
-    time_edges : array of astropy.units.Quantity
+    time_edges : Quantity
         An array of times for the edges of bins,
         if you just want to give an entirely custom array.
         The bins will span `time_edges[:-1]` to
@@ -434,13 +434,13 @@ def bin_in_wavelength(
     dw : Quantity
         The d(wavelength) bin size for creating a grid
         that is uniform in linear space.
-    wavelength : array of astropy.units.Quantity
+    wavelength : Quantity
         An array of wavelength centers, if you just want to give
         it an entirely custom array. The widths of the bins
         will be guessed from the centers. It will do a good
         job if the widths are constant, but don't 100% trust
         it otherwise.
-    wavelength_edges : array of astropy.units.Quantity
+    wavelength_edges : Quantity
         An array of wavelengths for the edges of bins,
         if you just want to give an entirely custom array.
         The bins will span `wavelength_edges[:-1]` to

@@ -26,7 +26,7 @@ def plot_histogram(
     ----------
     i_wavelength : integer
         The wavelength row we want to plot.
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which the plot should be drawn.
     quantity : string
         The quantity for which we want a histogram.

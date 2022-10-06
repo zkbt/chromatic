@@ -100,15 +100,16 @@ def plot_one_wavelength_with_models(
           fontstyle, fontweight, rotation, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str,
+
         The color map to use for expressing wavelength
     vmin : Quantity
         The minimum value to use for the wavelength colormap
     vmax : Quantity
         The maximum value to use for the wavelength colormap
-    w_unit : str, astropy.unit.Unit
+    w_unit : str, Unit
         The unit for plotting wavelengths.
-    t_unit : str, astropy.unit.Unit
+    t_unit : str, Unit
         The unit for plotting times.
     label : bool
         Should we add (a), (b), (c) labels to the panels,

@@ -28,17 +28,17 @@ def plot_spectra(
 
     Parameters
     ----------
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which to make this plot.
     spacing : None, float
         The spacing between light curves.
         (Might still change how this works.)
         None uses half the standard dev of entire flux data.
-    w_unit : str, astropy.unit.Unit
+    w_unit : str, Unit
         The unit for plotting wavelengths.
-    t_unit : str, astropy.unit.Unit
+    t_unit : str, Unit
         The unit for plotting times.
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap
         The color map to use for expressing wavelength.
     vmin : Quantity
         The minimum value to use for the wavelength colormap.

@@ -385,7 +385,7 @@ def bintogrid(
     y : array
         The original dependent variable (same size as x).
         (For a spectrum example = flux)
-    unc : array, or None
+    unc : array, None
         The unceratinty on the dependent variable
         (For a spectrum example = the flux uncertainty)
     nx : array
@@ -682,14 +682,14 @@ def bintoR(
     y : array
         The original dependent variable (same size as x).
         (For a spectrum example = flux)
-    unc : array, or None
+    unc : array, None
         The unceratinty on the dependent variable
         (For a spectrum example = the flux uncertainty)
     R : array
         The spectral resolution R=x/dx for creating a new,
         logarithmically uniform grid that starts at the first
         value of x.
-    xlim : list, np.array
+    xlim : list, array
         A two-element list indicating the min and max values of
         x for the new logarithmically spaced grid. If None,
         these limits will be created from the data themselves

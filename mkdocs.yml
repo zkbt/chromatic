@@ -22,9 +22,7 @@ nav:
     #     - tools/spectra.ipynb
     #     - tools/binning.ipynb
     #     - tools/colormaps.ipynb
-    - Reference:
-        - Rainbow-api.md
-        - RainbowWithModel-api.md
+    - api.md
 theme:
   name: "material"
   features:
@@ -32,9 +30,7 @@ theme:
 repo_url: https://github.com/zkbt/chromatic/
 plugins:
   - search
-  #- gen-files:
-  #    scripts:
-  #    - docs/generate_reference_pages.py  #
+
   # - mkdocs-jupyter:
   #     execute : True
   #     include_source : True
@@ -42,11 +38,20 @@ plugins:
       default_handler: python
       handlers:
         python:
+          paths: [../chromatic]
           selection:
             docstring_style: "numpy"
           rendering:
             show_source: True
             show_root_heading: True
+            show_root_toc_entry: False
+            show_root_full_path: False
+            show_category_heading: False
+            show_submodules: False
+            merge_init_into_class: False
+            show_if_no_docstring: False
+            heading_level: 3
+            show_bases: False
       custom_templates: templates
       watch:
         - chromatic

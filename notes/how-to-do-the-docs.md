@@ -11,7 +11,7 @@ which made a `docs/` directory and a `mkdocs.yml`
 
 Then, we copied her template into the `docs/index.md` file and made appropriate changes for names.
 
-Then, we edited the `docs/api.md` file to point to the objects and methods we want to explain. Docstrings for functions should follow the [`numpy` style conventions](https://numpydoc.readthedocs.io/en/latest/format.html).
+Then, we edited the `docs/api.md` file to point to the objects and methods we want to explain. Docstrings for functions should follow the [`numpy` style conventions](https://numpydoc.readthedocs.io/en/latest/format.html). Options for rendering automatically are best described [here](https://mkdocstrings.github.io/python/usage/), although I don't fully understand everything going on in the YAML.
 
 Then, we used the `mkdocs-jupyter` plugin to be able use jupyter notebooks as the source for writing docs, following the examples on their pages. We added some notebooks to the `docs/` diretory and pointed to them in the `mkdocs.yml` file.
 

@@ -61,7 +61,7 @@ def _add_panel_labels(axes, preset="inside", **kw):
 
     Parameters
     ----------
-    ax : list or array of matplotlib.axes._subplots.AxesSubplot objects
+    ax : list, AxesSubplot
         The axes into which the labels should be drawn.
     preset : str
         A few presets for where to put the labels relative to
@@ -116,17 +116,17 @@ def _scatter_timelike_or_wavelike(
         The values to plot on the y axis.
     ylabel : string
         The ylabel for the plot. (xlabel will be guessed)
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which this plot should go.
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap
         The color map to use for expressing wavelength.
     vmin : Quantity
         The minimum value to use for the wavelength colormap.
     vmax : Quantity
         The maximum value to use for the wavelength colormap.
-    w_unit : str, astropy.unit.Unit
+    w_unit : str, Unit
         The unit for plotting wavelengths (if needed).
-    t_unit : str, astropy.unit.Unit
+    t_unit : str, Unit
         The unit for plotting times (if needed).
     wavelength_for_color : Quantity
         It you're plotting a timelike quantity, and you want

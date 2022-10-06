@@ -426,9 +426,9 @@ class MultiRainbow:
         quantity : str
             The fluxlike quantity to imshow.
             (Must be a key of `rainbow.fluxlike`).
-        w_unit : str, astropy.unit.Unit
+        w_unit : str, Unit
             The unit for plotting wavelengths.
-        t_unit : str, astropy.unit.Unit
+        t_unit : str, Unit
             The unit for plotting times.
         aspect : str
             What aspect ratio should be used for the imshow?
@@ -492,7 +492,7 @@ class MultiRainbow:
             Custom xlimits for the plot
         ylim : tuple
             Custom ylimits for the plot
-        cmap : str, matplotlib.colors.Colormap
+        cmap : str, Colormap
             The color map to use for expressing wavelength
         vmin : Quantity
             The minimum value to use for the wavelength colormap
@@ -566,7 +566,7 @@ class MultiRainbow:
             Custom xlimits for the plot
         ylim : tuple
             Custom ylimits for the plot
-        cmap : str, matplotlib.colors.Colormap
+        cmap : str, Colormap
             The color map to use for expressing wavelength
         vmin : Quantity
             The minimum value to use for the wavelength colormap

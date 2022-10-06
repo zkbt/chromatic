@@ -26,14 +26,14 @@ def pcolormesh(
 
     Parameters
     ----------
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which to make this plot.
     quantity : str
         The fluxlike quantity to imshow.
         (Must be a key of `rainbow.fluxlike`).
-    w_unit : str, astropy.unit.Unit
+    w_unit : str, Unit
         The unit for plotting wavelengths.
-    t_unit : str, astropy.unit.Unit
+    t_unit : str, Unit
         The unit for plotting times.
     colorbar : bool
         Should we include a colorbar?

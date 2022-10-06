@@ -14,7 +14,7 @@ def setup_wavelength_colors(self, cmap=None, vmin=None, vmax=None, log=None):
 
     Parameters
     ----------
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap
         The color map to use.
     vmin : Quantity
         The wavelength at the bottom of the cmap.
@@ -55,7 +55,7 @@ def _make_sure_cmap_is_defined(self, cmap=None, vmin=None, vmax=None):
 
     Parameters
     ----------
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap
         The color map to use for expressing wavelength.
     vmin : Quantity
         The minimum value to use for the wavelength colormap.

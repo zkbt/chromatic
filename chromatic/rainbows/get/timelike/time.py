@@ -7,7 +7,7 @@ def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentri
 
     Parameters
     ----------
-    time : u.Quantity
+    time : Quantity
         The time-like Quantity to be converted.
         If None (default), convert the time values in `self.time`
         If another time-like Quantity, convert those values.
@@ -28,7 +28,7 @@ def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentri
 
     Returns
     -------
-    astropy_time : astropy.time.Time
+    astropy_time : Time
         The times as an astropy Time object.
     """
 
@@ -129,7 +129,7 @@ def set_times_from_astropy(self, astropy_time, is_barycentric=None):
 
     Parameters
     ----------
-    astropy_time : astropy.time.Time
+    astropy_time : Time
         The times as an astropy Time object.
     is_barycentric : bool
         Are the times already measured relative to the
@@ -140,7 +140,7 @@ def set_times_from_astropy(self, astropy_time, is_barycentric=None):
 
     Returns
     -------
-    time : u.Quantity
+    time : Quantity
         An astropy Quantity with units of time,
         expressing the Time as julian day.
         In addition to this returned variable,

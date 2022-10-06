@@ -224,7 +224,7 @@ class PHOENIXLibrary:
 
         Returns
         -------
-        wavelength : u.Quantity
+        wavelength : Quantity
             The wavelengths associated with this grid,
             with astropy units of microns.
         """
@@ -253,7 +253,7 @@ class PHOENIXLibrary:
             The filename of the raw PHOENIX spectrum
         Returns
         -------
-        spectrum : u.Quantity
+        spectrum : Quantity
             The spectrum, with astropy units of W/(m**2 nm)
         """
         hdus = fits.open(filename)
@@ -641,7 +641,7 @@ class PHOENIXLibrary:
 
         Parameters
         ----------
-        w : u.Quantity
+        w : Quantity
             The wavelength array.
 
         Returns
@@ -662,7 +662,7 @@ class PHOENIXLibrary:
 
         Parameters
         ----------
-        w : u.Quantity
+        w : Quantity
             The wavelength array.
 
         Returns
@@ -735,7 +735,7 @@ class PHOENIXLibrary:
             (If you're using the `wavelength` or `wavelength_edges` option
             below, please be ensure your requested R exceeds that needed
             to support your wavelengths.)
-        wavelength : u.Quantity
+        wavelength : Quantity
             A grid of wavelengths on which you would like your spectrum.
             If this is None, the complete wavelength array will be returned
             at your desired resolution. Otherwise, the spectrum will be
@@ -743,16 +743,16 @@ class PHOENIXLibrary:
             cached for this new wavelength grid to speed up applications
             that need to retreive lots of similar spectra for the same
             wavelength (like many optimization or sampling problems).
-        wavelength_edges : u.Quantity
+        wavelength_edges : Quantity
             Same as `wavelength` (see above!) but defining the wavelength
             grid by its edges instead of its centers. The returned spectrum
             will have 1 fewer element than `wavelength_edges`.
 
         Returns
         -------
-        wavelength : u.Quantity
+        wavelength : Quantity
             The wavelengths, at the specified resolution.
-        spectrum : u.Quantity
+        spectrum : Quantity
             The spectrum, in either photons or flux.
         """
 
