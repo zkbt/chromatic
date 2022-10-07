@@ -61,7 +61,6 @@ def inflate_uncertainty(
 
     # calculate the necessary inflation ratio
     inflate_ratio = measured_scatter / expected_uncertainty
-    new.wavelike["inflate_ratio"] = inflate_ratio
 
     # warn if there are some inflation ratios below minimum (usually = 1)
     if np.min(inflate_ratio) < minimum_inflate_ratio:
@@ -72,6 +71,9 @@ def inflate_uncertainty(
         """
         )
         inflate_ratio = np.maximum(inflate_ratio, minimum_inflate_ratio)
+
+    # store the inflation ratio
+    new.wavelike["inflate_ratio"] = inflate_ratio
 
     # inflate the uncertainties
     new.uncertainty = new.uncertainty * inflate_ratio[:, np.newaxis]
