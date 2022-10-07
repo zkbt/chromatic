@@ -8,9 +8,12 @@ def get_measured_scatter_in_bins(
 ):
     """
     Get measured scatter in time bins of increasing sizes.
+
     For uncorrelated Gaussian noise, the scatter should
     decrease as 1/sqrt(N), where N is the number points
-    in a bin.
+    in a bin. This function calculates the scatter for
+    a range of N, thus providing a quick test for
+    correlated noise.
 
     Parameters
     ----------
@@ -28,8 +31,8 @@ def get_measured_scatter_in_bins(
 
     Returns
     -------
-    scatter : np.array (wavelike)
-        The scatter wavelike array.
+    scatter_dictionary : dict
+        Dictionary with lots of information about scatter in bins per wavelength.
     """
 
     from ...rainbow import Rainbow

@@ -1,13 +1,15 @@
 from ...imports import *
 
+__all__ = ["trim", "trim_times", "trim_wavelengths"]
+
 
 def trim_times(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
     """
-    Trim times that are all (or mostly) not numbers.
+    Trim times that are all (or mostly) useless.
 
     Parameters
     ----------
-    just_edges : bool
+    just_edges : bool, optional
         Should we only trim the outermost bad time bins?
             `True` = Just trim off the bad edges and keep
             interior bad values. Keeping interior data, even if
@@ -17,13 +19,13 @@ def trim_times(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1
             the edge or somewhere in the middle of the dataset.
             The resulting Rainbow will be smaller, but it might
             be a little tricky to visualize with imshow.
-    when_to_give_up : float
+    when_to_give_up : float, optional
         The fraction of wavelengths that must be nan or not OK
         for the entire time to be considered bad (default = 1).
             `1.0` = trim only if all wavelengths are bad
             `0.5` = trim if more than 50% of wavelengths are bad
             `0.0` = trim if any wavelengths are bad
-    minimum_acceptable_ok : float
+    minimum_acceptable_ok : float, optional
         The numbers in the `.ok` attribute express "how OK?" each
         data point is, ranging from 0 (not OK) to 1 (super OK).
         In most cases, `.ok` will be binary, but there may be times
@@ -31,6 +33,11 @@ def trim_times(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1
         from some data that were not OK and some that were).
         The `minimum_acceptable_ok` parameter allows you to specify what
         level of OK-ness for a point to not get trimmed.
+
+    Returns
+    -------
+    trimmed : Rainbow
+        The trimmed `Rainbow`.
     """
 
     # create a history entry for this action (before other variables are defined)
@@ -62,11 +69,11 @@ def trim_times(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1
 
 def trim_wavelengths(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
     """
-    Trim wavelengths that are all (or mostly) not numbers.
+    Trim wavelengths that are all (or mostly) useless.
 
     Parameters
     ----------
-    just_edges : bool
+    just_edges : bool, optional
         Should we only trim the outermost bad wavelength bins?
             `True` = Just trim off the bad edges and keep
             interior bad values. Keeping interior data, even if
@@ -76,13 +83,13 @@ def trim_wavelengths(self, just_edges=True, when_to_give_up=1, minimum_acceptabl
             the edge or somewhere in the middle of the dataset.
             The resulting Rainbow will be smaller, but it might
             be a little tricky to visualize with imshow.
-    when_to_give_up : float
+    when_to_give_up : float, optional
         The fraction of times that must be nan or not OK
         for the entire wavelength to be considered bad (default = 1).
             `1.0` = trim only if all times are bad
             `0.5` = trim if more than 50% of times are bad
             `0.0` = trim if any times are bad
-    minimum_acceptable_ok : float
+    minimum_acceptable_ok : float, optional
         The numbers in the `.ok` attribute express "how OK?" each
         data point is, ranging from 0 (not OK) to 1 (super OK).
         In most cases, `.ok` will be binary, but there may be times
@@ -90,7 +97,13 @@ def trim_wavelengths(self, just_edges=True, when_to_give_up=1, minimum_acceptabl
         from some data that were not OK and some that were).
         The `minimum_acceptable_ok` parameter allows you to specify what
         level of OK-ness for a point to not get trimmed.
+
+    Returns
+    -------
+    trimmed : Rainbow
+        The trimmed `Rainbow`.
     """
+
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("trim_wavelengths", locals())
 
@@ -120,7 +133,17 @@ def trim_wavelengths(self, just_edges=True, when_to_give_up=1, minimum_acceptabl
 
 def trim(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
     """
-    just_edges : bool
+    Trim away bad wavelengths and/or times.
+
+    If entire wavelengths or times are marked as not `ok`,
+    we can probably remove them to simplify calculations
+    and visualizations. This function will trim those away,
+    by default only removing problem rows/columns on the ends,
+    to maintain a contiguous block.
+
+    Parameters
+    ----------
+    just_edges : bool, optional
         Should we only trim the outermost bad wavelength bins?
             `True` = Just trim off the bad edges and keep
             interior bad values. Keeping interior data, even if
@@ -130,13 +153,13 @@ def trim(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
             the edge or somewhere in the middle of the dataset.
             The resulting Rainbow will be smaller, but it might
             be a little tricky to visualize with imshow.
-    when_to_give_up : float
+    when_to_give_up : float, optional
         The fraction of times that must be nan or not OK
         for the entire wavelength to be considered bad (default = 1).
             `1.0` = trim only if all times are bad
             `0.5` = trim if more than 50% of times are bad
             `0.0` = trim if any times are bad
-    minimum_acceptable_ok : float
+    minimum_acceptable_ok : float, optional
         The numbers in the `.ok` attribute express "how OK?" each
         data point is, ranging from 0 (not OK) to 1 (super OK).
         In most cases, `.ok` will be binary, but there may be times
@@ -144,6 +167,11 @@ def trim(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
         from some data that were not OK and some that were).
         The `minimum_acceptable_ok` parameter allows you to specify what
         level of OK-ness for a point to not get trimmed.
+
+    Returns
+    -------
+    trimmed : Rainbow
+        The trimmed `Rainbow`.
     """
 
     trimmed = self.trim_times(

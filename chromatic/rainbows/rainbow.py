@@ -1,18 +1,67 @@
 from ..imports import *
 from .readers import *
-from .writers import *
 from ..resampling import *
 
 
 class Rainbow:
     """
-    Rainbow objects represent the flux of some astrophysical
-    object as a function of both wavelength and time.
+    `Rainbow` (🌈) objects represent brightness as a function
+    of both wavelength and time.
 
-    The general stucture of a Rainbow object contains a
-    1D array of wavelengths, a 1D array of times, and a
-    2D array of flux values (with row as wavelength and
-    column as time).
+    These objects are useful for reading or writing multiwavelength
+    time-series datasets in a variety of formats, visualizing these
+    data with simple commands, and performing basic calculations.
+    `RainbowWithModel` and `SimulatedRainbow` objects inherit from
+    `Rainbow`, so all basically all methods and attributes described
+    below are available for them too.
+
+    Attributes
+    ----------
+    wavelike : dict
+        A dictionary for quantities with shape `(nwave,),
+        for which there's one value for each wavelength.
+    timelike : dict
+        A dictionary for quantities with shape `(ntime,),
+        for which there's one value for each time.
+    fluxlike : dict
+        A dictionary for quantities with shape `(nwave,ntime),
+        for which there's one value for each wavelength and time.
+    metadata : dict
+        A dictionary containing all other useful information
+        that should stay connected to the `Rainbow`, in any format.
+    wavelength : Quantity
+        The 1D array of wavelengths for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    time : Quantity
+        The 1D array of times for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    flux : array, Quantity
+        The 2D array of fluxes for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    uncertainty : array, Quantity
+        The 2D array of flux uncertainties for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    ok : array
+        The 2D array of "ok-ness" for this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    shape : tuple
+        The shape of this `Rainbow`'s flux array.
+        (This is a property, not an actual attribute.)
+    nwave : int
+        The number of wavelengths in this `Rainbow`'.
+        (This is a property, not an actual attribute.)
+    ntime : int
+        The number of times in this `Rainbow`'.
+        (This is a property, not an actual attribute.)
+    nflux : int
+        The total number of fluxes in this `Rainbow`' (= `nwave*ntime`).
+        (This is a property, not an actual attribute.)
+    dt : Quantity
+        The typical time offset between adjacent times in this `Rainbow`.
+        (This is a property, not an actual attribute.)
+    name : array, Quantity
+        The name of this `Rainbow`, if one has been set.
+        (This is a property, not an actual attribute.)
     """
 
     # all Rainbows must contain these core dictionaries
@@ -44,49 +93,47 @@ class Rainbow:
         **kw,
     ):
         """
-        Initialize a Rainbow object from a file, from arrays
-        with appropriate units, or from dictionaries with
-        appropriate ingredients.
+        Initialize a `Rainbow` object from a file, from arrays
+        with appropriate units, from dictionaries with appropriate
+        ingredients, or simply as an empty object if no arguments
+        are given.
 
         Parameters
         ----------
-
-        filepath : str
+        filepath : str, optional
             The filepath pointing to the file or group of files
             that should be read.
-        format : str
+        format : str, optional
             The file format of the file to be read. If None,
             the format will be guessed automatically from the
             filepath.
-
-        wavelength : astropy.unit.Quantity
+        wavelength : Quantity, optional
             A 1D array of wavelengths, in any unit.
-        time : astropy.unit.Quantity or astropy.unit.Time
+        time : Quantity, Time, optional
             A 1D array of times, in any unit.
-        flux : np.array
+        flux : array, optional
             A 2D array of flux values.
-        uncertainty : np.array
+        uncertainty : array, optional
             A 2D array of uncertainties, associated with the flux.
-
-        wavelike : dict
+        wavelike : dict, optional
             A dictionary containing 1D arrays with the same
             shape as the wavelength axis. It must at least
             contain the key 'wavelength', which should have
             astropy units of wavelength associated with it.
-        timelike : dict
+        timelike : dict, optional
             A dictionary containing 1D arrays with the same
             shape as the time axis. It must at least
             contain the key 'time', which should have
             astropy units of time associated with it.
-        fluxlike : dict
+        fluxlike : dict, optional
             A dictionary containing 2D arrays with the shape
             of (nwave, ntime), like flux. It must at least
             contain the key 'flux'.
-        metadata : dict
+        metadata : dict, optional
             A dictionary containing all other metadata
             associated with the dataset, generally lots of
             individual parameters or comments.
-        kw : dict
+        **kw : dict, optional
             Additional keywords will be passed along to
             the function that initializes the rainbow.
             If initializing from arrays (`time=`, `wavelength=`,
@@ -98,20 +145,39 @@ class Rainbow:
 
         Examples
         --------
+        Initialize from a file. While this works, a more robust
+        solution is probably to use `read_rainbow`, which will
+        automatically choose the best of `Rainbow` and `RainbowWithModel`
         ```
-        # initalize from a file
         r1 = Rainbow('my-neat-file.abc', format='abcdefgh')
+        ```
 
-        # initalize from arrays
-        r2 = Rainbow(wavelength=np.linspace(1, 5, 50)*u.micron,
-                     time=np.linspace(-0.5, 0.5, 100)*u.day,
-                     flux=np.random.normal(0, 1, (50, 100)))
-
-        # initialize from dictionaries
-        f3 = Rainbow(wavelike=dict(wavelength=np.linspace(1, 5, 50)*u.micron),
-                     timelike=dict(time=np.linspace(-0.5, 0.5, 100)*u.day),
-                     fluxlike=dict(flux=np.random.normal(0, 1, (50, 100))))
-
+        Initalize from arrays. The wavelength and time must have
+        appropriate units, and the shape of the flux array must
+        match the size of the wavelength and time arrays. Other
+        arrays that match the shape of any of these quantities
+        will be stored in the appropriate location. Other inputs
+        not matching any of these will be stored as `metadata.`
+        ```
+        r2 = Rainbow(
+                wavelength=np.linspace(1, 5, 50)*u.micron,
+                time=np.linspace(-0.5, 0.5, 100)*u.day,
+                flux=np.random.normal(0, 1, (50, 100)),
+                some_other_array=np.ones((50,100)),
+                some_metadata='wow!'
+        )
+        ```
+        Initialize from dictionaries. The dictionaries must contain
+        at least `wavelike['wavelength']`, `timelike['time']`, and
+        `fluxlike['flux']`, but any other additional inputs can be
+        provided.
+        ```
+        r3 = Rainbow(
+                wavelike=dict(wavelength=np.linspace(1, 5, 50)*u.micron),
+                timelike=dict(time=np.linspace(-0.5, 0.5, 100)*u.day),
+                fluxlike=dict(flux=np.random.normal(0, 1, (50, 100)))
+        )
+        ```
         """
         # create a history entry for this action (before other variables are defined)
         h = self._create_history_entry("Rainbow", locals())
@@ -312,15 +378,15 @@ class Rainbow:
 
         Parameters
         ----------
-        wavelength : astropy.unit.Quantity
+        wavelength : Quantity, optional
             A 1D array of wavelengths, in any unit.
-        time : astropy.unit.Quantity or astropy.unit.Time
+        time : Quantity, Time, optional
             A 1D array of times, in any unit.
-        flux : np.array
+        flux : array, optional
             A 2D array of flux values.
-        uncertainty : np.array
+        uncertainty : array, optional
             A 2D array of uncertainties, associated with the flux.
-        kw : dict
+        **kw : dict, optional
             Additional keywords will be interpreted as arrays
             that should be sorted into the appropriate location
             based on their size.
@@ -355,7 +421,7 @@ class Rainbow:
         ----------
         k : str
             The key for the (appropriate) dictionary.
-        v : np.array
+        v : array
             The quantity to sort.
         """
         if np.shape(v) == self.shape:
@@ -373,15 +439,14 @@ class Rainbow:
 
         Parameters
         ----------
-
-        filepath : str
+        filepath : str, optional
             The filepath pointing to the file or group of files
             that should be read.
-        format : str
+        format : str, optional
             The file format of the file to be read. If None,
             the format will be guessed automatically from the
             filepath.
-        kw : dict
+        **kw : dict, optional
             Additional keywords will be passed on to the reader.
         """
 
@@ -483,7 +548,7 @@ class Rainbow:
     @property
     def name(self):
         """
-        The name of this Rainbow object.
+        The name of this `Rainbow` object.
         """
         return self.metadata.get("name", None)
 
@@ -578,46 +643,6 @@ class Rainbow:
         message = f"🌈.{key} does not exist for this Rainbow"
         raise AttributeError(message)
 
-    def save(self, filepath="test.rainbow.npy", format=None, **kw):
-        """
-        Save this Rainbow out to a file.
-
-        Parameters
-        ----------
-        filepath : str
-            The filepath pointing to the file to be written.
-            (For now, it needs a `.rainbow.npy` extension.)
-        format : str
-            The file format of the file to be written. If None,
-            the format will be guessed automatically from the
-            filepath."""
-
-        # figure out the best writer
-        writer = guess_writer(filepath, format=format)
-
-        # use that writer to save the file
-        writer(self, filepath, **kw)
-
-    def get(self, key, default=None):
-        """
-        Retrieve an attribute by its string name.
-        (This is a friendlier wrapper for `getattr()`).
-
-        `r.get('flux')` is identical to `r.flux`
-
-        This is different from indexing directly into
-        a core dictionary (for example, `r.fluxlike['flux']`),
-        because it can also be used to get the results of
-        properties that do calculations on the fly (for example,
-        `r.residuals` in the `RainbowWithModel` class).
-
-        This will default to None if the attribute can't be found.
-        """
-        try:
-            return getattr(self, key)
-        except AttributeError:
-            return default
-
     def __setattr__(self, key, value):
         """
         When setting a new attribute, try to sort it into the
@@ -633,7 +658,7 @@ class Rainbow:
         ----------
         key : str
             The attribute we're trying to get.
-        value : np.array
+        value : array
             The quantity we're trying to attach to that name.
         """
         try:
@@ -1032,4 +1057,6 @@ class Rainbow:
         _create_history_entry,
         history,
         help,
+        save,
+        get,
     )

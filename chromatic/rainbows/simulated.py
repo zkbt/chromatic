@@ -27,43 +27,47 @@ class SimulatedRainbow(RainbowWithModel):
         signal_to_noise=None,
     ):
         """
-        Create a simulated rainbow object.
+        Initialize a `SimulatedRainbow` object from some parameters.
 
-        Parameters
-        ----------
-
-        tlim : list or array of astropy.units.Quantity
-            The pip install -e '.[develop]'[min, max] times for creating the time grid.
-            These should have astropy units of time.
-        dt : astropy.units.Quantity
-            The d(time) bin size for creating a grid
-            that is uniform in linear space.
-        time : array of astropy.units.Quantity
-            An array of times, if you just want to give
-            it an entirely custom array.
+        This sets up an effectively empty `Rainbow` with defined
+        wavelengths and times. For making more interesting
+        simulated datasets, this will often be paired with
+        some combination of the `.inject...` actions that inject
+        various astrophysical, instrumental, or noise signatures
+        into the dataset.
 
         The time-setting order of precendence is:
             1) time
             2) tlim + dt
-
-        wlim : list or array of astropy.units.Quantity
-            The [min, max] wavelengths for creating the grid.
-            These should have astropy units of wavelength.
-        R : float
-            The spectral resolution for creating a grid
-            that is uniform in logarithmic space.
-        dw : astropy.units.Quantity
-            The d(wavelength) bin size for creating a grid
-            that is uniform in linear space.
-        wavelength : array of astropy.units.Quantity
-            An array of wavelengths, if you just want to give
-            it an entirely custom array.
 
         The wavelength-setting order of precendence is:
             1) wavelength
             2) wlim + dw
             3) wlim + R
 
+        Parameters
+        ----------
+        tlim : list or Quantity
+            The pip install -e '.[develop]'[min, max] times for creating the time grid.
+            These should have astropy units of time.
+        dt : Quantity
+            The d(time) bin size for creating a grid
+            that is uniform in linear space.
+        time : Quantity
+            An array of times, if you just want to give
+            it an entirely custom array.
+        wlim : list or Quantity
+            The [min, max] wavelengths for creating the grid.
+            These should have astropy units of wavelength.
+        R : float
+            The spectral resolution for creating a grid
+            that is uniform in logarithmic space.
+        dw : Quantity
+            The d(wavelength) bin size for creating a grid
+            that is uniform in linear space.
+        wavelength : Quantity
+            An array of wavelengths, if you just want to give
+            it an entirely custom array.
         star_flux : numpy 1D array
             An array of fluxes corresponding to the supplied wavelengths.
             If left blank, the code assumes a normalized flux of
@@ -137,13 +141,13 @@ class SimulatedRainbow(RainbowWithModel):
         Parameters
         ----------
 
-        tlim : list or array of astropy.units.Quantity
+        tlim : list or Quantity
             The [min, max] times for creating the time grid.
             These should have astropy units of time.
-        dt : astropy.units.Quantity
+        dt : Quantity
             The d(time) bin size for creating a grid
             that is uniform in linear space.
-        time : array of astropy.units.Quantity
+        time : Quantity
             An array of times, if you just want to give
             it an entirely custom array.
 
@@ -176,16 +180,16 @@ class SimulatedRainbow(RainbowWithModel):
         Parameters
         ----------
 
-        wlim : list or array of astropy.units.Quantity
+        wlim : list or Quantity
             The [min, max] wavelengths for creating the grid.
             These should have astropy units of wavelength.
         R : float
             The spectral resolution for creating a grid
             that is uniform in logarithmic space.
-        dw : astropy.units.Quantity
+        dw : Quantity
             The d(wavelength) bin size for creating a grid
             that is uniform in linear space.
-        wavelength : array of astropy.units.Quantity
+        wavelength : Quantity
             An array of wavelengths, if you just want to give
             it an entirely custom array.
 

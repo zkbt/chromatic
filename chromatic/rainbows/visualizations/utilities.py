@@ -2,7 +2,7 @@ from ...imports import *
 
 __all__ = [
     "_add_panel_labels",
-    "_get_animation_writer_and_displayer",
+    "get_animation_writer_and_displayer",
     "_scatter_timelike_or_wavelike",
     "_get_unit_string",
     "_get_plot_directory",
@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 
-def _get_animation_writer_and_displayer(filename="animation.html", **kw):
+def get_animation_writer_and_displayer(filename="animation.html", **kw):
     """
     Create the right animation writer based on filename.
 
@@ -61,7 +61,7 @@ def _add_panel_labels(axes, preset="inside", **kw):
 
     Parameters
     ----------
-    ax : list or array of matplotlib.axes._subplots.AxesSubplot objects
+    ax : list, AxesSubplot
         The axes into which the labels should be drawn.
     preset : str
         A few presets for where to put the labels relative to
@@ -109,26 +109,26 @@ def _scatter_timelike_or_wavelike(
 
     Parameters
     ----------
-    x : u.Quantity
+    x : Quantity
         Either time or wavelength, with units (which will
         used to set the xlabel and/or point colors).
-    y : np.array, u.Quantity
+    y : array, Quantity
         The values to plot on the y axis.
     ylabel : string
         The ylabel for the plot. (xlabel will be guessed)
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which this plot should go.
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap
         The color map to use for expressing wavelength.
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap.
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap.
-    w_unit : str, astropy.unit.Unit
+    w_unit : str, Unit
         The unit for plotting wavelengths (if needed).
-    t_unit : str, astropy.unit.Unit
+    t_unit : str, Unit
         The unit for plotting times (if needed).
-    wavelength_for_color : u.Quantity
+    wavelength_for_color : Quantity
         It you're plotting a timelike quantity, and you want
         to set the color automatically based on wavelength,
         supply the wavelength for that color here.

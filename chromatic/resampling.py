@@ -22,14 +22,14 @@ def calculate_bin_leftright(x):
 
     Parameters
     ----------
-    x : np.array
+    x : array
         The array of bin centers.
 
     Returns
     ----------
-    l : np.array
+    l : array
         The left edges of the bins.
-    r : np.array
+    r : array
         The right edges of the bins.
     """
 
@@ -60,12 +60,12 @@ def calculate_bin_widths(x):
 
     Parameters
     ----------
-    x : np.array
+    x : array
         The array of bin centers.
 
     Returns
     ----------
-    s : np.array
+    s : array
         The array of bin sizes (total size, from left to right).
     """
 
@@ -87,9 +87,9 @@ def plot_as_boxes(x, y, xleft=None, xright=None, **kwargs):
 
     Parameters
     ----------
-    x : np.array
+    x : array
         The original independent variable.
-    y : np.array
+    y : array
         The original dependent variable (same size as x).
     **kwargs : dict
         All additional keywords will be passed to plt.plot
@@ -138,25 +138,24 @@ def resample_while_conserving_flux(
     different grid (either higher or lower resolution),
     while conserving total flux.
 
-    When including the entire range of xin,
-    sum(yout) == sum(yin) should be true.
+    When including the entire range of `xin`,
+    `sum(yout) == sum(yin)` should be true.
 
-    When including only part of the range of xin,
+    When including only part of the range of `xin`,
     the integral between any two points should be conserved.
 
     Parameters
     ----------
-
-    xin : np.array
+    xin : array
         The original independent variable.
-    yin : np.array
+    yin : array
         The original dependent variable (same size as x).
-    xout : np.array
+    xout : array
         The new grid of independent variables onto which
         you want to resample the y values. Refers to the
         center of each bin (use `xout_edges` for finer
         control over the exact edges of the bins)
-    xin_edges : np.array
+    xin_edges : array
         The edges of the original independent variable bins.
         The left and right edges of the bins are interpreted
         to be `xin_edges[:-1]` and `xin_edges[1:]`,
@@ -165,7 +164,7 @@ def resample_while_conserving_flux(
         control over the size of each bin in the input than
         simply supplying `xin`(still a little experimental)
         They should probably be sorted?
-    xout_edges : np.array
+    xout_edges : array
         The edges of the new grid of bins for the independent
         variable, onto which you want to resample the y
         values. The left and right edges of the bins will be,
@@ -371,33 +370,27 @@ def bintogrid(
     """
     Bin any x and y array onto a linearly uniform grid.
 
-
-    The order of precendence for setting the new grid is
-    [`newx_edges`, `newx`, `dx`, `nx`]
-    The first will be used, and others will be ignored.
-
     Parameters
     ----------
-
-    x : np.array
+    x : array
         The original independent variable.
         (For a spectrum example = wavelength)
-    y : np.array
+    y : array
         The original dependent variable (same size as x).
         (For a spectrum example = flux)
-    unc : np.array, or None
+    unc : array, None
         The unceratinty on the dependent variable
         (For a spectrum example = the flux uncertainty)
-    nx : np.array
+    nx : array
         The number of bins from the original grid to
         bin together into the new one.
-    dx : np.array
+    dx : array
         The fixed spacing for creating a new, linearly uniform
         grid that start at the first value of x. This will
         be ignored if `newx` != None.
-    newx : np.array
+    newx : array
         A new custom grid onto which we should bin.
-    newx_edges : np.array
+    newx_edges : array
         The edges of the new grid of bins for the independent
         variable, onto which you want to resample the y
         values. The left and right edges of the bins will be,
@@ -417,7 +410,7 @@ def bintogrid(
     drop_nans : bool
         Should we skip any bins turn out to be nans?
         This most often happens when bins are empty.
-    x_edges : np.array
+    x_edges : array
         The edges of the original independent variable bins.
         The left and right edges of the bins are interpreted
         to be `x_edges[:-1]` and `x_edges[1:]`,
@@ -437,6 +430,10 @@ def bintogrid(
         ...and possibly also
             `uncertainty` = the calculated uncertainty per bin
 
+
+    The order of precendence for setting the new grid is
+    [`newx_edges`, `newx`, `dx`, `nx`]
+    The first will be used, and others will be ignored.
     """
 
     # check that an OK set of inputs has been supplied
@@ -670,30 +667,28 @@ def bintoR(
     x, y, unc=None, R=50, xlim=None, weighting="inversevariance", drop_nans=True
 ):
     """
-    Bin any x and y array onto a logarithmicly uniform grid,
-    characterized by
+    Bin any x and y array onto a logarithmicly uniform grid.
 
     Parameters
     ----------
-
-    x : np.array
+    x : array
         The original independent variable.
         (For a spectrum example = wavelength)
-    y : np.array
+    y : array
         The original dependent variable (same size as x).
         (For a spectrum example = flux)
-    unc : np.array, or None
+    unc : array, None, optional
         The unceratinty on the dependent variable
         (For a spectrum example = the flux uncertainty)
-    R : np.array
+    R : array, optional
         The spectral resolution R=x/dx for creating a new,
         logarithmically uniform grid that starts at the first
         value of x.
-    xlim : list, np.array
+    xlim : list, array, optional
         A two-element list indicating the min and max values of
         x for the new logarithmically spaced grid. If None,
         these limits will be created from the data themselves
-    weighting : str
+    weighting : str, optional
         How should we weight values when averaging
         them together into one larger bin?
         `weighting = 'inversevariance'`
@@ -703,7 +698,7 @@ def bintoR(
         This will have no impact if `unc == None`, or for any
         new bins that effectively overlap less than one original
         unbinned point.
-    drop_nans : bool
+    drop_nans : bool, optional
         Should we skip any bins turn out to be nans?
         This most often happens when bins are empty.
 

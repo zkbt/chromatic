@@ -5,14 +5,15 @@ __all__ = ["shift"]
 
 def shift(self, velocity=0 * u.km / u.s):
     """
-    Doppler shift the wavelengths of this Rainbow.
+    Doppler shift the wavelengths of this `Rainbow`.
+
     Positive velocities make wavelengths longer (redshift).
     Negative velocities make wavelengths shorter (bluesfhit).
 
     Parameters
     ----------
-    velocity : astropy.units.Quantity
-        the systemic velocity in question,
+    velocity : Quantity
+        The systemic velocity by which we should shift,
         with units of velocity (for example, u.km/u.s)
     """
 

@@ -2,6 +2,7 @@ from .withmodel import *
 from .rainbow import *
 from .simulated import *
 from .multi import *
+from .writers import *
 
 
 def read_rainbow(filepath, **kw):
@@ -10,7 +11,6 @@ def read_rainbow(filepath, **kw):
     multiwavelength light curves into a `chromatic` Rainbow
     object. It will try its best to pick the best reader
     and return the most useful kind of object.
-
     🦋🌅2️⃣🪜🎬👀🇮🇹📕🧑‍🏫🌈
 
     Parameters
