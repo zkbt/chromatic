@@ -716,17 +716,20 @@ class PHOENIXLibrary:
         visualize=False,
     ):
         """
-        Get a spectrum for an arbitrary temperature, logg, metallicity.
+        Get a PHOENIX model spectrum for an arbitrary temperature, logg, metallicity.
+
+        Calculate the surface flux from a thermally emitted surface,
+        according to PHOENIX model spectra, in units of photons/(s * m**2 * nm).
 
         Parameters
         ----------
-        temperature : float
+        temperature : float, optional
             Temperature, in K (with no astropy units attached).
-        logg : float
+        logg : float, optional
             Surface gravity log10[g/(cm/s**2)] (with no astropy units attached).
-        metallicity : float
+        metallicity : float, optional
             Metallicity log10[metals/solar] (with no astropy units attached).
-        R : float
+        R : float, optional
             Spectroscopic resolution (lambda/dlambda). Currently, this must
             be in one of [3,10,30,100,300,1000,3000,10000,30000,100000], but
             check back soon for custom wavelength grids. There is extra
@@ -735,7 +738,7 @@ class PHOENIXLibrary:
             (If you're using the `wavelength` or `wavelength_edges` option
             below, please be ensure your requested R exceeds that needed
             to support your wavelengths.)
-        wavelength : Quantity
+        wavelength : Quantity, optional
             A grid of wavelengths on which you would like your spectrum.
             If this is None, the complete wavelength array will be returned
             at your desired resolution. Otherwise, the spectrum will be
@@ -743,7 +746,7 @@ class PHOENIXLibrary:
             cached for this new wavelength grid to speed up applications
             that need to retreive lots of similar spectra for the same
             wavelength (like many optimization or sampling problems).
-        wavelength_edges : Quantity
+        wavelength_edges : Quantity, optional
             Same as `wavelength` (see above!) but defining the wavelength
             grid by its edges instead of its centers. The returned spectrum
             will have 1 fewer element than `wavelength_edges`.
@@ -752,8 +755,8 @@ class PHOENIXLibrary:
         -------
         wavelength : Quantity
             The wavelengths, at the specified resolution.
-        spectrum : Quantity
-            The spectrum, in either photons or flux.
+        photons : Quantity
+            The surface flux in photon units
         """
 
         # this kludgy business is to try to avoid loading multiple metallicities unless absolutely necessary
@@ -994,4 +997,66 @@ class PHOENIXLibrary:
 
 
 phoenix_library = PHOENIXLibrary(photons=True)
-get_phoenix_photons = phoenix_library.get_spectrum
+
+
+def get_phoenix_photons(
+    temperature=5780,
+    logg=4.43,
+    metallicity=0.0,
+    R=100,
+    wavelength=None,
+    wavelength_edges=None,
+    visualize=False,
+):
+    """
+    Get a PHOENIX model spectrum for an arbitrary temperature, logg, metallicity.
+
+    Calculate the surface flux from a thermally emitted surface,
+    according to PHOENIX model spectra, in units of photons/(s * m**2 * nm).
+
+    Parameters
+    ----------
+    temperature : float, optional
+        Temperature, in K (with no astropy units attached).
+    logg : float, optional
+        Surface gravity log10[g/(cm/s**2)] (with no astropy units attached).
+    metallicity : float, optional
+        Metallicity log10[metals/solar] (with no astropy units attached).
+    R : float, optional
+        Spectroscopic resolution (lambda/dlambda). Currently, this must
+        be in one of [3,10,30,100,300,1000,3000,10000,30000,100000], but
+        check back soon for custom wavelength grids. There is extra
+        overhead associated with switching resolutions, so if you're
+        going to retrieve many spectra, try to group by resolution.
+        (If you're using the `wavelength` or `wavelength_edges` option
+        below, please be ensure your requested R exceeds that needed
+        to support your wavelengths.)
+    wavelength : Quantity, optional
+        A grid of wavelengths on which you would like your spectrum.
+        If this is None, the complete wavelength array will be returned
+        at your desired resolution. Otherwise, the spectrum will be
+        returned exactly at those wavelengths. Grid points will be
+        cached for this new wavelength grid to speed up applications
+        that need to retreive lots of similar spectra for the same
+        wavelength (like many optimization or sampling problems).
+    wavelength_edges : Quantity, optional
+        Same as `wavelength` (see above!) but defining the wavelength
+        grid by its edges instead of its centers. The returned spectrum
+        will have 1 fewer element than `wavelength_edges`.
+
+    Returns
+    -------
+    wavelength : Quantity
+        The wavelengths, at the specified resolution.
+    photons : Quantity
+        The surface flux in photon units
+    """
+    return phoenix_library.get_spectrum(
+        temperature=temperature,
+        logg=logg,
+        metallicity=metallicity,
+        R=R,
+        wavelength=wavelength,
+        wavelength_edges=wavelength_edges,
+        visualize=visualize,
+    )

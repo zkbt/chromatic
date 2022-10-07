@@ -128,7 +128,7 @@ def _create_fake_fluxlike_quantity(self, timelike_kw={}, wavelike_kw={}):
 
     Parameters
     ----------
-    timelike_kw : dict
+    timelike_kw : dict, optional
         Dictionary of keywords to pass to `_create_fake_timelike_quantity()`
 
     Returns
@@ -182,24 +182,24 @@ def inject_systematics(
 
     Parameters
     ----------
-    amplitude : float
+    amplitude : float, optional
         The (standard deviation-ish) amplitude of the systematics
         in units normalized to 1. For example, an amplitude of 0.003
         will produce systematic trends that tend to range (at 1 sigma)
         from 0.997 to 1.003.
-    wavelike : list of strings
+    wavelike : list of strings, optional
         A list of wave-like cotrending quantities to serve as ingredients
         to a linear combination systematics model. Existing quantities
         will be pulled from the appropriate core dictionary; fake
         data will be created for quantities that don't already exist,
         from a cartoony Gaussian process model.
-    timelike : list of strings
+    timelike : list of strings, optional
         A list of time-like cotrending quantities to serve as ingredients
         to a linear combination systematics model. Existing quantities
         will be pulled from the appropriate core dictionary; fake
         data will be created for quantities that don't already exist,
         from a cartoony Gaussian process model.
-    fluxlike : list of strings
+    fluxlike : list of strings, optional
         A list of flux-like cotrending quantities to serve as ingredients
         to a linear combination systematics model. Existing quantities
         will be pulled from the appropriate core dictionary; fake

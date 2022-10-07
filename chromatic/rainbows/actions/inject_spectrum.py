@@ -14,21 +14,28 @@ def inject_spectrum(
     phoenix=True,
 ):
     """
-    Inject a stellar spectrum.
+    Inject a stellar spectrum into the flux.
+
+    This injects a constant stellar spectrum into
+    all times in the `Rainbow`. Injection happens
+    by multiplying the `.model` flux array, so for
+    example a model that already has a transit in
+    it will be scaled up to match the stellar spectrum
+    in all wavelengths.
 
     Parameters
     ----------
-    temperature : Quantity
+    temperature : Quantity, optional
         Temperature, in K (with no astropy units attached).
-    logg : float
+    logg : float, optional
         Surface gravity log10[g/(cm/s**2)] (with no astropy units attached).
-    metallicity : float
+    metallicity : float, optional
         Metallicity log10[metals/solar] (with no astropy units attached).
-    radius : Quantity
+    radius : Quantity, optional
         The radius of the star.
-    distance : Quantity
+    distance : Quantity, optional
         The distance to the star.
-    phoenix : bool
+    phoenix : bool, optional
         If `True`, use PHOENIX surface flux.
         If `False`, use Planck surface flux.
 

@@ -9,7 +9,7 @@ __all__ = ["attach_model"]
 
 def attach_model(self, model, **kw):
     """
-    Attach a fluxlike model, thus making a new `RainbowWithModel.`
+    Attach a `fluxlike` model, thus making a new `RainbowWithModel.`
 
     Having a model attached makes it possible to make calculations
     (residuals, chi^2) and visualizations comparing data to model.
@@ -22,7 +22,7 @@ def attach_model(self, model, **kw):
     ----------
     model : array, Quantity
         An array of model values, with the same shape as 'flux'
-    **kw : dict
+    **kw : dict, optional
         All other keywords will be interpreted as items
         that can be added to a `Rainbow`. You might use this
         to attach intermediate model steps or quantities.

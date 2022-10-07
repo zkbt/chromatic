@@ -3,26 +3,31 @@ from ...imports import *
 __all__ = ["remove_trends"]
 
 
-def remove_trends(
-    self, method="median_filter", **kw
-):  # model=None,win_length=None,polyorder=None,butter_cutoff=None,butter_fs=None, butter_order=9,
+def remove_trends(self, method="median_filter", **kw):
     """
-    A quick tool to approximately remove astrophysical signals,
-    usually by some combination of smoothing/filtering.
+    A quick tool to approximately remove trends.
+
+    This function provides some simple tools for kludgily
+    removing trends from a `Rainbow`, through a variety of
+    filtering methods. If you just want to remove all
+    slow trends, whether astrophysical or instrumental,
+    options like the `median_filter` or `savgol_filter`
+    will effectively suppress all trends on timescales
+    longer than their filtering window. If you want a
+    more restricted approach to removing long trends,
+    the `polyfit` option allows you to fit out slow trends.
 
     Parameters
     ----------
-    method : str
+    method : str, optional
         What method should be used to make an approximate model
         for smooth trends that will then be subtracted off?
-
         `differences` will do an extremely rough filtering
         of replacing the fluxes with their first differences.
         Trends that are smooth relative to the noise will
         be removed this way, but sharp features will remain.
         Required keywords:
             None.
-
         `median_filter` is a wrapper for scipy.signal.median_filter.
         It smoothes each data point to the median of its surrounding
         points in time and/or wavelength. Required keywords:
@@ -31,7 +36,6 @@ def remove_trends(
             The dimensions are (nwavelengths, ntimes), so `size=(3,7)`
             means we'll take the median across three wavelengths and
             seven times. Default is `(1,5)`.
-
         `savgol_filter` is a wrapper for scipy.signal.savgol_filter.
         It applies a Savitzky-Golay filter for polynomial smoothing.
         Required keywords:
@@ -39,19 +43,16 @@ def remove_trends(
             which must be a positive odd integer. Default is `5`.
             `polyorder` = the order of the polynomial to use.
             Default is `2`.
-
         `polyfit` is a wrapper for numpy.polyfit to use a weighted
         linear least squares polynomial fit to remove smooth trends
         in time. Required keywods:
             `deg` = the polynomial degree, which must be a positive
             integer. Default is `1`, meaning a line.
-
         `custom` allow users to pass any fluxlike array of model
         values for an astrophysical signal to remove it. Required
         keywords:
             `model` = the (nwavelengths, ntimes) model array
-
-    kw : dict
+    **kw : dict, optional
         Any additional keywords will be passed to the function
         that does the filtering. See `method` keyword for options.
 

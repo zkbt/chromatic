@@ -11,7 +11,18 @@ def get(self, key, default=None):
     properties that do calculations on the fly (for example,
     `r.residuals` in the `RainbowWithModel` class).
 
-    This will default to None if the attribute can't be found.
+    Parameters
+    ----------
+    key : str
+        The name of the attribute, property, or core dictionary item to get.
+    default : any, optional
+        What to return if the attribute can't be found.
+
+    Returns
+    -------
+    thing : any
+        The thing you were trying to get. If unavailable,
+        return the `default` (which by default is `None`)
     """
     try:
         return getattr(self, key)

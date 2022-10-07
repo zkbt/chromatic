@@ -7,9 +7,6 @@ def get_median_lightcurve(self):
     """
     Return a lightcurve of the star, medianed over all wavelengths.
 
-    Parameters
-    ----------
-
     Returns
     -------
     median_lightcurve : array

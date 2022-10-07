@@ -21,29 +21,32 @@ def pcolormesh(
     **kw,
 ):
     """
-    Paint a 2D image of flux as a function of time and wavelength,
-    using `plt.pcolormesh` where pixels can transform based on their edges.
+    Paint a 2D image of flux as a function of time and wavelength.
+
+    By using `.pcolormesh`, pixels can transform based on their edges,
+    so non-uniform axes are allowed. This is a tiny bit slower than
+    `.imshow`, but otherwise very similar.
 
     Parameters
     ----------
-    ax : Axes
+    ax : Axes, optional
         The axes into which to make this plot.
-    quantity : str
+    quantity : str, optional
         The fluxlike quantity to imshow.
         (Must be a key of `rainbow.fluxlike`).
-    w_unit : str, Unit
+    w_unit : str, Unit, optional
         The unit for plotting wavelengths.
-    t_unit : str, Unit
+    t_unit : str, Unit, optional
         The unit for plotting times.
-    colorbar : bool
+    colorbar : bool, optional
         Should we include a colorbar?
-    mask_ok : bool
+    mask_ok : bool, optional
         Should we mark which data are not OK?
-    color_ok : str
+    color_ok : str, optional
         The color to be used for masking data points that are not OK.
-    alpha_ok : float
+    alpha_ok : float, optional
         The transparency to be used for masking data points that are not OK.
-    kw : dict
+    **kw : dict, optional
         All other keywords will be passed on to `plt.pcolormesh`,
         so you can have more detailed control over the plot
         appearance. Common keyword argumentsvli might include:

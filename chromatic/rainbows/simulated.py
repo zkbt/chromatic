@@ -27,11 +27,26 @@ class SimulatedRainbow(RainbowWithModel):
         signal_to_noise=None,
     ):
         """
-        Create a simulated rainbow object.
+        Initialize a `SimulatedRainbow` object from some parameters.
+
+        This sets up an effectively empty `Rainbow` with defined
+        wavelengths and times. For making more interesting
+        simulated datasets, this will often be paired with
+        some combination of the `.inject...` actions that inject
+        various astrophysical, instrumental, or noise signatures
+        into the dataset.
+
+        The time-setting order of precendence is:
+            1) time
+            2) tlim + dt
+
+        The wavelength-setting order of precendence is:
+            1) wavelength
+            2) wlim + dw
+            3) wlim + R
 
         Parameters
         ----------
-
         tlim : list or Quantity
             The pip install -e '.[develop]'[min, max] times for creating the time grid.
             These should have astropy units of time.
@@ -41,11 +56,6 @@ class SimulatedRainbow(RainbowWithModel):
         time : Quantity
             An array of times, if you just want to give
             it an entirely custom array.
-
-        The time-setting order of precendence is:
-            1) time
-            2) tlim + dt
-
         wlim : list or Quantity
             The [min, max] wavelengths for creating the grid.
             These should have astropy units of wavelength.
@@ -58,12 +68,6 @@ class SimulatedRainbow(RainbowWithModel):
         wavelength : Quantity
             An array of wavelengths, if you just want to give
             it an entirely custom array.
-
-        The wavelength-setting order of precendence is:
-            1) wavelength
-            2) wlim + dw
-            3) wlim + R
-
         star_flux : numpy 1D array
             An array of fluxes corresponding to the supplied wavelengths.
             If left blank, the code assumes a normalized flux of

@@ -2,6 +2,7 @@ from .withmodel import *
 from .rainbow import *
 from .simulated import *
 from .multi import *
+from .writers import *
 
 
 def read_rainbow(filepath, **kw):

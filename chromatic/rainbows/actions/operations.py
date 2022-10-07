@@ -153,7 +153,6 @@ def __add__(self, other):
     """
     Add the flux of a rainbow and an input array (or another rainbow)
     and output in a new rainbow other.
-    Currently only supports flux addition.
 
     Parameters
     ----------
@@ -167,8 +166,8 @@ def __add__(self, other):
 
     Returns
     ----------
-    rainbow : Rainbow() with the same parameters as self but with added
-    flux.
+    rainbow : Rainbow
+        A new `Rainbow` with the mathematical operation applied.
     """
 
     # create the history entry
@@ -187,7 +186,6 @@ def __sub__(self, other):
     """
     Subtract the flux of a rainbow from an input array (or another rainbow)
     and output in a new rainbow other.
-    Currently only supports flux subtraction.
 
     Parameters
     ----------
@@ -201,8 +199,8 @@ def __sub__(self, other):
 
     Returns
     ----------
-    rainbow : Rainbow() with the same parameters as self but with subtracted
-    flux.
+    rainbow : Rainbow
+        A new `Rainbow` with the mathematical operation applied.
     """
     # create the history entry
     h = self._create_history_entry("-", locals())
@@ -220,7 +218,6 @@ def __mul__(self, other):
     """
     Multiply the flux of a rainbow and an input array (or another rainbow)
     and output in a new rainbow other.
-    Currently only supports flux multiplication.
 
     Parameters
     ----------
@@ -234,8 +231,8 @@ def __mul__(self, other):
 
     Returns
     ----------
-    rainbow : Rainbow() with the same parameters as self but with multiplied
-    flux.
+    rainbow : Rainbow
+        A new `Rainbow` with the mathematical operation applied.
     """
 
     # create the history entry
@@ -254,7 +251,6 @@ def __truediv__(self, other):
     """
     Divide the flux of a rainbow and an input array (or another rainbow)
     and output in a new rainbow other.
-    Currently only supports flux division.
 
     Parameters
     ----------
@@ -268,8 +264,8 @@ def __truediv__(self, other):
 
     Returns
     ----------
-    rainbow : Rainbow() with the same parameters as self but with divided
-    flux.
+    rainbow : Rainbow
+        A new `Rainbow` with the mathematical operation applied.
     """
     # create the history entry
     h = self._create_history_entry("/", locals())
@@ -287,9 +283,20 @@ def __truediv__(self, other):
 
 def __eq__(self, other):
     """
-    Test whether (self) == (other).
+    Test whether `self == other`.
+
     This compares the wavelike, timelike, and fluxlike arrays
     for exact matches. It skips entirely over the metadata.
+
+    Parameters
+    ----------
+    other : Rainbow
+        Another `Rainbow` to compare to.
+
+    Returns
+    -------
+    equal : bool
+        Are they (effectively) equivalent?
     """
     # start by assuming the Rainbows are identical
     same = True
@@ -325,9 +332,22 @@ def __eq__(self, other):
 
 def diff(self, other):
     """
-    Test whether (self) == (other).
+    Test whether `self == other`, and print the differences.
+
     This compares the wavelike, timelike, and fluxlike arrays
     for exact matches. It skips entirely over the metadata.
+    The `diff` function is the same as `__eq__`, but a little
+    more verbose, just to serve as a helpful debugging tool.
+
+    Parameters
+    ----------
+    other : Rainbow
+        Another `Rainbow` to compare to.
+
+    Returns
+    -------
+    equal : bool
+        Are they (effectively) equivalent?
     """
     # start by assuming the Rainbows are identical
     same = True

@@ -490,6 +490,7 @@ def bin_in_wavelength(
         '2D' = (used only by `align_wavelengths`) the per-time 2D array
                stored in `.fluxlike['wavelength']`
         [Most users probably don't need to change this from default.]
+
     Returns
     -------
     binned : Rainbow

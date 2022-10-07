@@ -97,26 +97,13 @@
     options:
       show_root_heading: False
 ::: chromatic.rainbows.visualizations.imshow
-    options:
-      show_root_heading: False
 ::: chromatic.rainbows.visualizations.interactive
     options:
       show_root_heading: False
 ::: chromatic.rainbows.visualizations.pcolormesh
-    options:
-      show_root_heading: False
 ::: chromatic.rainbows.visualizations.plot_lightcurves
-    options:
-      show_root_heading: False
 ::: chromatic.rainbows.visualizations.plot_spectra
-    options:
-      show_root_heading: False
 ::: chromatic.rainbows.visualizations.plot
-    options:
-      show_root_heading: False
-::: chromatic.rainbows.visualizations.utilities
-    options:
-      show_root_heading: False
 
 ## 🔨 Tools
 ::: chromatic.spectra.planck.get_planck_photons
@@ -124,6 +111,11 @@
 ::: chromatic.resampling
     options:
       show_root_heading: False
+    selection:
+      members:
+        - bintoR
+        - bintogrid
+        - resample_while_conserving_flux
 ::: chromatic.imports
     options:
       show_root_heading: False

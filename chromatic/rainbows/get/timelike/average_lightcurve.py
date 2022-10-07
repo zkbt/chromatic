@@ -7,8 +7,9 @@ def get_average_lightcurve(self):
     """
     Return a lightcurve of the star, averaged over all wavelengths.
 
-    Parameters
-    ----------
+    This uses `bin`, which is a horribly slow way of doing what is
+    fundamentally a very simply array calculation, because we
+    don't need to deal with partial pixels.
 
     Returns
     -------

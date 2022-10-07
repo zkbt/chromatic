@@ -324,7 +324,7 @@ class MultiRainbow:
 
         Parameters
         ----------
-        kw : dict
+        **kw : dict, optional
             Extra keyword arguments will be passed to
             `._guess_good_uniform_wavelength_grid`
         """
@@ -413,26 +413,26 @@ class MultiRainbow:
 
         Parameters
         ----------
-        vmin : float
+        vmin : float, optional
             The bottom of the color scale.
-        vmax : float
+        vmax : float, optional
             The top of the color scale.
-        rows : int
+        rows : int, optional
             Over how many rows should the panels be distributed?
-        figsize : tuple
+        figsize : tuple, optional
             The (width, height) of the total figure.
-        colorbar : bool
+        colorbar : bool, optional
             Should we include a colorbar?
-        quantity : str
+        quantity : str, optional
             The fluxlike quantity to imshow.
             (Must be a key of `rainbow.fluxlike`).
-        w_unit : str, Unit
+        w_unit : str, Unit, optional
             The unit for plotting wavelengths.
-        t_unit : str, Unit
+        t_unit : str, Unit, optional
             The unit for plotting times.
-        aspect : str
+        aspect : str, optional
             What aspect ratio should be used for the imshow?
-        kwargs : dict
+        **kwargs : dict, optional
             Most other keyword arguments will be passed on into
             `plt.imshow`. If there's an `plt.imshow` keyword you
             want to set, try it!
@@ -483,24 +483,24 @@ class MultiRainbow:
 
         Parameters
         ----------
-        filename : str
+        filename : str, optional
             Name of file you'd like to save results in.
             Currently supports only .gif files.
-        fps : float
+        fps : float, optional
             frames/second of animation
-        xlim : tuple
+        xlim : tuple, optional
             Custom xlimits for the plot
-        ylim : tuple
+        ylim : tuple, optional
             Custom ylimits for the plot
-        cmap : str, Colormap
+        cmap : str, Colormap, optional
             The color map to use for expressing wavelength
-        vmin : Quantity
+        vmin : Quantity, optional
             The minimum value to use for the wavelength colormap
-        vmax : Quantity
+        vmax : Quantity, optional
             The maximum value to use for the wavelength colormap
-        scatterkw : dict
+        scatterkw : dict, optional
             A dictionary of keywords to be passed to `plt.scatter`
-        textkw : dict
+        textkw : dict, optional
             A dictionary of keywords to be passed to `plt.text`
         """
 
@@ -557,24 +557,24 @@ class MultiRainbow:
 
         Parameters
         ----------
-        filename : str
+        filename : str, optional
             Name of file you'd like to save results in.
             Currently supports only .gif files.
-        fps : float
+        fps : float, optional
             frames/second of animation
-        xlim : tuple
+        xlim : tuple, optional
             Custom xlimits for the plot
-        ylim : tuple
+        ylim : tuple, optional
             Custom ylimits for the plot
-        cmap : str, Colormap
+        cmap : str, Colormap, optional
             The color map to use for expressing wavelength
-        vmin : Quantity
+        vmin : Quantity, optional
             The minimum value to use for the wavelength colormap
-        vmax : Quantity
+        vmax : Quantity, optional
             The maximum value to use for the wavelength colormap
-        scatterkw : dict
+        scatterkw : dict, optional
             A dictionary of keywords to be passed to `plt.scatter`
-        textkw : dict
+        textkw : dict, optional
             A dictionary of keywords to be passed to `plt.text`
         """
 

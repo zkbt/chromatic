@@ -7,12 +7,19 @@ def inject_outliers(self, fraction=0.01, amplitude=10):
     """
     Inject some random outliers.
 
+    To approximately simulate cosmic rays or other
+    rare weird outliers, this randomly injects
+    outliers into a small fraction of pixels. For
+    this simple method, outliers will have the same
+    amplitude, either as a ratio above the per-data-point
+    or as a fixed number (if no uncertainties exist).
+
     Parameters
     ----------
-    fraction : float
+    fraction : float, optional
         The fraction of pixels that should get outliers.
         (default = 0.01)
-    amplitude : float
+    amplitude : float, optional
         If uncertainty > 0, how many sigma should outliers be?
         If uncertainty = 0, what number should be injected?
         (default = 10)

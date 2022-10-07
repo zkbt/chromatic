@@ -378,15 +378,15 @@ class Rainbow:
 
         Parameters
         ----------
-        wavelength : Quantity
+        wavelength : Quantity, optional
             A 1D array of wavelengths, in any unit.
-        time : Quantity, Time
+        time : Quantity, Time, optional
             A 1D array of times, in any unit.
-        flux : array
+        flux : array, optional
             A 2D array of flux values.
-        uncertainty : array
+        uncertainty : array, optional
             A 2D array of uncertainties, associated with the flux.
-        kw : dict
+        **kw : dict, optional
             Additional keywords will be interpreted as arrays
             that should be sorted into the appropriate location
             based on their size.
@@ -439,15 +439,14 @@ class Rainbow:
 
         Parameters
         ----------
-
-        filepath : str
+        filepath : str, optional
             The filepath pointing to the file or group of files
             that should be read.
-        format : str
+        format : str, optional
             The file format of the file to be read. If None,
             the format will be guessed automatically from the
             filepath.
-        kw : dict
+        **kw : dict, optional
             Additional keywords will be passed on to the reader.
         """
 

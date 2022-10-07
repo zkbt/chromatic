@@ -138,15 +138,14 @@ def resample_while_conserving_flux(
     different grid (either higher or lower resolution),
     while conserving total flux.
 
-    When including the entire range of xin,
-    sum(yout) == sum(yin) should be true.
+    When including the entire range of `xin`,
+    `sum(yout) == sum(yin)` should be true.
 
-    When including only part of the range of xin,
+    When including only part of the range of `xin`,
     the integral between any two points should be conserved.
 
     Parameters
     ----------
-
     xin : array
         The original independent variable.
     yin : array
@@ -371,14 +370,8 @@ def bintogrid(
     """
     Bin any x and y array onto a linearly uniform grid.
 
-
-    The order of precendence for setting the new grid is
-    [`newx_edges`, `newx`, `dx`, `nx`]
-    The first will be used, and others will be ignored.
-
     Parameters
     ----------
-
     x : array
         The original independent variable.
         (For a spectrum example = wavelength)
@@ -437,6 +430,10 @@ def bintogrid(
         ...and possibly also
             `uncertainty` = the calculated uncertainty per bin
 
+
+    The order of precendence for setting the new grid is
+    [`newx_edges`, `newx`, `dx`, `nx`]
+    The first will be used, and others will be ignored.
     """
 
     # check that an OK set of inputs has been supplied
@@ -670,30 +667,28 @@ def bintoR(
     x, y, unc=None, R=50, xlim=None, weighting="inversevariance", drop_nans=True
 ):
     """
-    Bin any x and y array onto a logarithmicly uniform grid,
-    characterized by
+    Bin any x and y array onto a logarithmicly uniform grid.
 
     Parameters
     ----------
-
     x : array
         The original independent variable.
         (For a spectrum example = wavelength)
     y : array
         The original dependent variable (same size as x).
         (For a spectrum example = flux)
-    unc : array, None
+    unc : array, None, optional
         The unceratinty on the dependent variable
         (For a spectrum example = the flux uncertainty)
-    R : array
+    R : array, optional
         The spectral resolution R=x/dx for creating a new,
         logarithmically uniform grid that starts at the first
         value of x.
-    xlim : list, array
+    xlim : list, array, optional
         A two-element list indicating the min and max values of
         x for the new logarithmically spaced grid. If None,
         these limits will be created from the data themselves
-    weighting : str
+    weighting : str, optional
         How should we weight values when averaging
         them together into one larger bin?
         `weighting = 'inversevariance'`
@@ -703,7 +698,7 @@ def bintoR(
         This will have no impact if `unc == None`, or for any
         new bins that effectively overlap less than one original
         unbinned point.
-    drop_nans : bool
+    drop_nans : bool, optional
         Should we skip any bins turn out to be nans?
         This most often happens when bins are empty.
 

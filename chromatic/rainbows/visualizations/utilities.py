@@ -2,7 +2,7 @@ from ...imports import *
 
 __all__ = [
     "_add_panel_labels",
-    "_get_animation_writer_and_displayer",
+    "get_animation_writer_and_displayer",
     "_scatter_timelike_or_wavelike",
     "_get_unit_string",
     "_get_plot_directory",
@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 
-def _get_animation_writer_and_displayer(filename="animation.html", **kw):
+def get_animation_writer_and_displayer(filename="animation.html", **kw):
     """
     Create the right animation writer based on filename.
 

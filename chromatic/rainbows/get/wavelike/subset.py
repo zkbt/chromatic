@@ -8,7 +8,7 @@ __all__ = [
 
 def get_for_wavelength(self, i, quantity="flux"):
     """
-    Get 'quantity' associated with wavelength 'i'.
+    Get `'quantity'` associated with wavelength `'i'`.
 
     Parameters
     ----------
@@ -49,24 +49,26 @@ def get_ok_data_for_wavelength(
     express_badness_with_uncertainty=False,
 ):
     """
-    A small wrapper to get the good data from a wavelength,
-    either trimming out data that are not OK or inflating the
+    A small wrapper to get the good data from a wavelength.
+
+    Extract a slice of data, marking data that are not `ok` either
+    by trimming them out entirely or by inflating their
     uncertainties to infinity.
 
     Parameters
     ----------
     i : int
         The wavelength index to retrieve.
-    x : string
+    x : string, optional
         What quantity should be retrieved as 'x'? (default = 'time')
-    y : string
+    y : string, optional
         What quantity should be retrieved as 'y'? (default = 'flux')
-    sigma : string
+    sigma : string, optional
         What quantity should be retrieved as 'sigma'? (default = 'uncertainty')
-    minimum_acceptable_ok : float
+    minimum_acceptable_ok : float, optional
         The smallest value of `ok` that will still be included.
         (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
-    express_badness_with_uncertainty : bool
+    express_badness_with_uncertainty : bool, optional
         If False, data that don't pass the `ok` cut will be removed.
         If True, data that don't pass the `ok` cut will have their
         uncertainties inflated to infinity (np.inf).

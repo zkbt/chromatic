@@ -29,30 +29,30 @@ def plot_lightcurves(
 
     Parameters
     ----------
-    ax : Axes
+    ax : Axes, optional
         The axes into which to make this plot.
-    spacing : None, float
+    spacing : None, float, optional
         The spacing between light curves.
         (Might still change how this works.)
         None uses half the standard dev of entire flux data.
-    w_unit : str, Unit
+    w_unit : str, Unit, optional
         The unit for plotting wavelengths.
-    t_unit : str, Unit
+    t_unit : str, Unit, optional
         The unit for plotting times.
-    cmap : str, Colormap
+    cmap : str, Colormap, optional
         The color map to use for expressing wavelength.
-    vmin : Quantity
+    vmin : Quantity, optional
         The minimum value to use for the wavelength colormap.
-    vmax : Quantity
+    vmax : Quantity, optional
         The maximum value to use for the wavelength colormap.
-    errorbar : boolean
+    errorbar : boolean, optional
         Should we plot errorbars?
-    text : boolean
+    text : boolean, optional
         Should we label each lightcurve?
     minimum_acceptable_ok : float
         The smallest value of `ok` that will still be included.
         (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
-    plotkw : dict
+    plotkw : dict, optional
         A dictionary of keywords passed to `plt.plot`
         so you can have more detailed control over the plot
         appearance. Common keyword arguments might include:
@@ -60,14 +60,14 @@ def plot_lightcurves(
           linewidth, linestyle, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html
-    errorbarkw : dict
+    errorbarkw : dict, optional
         A dictionary of keywords passed to `plt.errorbar`
         so you can have more detailed control over the plot
         appearance. Common keyword arguments might include:
         `[alpha, elinewidth, color, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.errorbar.html
-    textkw : dict
+    textkw : dict, optional
         A dictionary of keywords passed to `plt.text`
         so you can have more detailed control over the text
         appearance. Common keyword arguments might include:
@@ -75,7 +75,7 @@ def plot_lightcurves(
           fontstyle, fontweight, rotation, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
-    kw : dict
+    **kw : dict, optional
         Any additional keywords will be stored as `kw`.
         Nothing will happen with them.
     """

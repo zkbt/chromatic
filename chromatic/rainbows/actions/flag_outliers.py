@@ -57,9 +57,11 @@ def flag_outliers(self, how_many_sigma=5, inflate_uncertainty=True):
     if inflate_uncertainty:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            inflated = filtered.inflate_uncertainty(method="MAD")
+            inflated = filtered.inflate_uncertainty(method="MAD", remove_trends=True)
     else:
         inflated = filtered
+
+    # decide which points are outliers
     is_outlier = np.abs(inflated.flux - 1) > how_many_sigma * inflated.uncertainty
 
     # update the output object

@@ -5,7 +5,7 @@ __all__ = ["help"]
 
 def help(self):
     """
-    Provide a quick reference of key actions available for this Rainbow.
+    Print a quick reference of key actions available for this `Rainbow`.
     """
     print(
         textwrap.dedent(

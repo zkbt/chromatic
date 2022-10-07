@@ -7,18 +7,22 @@ def get_measured_scatter(
     self, quantity="flux", method="standard-deviation", minimum_acceptable_ok=1e-10
 ):
     """
-    Get measured scatter from a chromatic rainbow.
+    Get measured scatter for each wavelength.
+
+    Calculate the standard deviation (or outlier-robust
+    equivalent) for each wavelength, which can be compared
+    to the expected per-wavelength uncertainty.
 
     Parameters
     ----------
-    quantity : string
-        The fluxlike quantity for which we should calculate the scatter.
-    method : string
-        What method to use to obtain measured scatter. Current options are 'MAD', 'standard-deviation'.
-    minimum_acceptable_ok : float
+    quantity : string, optional
+        The `fluxlike` quantity for which we should calculate the scatter.
+    method : string, optional
+        What method to use to obtain measured scatter.
+        Current options are 'MAD', 'standard-deviation'.
+    minimum_acceptable_ok : float, optional
         The smallest value of `ok` that will still be included.
         (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
-
 
     Returns
     -------
