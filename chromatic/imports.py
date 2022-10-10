@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 
 import matplotlib.animation as ani
 import matplotlib.colors as col
-import matplotlib.cm as cm
 import matplotlib.gridspec as gs
 
 import copy, pkg_resources, os, glob, pickle
