@@ -7,6 +7,13 @@ def fold(self, period=None, t0=None, event="Mid-Transit"):
     """
     Fold this `Rainbow` to a period and reference epoch.
 
+    This changes the times from some original time into
+    a phased time, for example the time within an orbital
+    period, relative to the time of mid-transit. This
+    is mostly a convenience function for plotting data
+    relative to mid-transit and/or trimming data based
+    on orbital phase.
+
     Parameters
     ----------
     period : Quantity

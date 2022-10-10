@@ -72,6 +72,22 @@ def bin(
     """
     Bin in wavelength and/or time.
 
+    Average together some number of adjacent data points,
+    in wavelength and/or time. For well-behaved data where
+    data points are independent from each other, binning down
+    by N data points should decrease the noise per bin by
+    approximately 1/sqrt(N), making it easier to see subtle
+    signals. To bin data points together, data are combined
+    using inverse-variance weighting through interpolation
+    of cumulative distributions, in an attempt to make sure
+    that flux integrals between limits are maintained.
+
+    Currently, the inverse-variance weighting is most reliable
+    only for datasets that have been normalized to be close
+    to 1. We still need to do a little work to make sure
+    it works well on unnormalized datasets with dramatically
+    non-uniform uncertainties.
+
     By default, time binning happens before wavelength binning.
     To control the order, use separate calls to `.bin()`.
 

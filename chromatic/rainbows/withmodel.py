@@ -39,7 +39,7 @@ class RainbowWithModel(Rainbow):
 
         This calculates the sum of the squares of
         the uncertainty-normalized residuals,
-        `sum((flux - model)**2/uncertainty**2).
+        sum(((flux - model)/uncertainty)**2)
 
         Data points marked as not OK are ignored.
 

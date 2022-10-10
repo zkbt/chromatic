@@ -93,10 +93,15 @@ class Rainbow:
         **kw,
     ):
         """
-        Initialize a `Rainbow` object from a file, from arrays
-        with appropriate units, from dictionaries with appropriate
-        ingredients, or simply as an empty object if no arguments
-        are given.
+        Initialize a `Rainbow` object.
+
+        The `__init__` function is called when a new `Rainbow` is
+        instantiated as `r = Rainbow(some, kinds, of=inputs)`.
+
+        The options for inputs are flexible, including the possibility
+        to initialize from a file, from arrays with appropriate units,
+        from dictionaries with appropriate ingredients, or simply as
+        an empty object if no arguments are given.
 
         Parameters
         ----------

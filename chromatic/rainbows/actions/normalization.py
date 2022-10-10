@@ -7,6 +7,15 @@ def normalize(self, axis="wavelength", percentile=50):
     """
     Normalize by dividing through by the median spectrum and/or lightcurve.
 
+    This normalizes a `Rainbow` by estimating dividing
+    through by a wavelength-dependent normalization. With
+    default inputs, this would normalize each wavelength
+    to have flux values near 1, to make it easier to see
+    differences across time (such as a transit or eclipse).
+    This function could also be used to divide through by
+    a median light curve, to make it easier to see variations
+    across wavelength.
+
     Parameters
     ----------
     axis : str

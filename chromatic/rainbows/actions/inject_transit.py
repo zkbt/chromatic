@@ -7,7 +7,12 @@ __all__ = ["inject_transit"]
 def inject_transit(self, planet_radius=0.1, **planet_params):
 
     """
-    Simulate a wavelength-dependent planetary transit using `batman`.
+    Simulate a wavelength-dependent planetary transit.
+
+    This uses `batman` to inject a transit model into
+    the `Rainbow`, allowing each wavelength to have a
+    separate planet radius (for example caused by
+    absorption in the planet's atmosphere).
 
     Parameters
     ----------
