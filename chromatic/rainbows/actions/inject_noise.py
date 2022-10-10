@@ -5,13 +5,18 @@ __all__ = ["inject_noise"]
 
 def inject_noise(self, signal_to_noise=100, number_of_photons=None):
     """
-    Inject uncorrelated random noise from a Gaussian
-    or Poisson distribution into the flux array.
+    Inject uncorrelated random noise into the `.flux` array.
+
+    This injects independent noise to each data point,
+    drawn from either a Gaussian or Poisson distribution.
+    If the inputs can be scalar, or they can be arrays
+    that we will try to broadcast into the shape of the
+    `.flux` array.
 
     Parameters
     ----------
 
-    signal_to_noise : float, array
+    signal_to_noise : float, array, optional
         The signal-to-noise per wavelength per time.
         For example, S/N=100 would mean that the
         uncertainty on the flux for each each
@@ -20,22 +25,20 @@ def inject_noise(self, signal_to_noise=100, number_of_photons=None):
         If it is an array with a fluxlike, wavelike,
         or timelike shape it will be broadcast
         appropriately.
-
-    number_of_photons : float, array
+    number_of_photons : float, array, optional
         The number of photons expected to be recieved
         from the light source per wavelength and time.
         If it is a scalar, then even point is the same.
         If it is an array with a fluxlike, wavelike,
         or timelike shape it will be broadcast
         appropriately.
-
         If `number_of_photons` is set, then `signal_to_noise`
         will be ignored.
 
     Returns
     -------
     rainbow : Rainbow
-        A new Rainbow object with the noise injected.
+        A new `Rainbow` object with the noise injected.
     """
 
     # create a history entry for this action (before other variables are defined)

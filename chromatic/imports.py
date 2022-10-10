@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 
 import matplotlib.animation as ani
 import matplotlib.colors as col
-import matplotlib.cm as cm
 import matplotlib.gridspec as gs
 
 import copy, pkg_resources, os, glob, pickle
@@ -154,7 +153,7 @@ def one2another(bottom="white", top="red", alpha_bottom=1.0, alpha_top=1.0, N=25
 
     Returns
     -------
-    cmap : matplotlib.colors.Colormap
+    cmap : Colormap
         A color map that goes linearly from the
         bottom to top color (and alpha).
     """

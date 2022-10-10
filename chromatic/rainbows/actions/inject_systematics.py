@@ -30,7 +30,7 @@ def create_covariance_matrix(x, correlated=1, length=3, uncorrelated=0.5):
 
     Parameters
     ----------
-    x : np.array or u.Quantity
+    x : array or u.Quantity
         The arry of values for generating the matrix.
     correlated : float
         The amplitude of the correlated noise component.
@@ -72,14 +72,14 @@ def _create_fake_timelike_quantity(
         matrix.
     correlated : float
         The amplitude of the correlated noise component.
-    dt : u.Quantity
+    dt : Quantity
         The time scale of the correlation (in units of time).
     uncorrelated : float
         The amplitude of the uncorrelated noise component.
         (correlated and uncorrelated will be normalized to 1)
     Returns
     -------
-    timelike : np.array
+    timelike : array
         A timelike array with the requested noise properties.
     """
     x = self.time
@@ -104,7 +104,7 @@ def _create_fake_wavelike_quantity(
         matrix.
     correlated : float
         The amplitude of the correlated noise component.
-    dt : u.Quantity
+    dt : Quantity
         The time scale of the correlation (in units of time).
     uncorrelated : float
         The amplitude of the uncorrelated noise component.
@@ -112,7 +112,7 @@ def _create_fake_wavelike_quantity(
 
     Returns
     -------
-    wavelike : np.array
+    wavelike : array
         A wavelike array with the requested noise properties.
     """
     x = np.log(self.wavelength.value)
@@ -128,12 +128,12 @@ def _create_fake_fluxlike_quantity(self, timelike_kw={}, wavelike_kw={}):
 
     Parameters
     ----------
-    timelike_kw : dict
+    timelike_kw : dict, optional
         Dictionary of keywords to pass to `_create_fake_timelike_quantity()`
 
     Returns
     -------
-    fluxlike : np.array
+    fluxlike : array
         A fluxlike array (with )
     """
 
@@ -182,24 +182,24 @@ def inject_systematics(
 
     Parameters
     ----------
-    amplitude : float
+    amplitude : float, optional
         The (standard deviation-ish) amplitude of the systematics
         in units normalized to 1. For example, an amplitude of 0.003
         will produce systematic trends that tend to range (at 1 sigma)
         from 0.997 to 1.003.
-    wavelike : list of strings
+    wavelike : list of strings, optional
         A list of wave-like cotrending quantities to serve as ingredients
         to a linear combination systematics model. Existing quantities
         will be pulled from the appropriate core dictionary; fake
         data will be created for quantities that don't already exist,
         from a cartoony Gaussian process model.
-    timelike : list of strings
+    timelike : list of strings, optional
         A list of time-like cotrending quantities to serve as ingredients
         to a linear combination systematics model. Existing quantities
         will be pulled from the appropriate core dictionary; fake
         data will be created for quantities that don't already exist,
         from a cartoony Gaussian process model.
-    fluxlike : list of strings
+    fluxlike : list of strings, optional
         A list of flux-like cotrending quantities to serve as ingredients
         to a linear combination systematics model. Existing quantities
         will be pulled from the appropriate core dictionary; fake

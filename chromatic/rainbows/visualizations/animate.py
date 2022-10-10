@@ -20,14 +20,14 @@ def _setup_animated_scatter(self, ax=None, figurekw={}, scatterkw={}, textkw={})
 
     Parameters
     ----------
-    ax : matplotlib.axes.Axes
+    ax : Axes, optional
         The axes into which the plot should be drawn.
         If None, a new one will be created.
-    figurekw : dict
+    figurekw : dict, optional
         A dictionary of keywords to be passed to `plt.figure`
-    scatterkw : dict
+    scatterkw : dict, optional
         A dictionary of keywords to be passed to `plt.scatter`
-    textkw : dict
+    textkw : dict, optional
         A dictionary of keywords to be passed to `plt.text`
     """
 
@@ -76,26 +76,21 @@ def _setup_animate_lightcurves(
 
     Parameters
     ----------
-    filename : str
-        Name of file you'd like to save results in.
-        Currently supports only .gif files.
-    fps : float
-        frames/second of animation
-    ax : matplotlib.axes.Axes
+    ax : Axes, optional
         The axes into which this animated plot should go.
-    quantity : string
+    quantity : string, optional
         Which fluxlike quantity should be retrieved? (default = 'flux')
-    xlim : tuple
+    xlim : tuple, optional
         Custom xlimits for the plot
-    ylim : tuple
+    ylim : tuple, optional
         Custom ylimits for the plot
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap, optional
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity, optional
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity, optional
         The maximum value to use for the wavelength colormap
-    scatterkw : dict
+    scatterkw : dict, optional
         A dictionary of keywords to be passed to `plt.scatter`
         so you can have more detailed control over the plot
         appearance. Common keyword arguments might include:
@@ -203,20 +198,20 @@ def animate_lightcurves(
     ----------
     filename : str
         Name of file you'd like to save results in.
-        Currently supports only .gif files.
+        Currently supports only .gif or .html files.
     fps : float
         frames/second of animation
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which this animated plot should go.
     xlim : tuple
         Custom xlimits for the plot
     ylim : tuple
         Custom ylimits for the plot
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str,
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
@@ -239,7 +234,7 @@ def animate_lightcurves(
     filename = self._label_plot_file(filename)
 
     # initialize the animator
-    writer, displayer = _get_animation_writer_and_displayer(
+    writer, displayer = get_animation_writer_and_displayer(
         filename=filename, fps=fps, bitrate=bitrate
     )
 
@@ -284,7 +279,7 @@ def _setup_animate_spectra(
     filename : str
         Name of file you'd like to save results in.
         Currently supports only .gif files.
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which this animated plot should go.
     quantity : string
         Which fluxlike quantity should be retrieved? (default = 'flux')
@@ -296,11 +291,11 @@ def _setup_animate_spectra(
         Custom xlimits for the plot
     ylim : tuple
         Custom ylimits for the plot
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str,
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
@@ -403,7 +398,7 @@ def _setup_animate_spectra(
 
 
 def animate_spectra(
-    self, filename="animated-spectra.gif", fps=5, dpi=None, bitrate=None, **kwargs
+    self, filename="animated-spectra.gif", fps=5, dpi=None, bitrate=None, **kw
 ):
     """
     Create an animation to show how the spectrum changes
@@ -414,7 +409,7 @@ def animate_spectra(
     filename : str
         Name of file you'd like to save results in.
         Currently supports only .gif files.
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which this animated plot should go.
     fps : float
         frames/second of animation
@@ -422,11 +417,11 @@ def animate_spectra(
         Custom xlimits for the plot
     ylim : tuple
         Custom ylimits for the plot
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str,
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap
     scatterkw : dict
         A dictionary of keywords to be passed to `plt.scatter`
@@ -445,11 +440,11 @@ def animate_spectra(
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
     """
 
-    self._setup_animate_spectra(**kwargs)
+    self._setup_animate_spectra(**kw)
 
     filename = self._label_plot_file(filename)
     # initialize the animator
-    writer, displayer = _get_animation_writer_and_displayer(
+    writer, displayer = get_animation_writer_and_displayer(
         filename=filename, fps=fps, bitrate=bitrate
     )
 

@@ -20,7 +20,7 @@ def _warn_about_weird_binning(N, dimension, fraction_that_can_be_bad=0.0):
 
     Parameters
     ----------
-    N : np.array
+    N : array
         The effective number of original bins going into each new bin.
     minimum_points_per_bin : float
         The threshold for the number of original bins to not be enough.
@@ -72,6 +72,22 @@ def bin(
     """
     Bin in wavelength and/or time.
 
+    Average together some number of adjacent data points,
+    in wavelength and/or time. For well-behaved data where
+    data points are independent from each other, binning down
+    by N data points should decrease the noise per bin by
+    approximately 1/sqrt(N), making it easier to see subtle
+    signals. To bin data points together, data are combined
+    using inverse-variance weighting through interpolation
+    of cumulative distributions, in an attempt to make sure
+    that flux integrals between limits are maintained.
+
+    Currently, the inverse-variance weighting is most reliable
+    only for datasets that have been normalized to be close
+    to 1. We still need to do a little work to make sure
+    it works well on unnormalized datasets with dramatically
+    non-uniform uncertainties.
+
     By default, time binning happens before wavelength binning.
     To control the order, use separate calls to `.bin()`.
 
@@ -86,16 +102,16 @@ def bin(
 
     Parameters
     ----------
-    dt : astropy.units.Quantity
+    dt : Quantity
         The d(time) bin size for creating a grid
         that is uniform in linear space.
-    time : array of astropy.units.Quantity
+    time : Quantity
         An array of times, if you just want to give
         it an entirely custom array.
         The widths of the bins will be guessed from the centers
         (well, if the spacing is uniform constant; pretty well
         but not perfectly otherwise).
-    time_edges : array of astropy.units.Quantity
+    time_edges : Quantity
         An array of times for the edges of bins,
         if you just want to give an entirely custom array.
         The bins will span `time_edges[:-1]` to
@@ -110,16 +126,16 @@ def bin(
     R : float
         The spectral resolution for creating a grid
         that is uniform in logarithmic space.
-    dw : astropy.units.Quantity
+    dw : Quantity
         The d(wavelength) bin size for creating a grid
         that is uniform in linear space.
-    wavelength : array of astropy.units.Quantity
+    wavelength : Quantity
         An array of wavelengths for the centers of bins,
         if you just want to give an entirely custom array.
         The widths of the bins will be guessed from the centers
         (well, if the spacing is uniform constant; pretty well
         but not perfectly otherwise).
-    wavelength_edges : array of astropy.units.Quantity
+    wavelength_edges : Quantity
         An array of wavelengths for the edges of bins,
         if you just want to give an entirely custom array.
         The bins will span `wavelength_edges[:-1]` to
@@ -165,7 +181,7 @@ def bin(
     Returns
     -------
     binned : Rainbow
-        The binned Rainbow.
+        The binned `Rainbow`.
     """
 
     # bin first in time
@@ -215,21 +231,21 @@ def bin_in_time(
 
     Parameters
     ----------
-    dt : astropy.units.Quantity
+    dt : Quantity
         The d(time) bin size for creating a grid
         that is uniform in linear space.
-    time : array of astropy.units.Quantity
+    time : Quantity
         An array of times, if you just want to give
         it an entirely custom array.
         The widths of the bins will be guessed from the centers
         (well, if the spacing is uniform constant; pretty well
         but not perfectly otherwise).
-    time_edges : array of astropy.units.Quantity
+    time_edges : Quantity
         An array of times for the edges of bins,
         if you just want to give an entirely custom array.
         The bins will span `time_edges[:-1]` to
         `time_edges[1:]`, so the resulting binned
-        Rainbow will have `len(time_edges) - 1`
+        `Rainbow` will have `len(time_edges) - 1`
         time bins associated with it.
     ntimes : int
         A fixed number of time to bin together.
@@ -270,7 +286,7 @@ def bin_in_time(
     Returns
     -------
     binned : Rainbow
-        The binned Rainbow.
+        The binned `Rainbow`.
     """
 
     # create a history entry for this action (before other variables are defined)
@@ -431,21 +447,21 @@ def bin_in_wavelength(
     R : float
         The spectral resolution for creating a grid
         that is uniform in logarithmic space.
-    dw : astropy.units.Quantity
+    dw : Quantity
         The d(wavelength) bin size for creating a grid
         that is uniform in linear space.
-    wavelength : array of astropy.units.Quantity
+    wavelength : Quantity
         An array of wavelength centers, if you just want to give
         it an entirely custom array. The widths of the bins
         will be guessed from the centers. It will do a good
         job if the widths are constant, but don't 100% trust
         it otherwise.
-    wavelength_edges : array of astropy.units.Quantity
+    wavelength_edges : Quantity
         An array of wavelengths for the edges of bins,
         if you just want to give an entirely custom array.
         The bins will span `wavelength_edges[:-1]` to
         `wavelength_edges[1:]`, so the resulting binned
-        Rainbow will have `len(wavelength_edges) - 1`
+        `Rainbow` will have `len(wavelength_edges) - 1`
         wavelength bins associated with it.
     nwavelengths : int
         A fixed number of wavelengths to bin together.
@@ -490,10 +506,11 @@ def bin_in_wavelength(
         '2D' = (used only by `align_wavelengths`) the per-time 2D array
                stored in `.fluxlike['wavelength']`
         [Most users probably don't need to change this from default.]
+
     Returns
     -------
     binned : Rainbow
-        The binned Rainbow.
+        The binned `Rainbow`.
     """
 
     # create a history entry for this action (before other variables are defined)
@@ -518,7 +535,7 @@ def bin_in_wavelength(
         cheerfully_suggest(
             f"""
         It looks like you're trying to bin in wavelength for a
-        Rainbow object that might not be normalized. In the
+        `Rainbow` object that might not be normalized. In the
         current version of `chromatic`, binning before normalizing
         might give inaccurate results if the typical uncertainty
         varies strongly with wavelength.
@@ -670,10 +687,16 @@ def get_average_lightcurve_as_rainbow(self):
     """
     Produce a wavelength-integrated light curve.
 
+    The average across wavelengths is uncertainty-weighted.
+
+    This uses `bin`, which is a horribly slow way of doing what is
+    fundamentally a very simply array calculation, because we
+    don't need to deal with partial pixels.
+
     Returns
     -------
     lc : Rainbow
-        A Rainbow object with just one wavelength.
+        A `Rainbow` object with just one wavelength.
     """
     h = self._create_history_entry("get_average_spectrum_as_rainbow", locals())
 
@@ -689,10 +712,16 @@ def get_average_spectrum_as_rainbow(self):
     """
     Produce a time-integrated spectrum.
 
+    The average across times is uncertainty-weighted.
+
+    This uses `bin`, which is a horribly slow way of doing what is
+    fundamentally a very simply array calculation, because we
+    don't need to deal with partial pixels.
+
     Returns
     -------
     lc : Rainbow
-        A Rainbow object with just one time.
+        A `Rainbow` object with just one time.
     """
     h = self._create_history_entry("get_average_spectrum_as_rainbow", locals())
 

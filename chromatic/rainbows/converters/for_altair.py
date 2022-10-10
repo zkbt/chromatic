@@ -17,13 +17,13 @@ def to_nparray(self, t_unit="d", w_unit="micron"):
             The wavelength units to use
     Returns
     ----------
-        rflux : np.array
+        rflux : array
             flux                   [n_wavelengths x n_integrations]
-        rfluxu : np.array
+        rfluxu : array
             flux uncertainty       [n_wavelengths x n_integrations]
-        rtime : np.array
+        rtime : array
             time (t_unit)          [n_integrations]
-        rwavel : np.array
+        rwavel : array
             wavelength (w_unit)    [n_wavelengths]
     """
 

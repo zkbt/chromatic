@@ -12,7 +12,7 @@ def get_time_axis(header):
 
     Parameters
     ----------
-    header : astropy header object
+    header : Header
         Header of the primary HDU.
 
     Returns

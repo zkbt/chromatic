@@ -7,12 +7,10 @@ def get_median_spectrum(self):
     """
     Return a spectrum of the star, medianed over all times.
 
-    Parameters
-    ----------
-
     Returns
     -------
-    median_spectrum : np.array (wavelike)
+    median_spectrum : array
+        Wavelike array of fluxes.
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
