@@ -7,8 +7,10 @@ def shift(self, velocity=0 * u.km / u.s):
     """
     Doppler shift the wavelengths of this `Rainbow`.
 
-    Positive velocities make wavelengths longer (redshift).
-    Negative velocities make wavelengths shorter (bluesfhit).
+    This shifts the wavelengths in a `Rainbow` by
+    applying a velocity shift. Positive velocities make
+    wavelengths longer (redshift); negative velocities make
+    wavelengths shorter (bluesfhit).
 
     Parameters
     ----------

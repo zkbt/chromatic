@@ -6,13 +6,28 @@ __all__ = ["inflate_uncertainty"]
 def inflate_uncertainty(
     self,
     method="MAD",
-    remove_trends=False,
+    remove_trends=True,
     remove_trends_method="median_filter",
     remove_trends_kw={},
     minimum_inflate_ratio=1.0,
 ):
     """
-    A quick tool to inflate uncertainties to match scatter.
+    Inflate uncertainties to match observed scatter.
+
+    This is a quick and approximate tool for inflating
+    the flux uncertainties in a `Rainbow` to match the
+    observed scatter. With defaults, this will estimate
+    the scatter using a robust median-absolute-deviation
+    estimate of the standard deviation (`method='MAD'`),
+    applied to time-series from which temporal trends
+    have been removed (`remove_trends=True`), and inflate
+    the uncertainties on a per-wavelength basis. The trend
+    removal, by default by subtracting off local medians
+    (`remove_trends_method='median_filter'`), will squash
+    many types of both astrophysical and systematic trends,
+    so this function should be used with caution in
+    applicants where precise and reliable uncertainties
+    are needed.
 
     Parameters
     ----------
@@ -37,7 +52,6 @@ def inflate_uncertainty(
     removed : Rainbow
         The Rainbow with estimated signals removed.
     """
-    # TODO, think about more careful treatment of uncertainties + good/bad data
 
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("inflate_uncertainty", locals())

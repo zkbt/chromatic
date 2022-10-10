@@ -4,16 +4,32 @@ from scipy.special import erfc
 __all__ = ["flag_outliers"]
 
 
-def flag_outliers(self, how_many_sigma=5, inflate_uncertainty=True):
+def flag_outliers(self, how_many_sigma=5, remove_trends=True, inflate_uncertainty=True):
     """
-    Flag outliers on a chromatic rainbow.
+    Flag outliers as not `ok`.
+
+    This examines the flux array, identifies significant outliers,
+    and marks them 0 in the `ok` array. The default procedure is to use
+    a median filter to remove temporal trends (`remove_trends`),
+    inflate the uncertainties based on the median-absolute-deviation
+    scatter (`inflate_uncertainty`), and call points outliers if they
+    deviate by more than a certain number of sigma (`how_many_sigma`)
+    from the median-filtered level.
+
+    The returned `Rainbow` object should be identical to the input
+    one, except for the possibility that some elements in `ok` array
+    will have been marked as zero. (The filtering or inflation are
+    not applied to the returned object.)
 
     Parameters
     ----------
-    how_many_sigma : float
+    how_many_sigma : float, optional
         Standard deviations (sigmas) allowed for individual data
         points before they are flagged as outliers.
-    inflate_uncertainty : bool
+    remove_trends : bool, optional
+        Should we remove trends from the flux data before
+        trying to look for outliers?
+    inflate_uncertainty : bool, optional
         Should uncertainties per wavelength be inflated to
         match the (MAD-based) standard deviation of the data?
 
@@ -44,8 +60,13 @@ def flag_outliers(self, how_many_sigma=5, inflate_uncertainty=True):
         """
         )
 
-    # create a trend-filtered object and use it to find outliers
-    filtered = new.remove_trends(method="median_filter", size=(3, 5))
+    # create a trend-filtered object
+    if remove_trends:
+        filtered = new.remove_trends(method="median_filter", size=(3, 5))
+    else:
+        filtered = new._create_copy()
+
+    # update the uncertainties, if need be
     if np.all(filtered.uncertainty == 0):
         filtered.uncertainty = (
             np.ones(filtered.shape)
