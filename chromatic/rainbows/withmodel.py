@@ -24,6 +24,14 @@ class RainbowWithModel(Rainbow):
         return self.flux - self.model
 
     @property
+    def residuals_ppm(self):
+        """
+        Calculate the residuals on the fly,
+        to make sure they're always up to date.
+        """
+        return (self.flux - self.model) * 1e6
+
+    @property
     def residuals_plus_one(self):
         """
         Calculate the residuals on the fly,

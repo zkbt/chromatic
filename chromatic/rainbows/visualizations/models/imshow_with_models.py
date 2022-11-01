@@ -71,7 +71,7 @@ def imshow_with_models(
     models_that_exist = []
     for m in models:
         if self.get(m) is None:
-            cheerfully_suggest(f"'{m}' doesn't exist and will be skipped.")
+            warnings.warn(f"'{m}' doesn't exist and will be skipped.")
         else:
             models_that_exist.append(m)
     if len(models_that_exist) == 0:
@@ -94,16 +94,24 @@ def imshow_with_models(
     # set up the panels
     row_data, row_colorbar = 1, 0
     N = len(models) + 2
-    fi, ax = plt.subplots(
-        2,
-        N,
-        figsize=figsize,
-        dpi=600,
-        gridspec_kw=dict(height_ratios=[1, 20]),
-        sharex="row",
-        sharey="row",
-        constrained_layout=True,
-    )
+
+    if "ax" not in kw:
+        fi, ax = plt.subplots(
+            2,
+            N,
+            figsize=figsize,
+            dpi=600,
+            gridspec_kw=dict(height_ratios=[1, 20]),
+            sharex="row",
+            sharey="row",
+            constrained_layout=True,
+        )
+    else:
+        ax = kw["ax"]
+        kw.pop("ax")
+        if "figure" in kw:
+            fi = kw["figure"]
+            kw.pop("figure")
 
     # decide whether to use imshow or pcolormesh
     if (self.wscale in ["linear", "log"]) and (self.tscale in ["linear", "log"]):
@@ -127,10 +135,16 @@ def imshow_with_models(
     for a in ax[row_colorbar, :-1]:
         a.remove()
     ax_colorbar = fi.add_subplot(gs[row_colorbar, :-1])
-    plt.colorbar(cax=ax_colorbar, orientation="horizontal")
+    cb = plt.colorbar(cax=ax_colorbar, orientation="horizontal")
+    cb.ax.xaxis.set_label_position("top")
+    cb.ax.get_xaxis().labelpad = 10
+    cb.ax.set_xlabel("relative flux")
 
     # plot the residuals
-    k = "residuals"
+    if "cmap" in kw:
+        kw.pop("cmap")
+        kw["cmap"] = "inferno"
+    k = "residuals_ppm"
     show(
         ax[row_data, -1],
         k,
@@ -144,10 +158,13 @@ def imshow_with_models(
     # set up the colorbar for the residuals
     ax_colorbar_residuals = plt.subplot(gs[row_colorbar, -1])
     cbar = plt.colorbar(cax=ax_colorbar_residuals, orientation="horizontal")
+    cbar.ax.xaxis.set_label_position("top")
+    cbar.ax.get_xaxis().labelpad = 10
+    cbar.ax.set_xlabel("relative flux (ppm)")
     for a in [ax_colorbar, ax_colorbar_residuals]:
-        a.tick_params(labelsize=8)
+        a.tick_params(labelsize=14)
     x = vspan_residuals / 2
-    cbar.set_ticks([-x, 0, x], labels=[f"{-x:.2}", "0", f"{x:.2}"])
+    cbar.set_ticks([-x, 0, x], labels=[f"{-int(x)}", "0", f"{int(x)}"])
 
     # clear all the axis labels and replace with shared
     for a in ax[row_data, :]:
