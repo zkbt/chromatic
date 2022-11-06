@@ -1,5 +1,4 @@
 from ...imports import *
-import batman
 
 __all__ = ["inject_transit"]
 
@@ -112,7 +111,7 @@ def batman_transit(
     t,
     rp=0.1,
     t0=0.0,
-    per=1.0,
+    per=3.0,
     a=10.0,
     inc=90.0,
     ecc=0.0,
@@ -121,6 +120,7 @@ def batman_transit(
     limb_dark="quadratic",
     batman_model=None,
     batman_params=None,
+    **kw,
 ):
     """
     One dimensional batman Transit model,
@@ -130,6 +130,8 @@ def batman_transit(
     ----------
     t : array
         The times at which to evaluate the model.
+    rp : float, array
+        The radius of the planet, in stellar radii.
     t0 : float, array
         Mid-transit time of the transit, in days.
     per : float, array
@@ -149,8 +151,12 @@ def batman_transit(
         shape (nwavelengths, ncoefficients_per_wavelength).
         For example, the coefficients for wavelength-shared
         quadratic limb-darkening might have a shape of (1, 2).
-    baseline : float
-        The baseline, out-of-transit flux level.
+    **kw : dict
+        All additional parameters will be passed to the
+        batman.TransitModel initialization. Possibilities
+        with defaults include [max_err=1.0, nthreads=1, fac=None,
+        transittype='primary', supersample_factor=1, exp_time=0.0]
+
 
     Returns
     -------
@@ -162,17 +168,38 @@ def batman_transit(
         the trapezoidal transit).
     """
 
-    # Initialize batman model.
+    try:
+        import batman
+    except ImportError:
+        warnings.warn(
+            f"""
+        You're trying to produce a transit model using `batman`,
+        but it looks like you don't have `batman-package` installed
+        in the environment from which you're running `chromatic`.
+
+        Please either install it with `pip install batman-package`
+        (see https://github.com/lkreidberg/batman for details)
+        or use the `.inject_transit(..., method='trapezoid')`
+        option instead.
+        """
+        )
+
+    # set the batman parameters
     if batman_params is None:
         batman_params = batman.TransitParams()
-    params.t0 = t0
-    params.per = per
-    params.a = a
-    params.inc = inc
-    params.ecc = ecc
-    params.w = w
-    params.u = u
-    params.limb_dark = limb_dark
+    batman_params.rp = rp
+    batman_params.t0 = t0
+    batman_params.per = per
+    batman_params.a = a
+    batman_params.inc = inc
+    batman_params.ecc = ecc
+    batman_params.w = w
+    batman_params.u = u
+    batman_params.limb_dark = limb_dark
+
+    # generate the batman model
+    if batman_model is None:
+        batman_model = batman.TransitModel(batman_params, t)
 
     flux = batman_model.light_curve(batman_params)
     cached_inputs = dict(batman_model=batman_model, batman_params=batman_params)
@@ -191,7 +218,10 @@ transit_model_functions = dict(
 
 
 def inject_transit(
-    self, depth=0.01, radius_ratio=None, method="trapezoid", **transit_parameters
+    self,
+    planet_radius=0.1,
+    method="trapezoid",
+    **transit_parameters,
 ):
 
     """
@@ -226,18 +256,10 @@ def inject_transit(
 
     Parameters
     ----------
-    depth : float, array, None
-        The transit depth = [(planet radius)/(star radius)]**2,
-        which can be either a single value for all wavelengths,
-        or an array with one value for each wavelength.
-        Only one of [`depth`, `radius_ratio`] should be set.
-        (default 0.01)
-    radius_ratio : float, array, None
+    planet_radius : float, array, None
         The planet-to-star radius ratio = [transit depth]**0.5,
         which can be either a single value for all wavelengths,
         or an array with one value for each wavelength.
-        Only one of [`depth`, `radius_ratio`] should be set.
-        (default None)
     method : str
         What method should be used to inject the transits? Different
         methods will produce different results and have different options.
@@ -248,7 +270,7 @@ def inject_transit(
             `'trapezoid'` accepts the following keyword arguments:
                 `delta` = The depth of the transit, as a fraction of the out-of-transit flux (default 0.01)
                 (If not provided, it will be set by `depth` or `radius_ratio`.)
-                `P` = The orbital period of the planet, in days (default 1.0)
+                `P` = The orbital period of the planet, in days (default 3.0)
                 `t0` = Mid-transit time of the transit, in days (default 0.0)
                 `T` = The duration of the transit (from mid-ingress to mid-egress), in days (default 0.1)
                 `tau` = The duration of ingress/egress, in days (default 0.01)
@@ -287,28 +309,13 @@ def inject_transit(
     # make sure the depth is set, with some flexibility
     # to allow for different names. parameter names that
     # belong directly to the transit model [delta, rp]
-    # will take precendence over method-independent
-    # names [depth, radius_ratio]
-    if (depth is not None) and (radius_ratio is not None):
-        if np.any(depth != radius_ratio**2):
-            raise ValueError(
-                f"""
-            We can't figure out what the transit depth should be,
-            since you've provided two inconsistent inputs:
-                depth={depth}
-                radius_ratio={radius_ratio}
-            Please provide only one at a time!
-            """
-            )
-    elif radius_ratio is None:
-        radius_ratio = np.sqrt(depth)
-    elif depth is None:
-        depth = radius_ratio**2
+    # will take precendence first, then [depth], then
+    # [planet_radius = the default]
 
     # set defaults for planet simulation
     if method == "trapezoid":
         parameters_to_use = {
-            "delta": depth,
+            "delta": planet_radius**2 * np.sign(planet_radius),
             "P": 1.0,
             "t0": 0.0,
             "T": 0.1,
@@ -317,9 +324,9 @@ def inject_transit(
         }
     elif method == "batman":
         parameters_to_use = {
-            "rp": radius_ratio,
+            "rp": planet_radius,
             "t0": 0.0,
-            "per": 1.0,
+            "per": 3.0,
             "a": 10.0,
             "inc": 90.0,
             "ecc": 0.0,
@@ -364,18 +371,19 @@ def inject_transit(
     new.model = new.fluxlike.get("model", 1) * new.planet_model
 
     # store the injected parameters as metadata or wavelike
-    new.metadata["transit_method"] = method
-    new.metadata["transit_parameters"] = parameters_to_use
+    new.metadata["injected_transit_method"] = method
+    new.metadata["injected_transit_parameters"] = parameters_to_use
     for k, v in parameters_to_use.items():
-        label = "injected-transit-{k}"
-        if np.shape(v) == ():
+        label = f"injected_transit_{k}"
+        s = np.shape(v)
+        if s == ():
             continue
-        elif np.shape(v)[0] == new.nwave:
+        elif s[0] == new.nwave:
             if len(s) == 1:
                 new.wavelike[label] = v
             elif len(s) > 1:
                 for i in range(s[1]):
-                    new.wavelike[f"label{i+1}"] = v[:, i]
+                    new.wavelike[f"{label}{i+1}"] = v[:, i]
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)

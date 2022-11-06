@@ -64,6 +64,7 @@ def test_plot_with_model_and_residuals():
         u=np.transpose(
             [np.linspace(1.0, 0.0, s.nwave), np.linspace(0.5, 0.0, s.nwave)]
         ),
+        method="batman",
     ).inject_noise(signal_to_noise=1000)
     for i, options in enumerate(
         [

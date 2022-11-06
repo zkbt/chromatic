@@ -46,27 +46,46 @@ def test_star_flux():
 
 
 def test_inject_transit():
-    h = SimulatedRainbow(wavelength=np.logspace(0, 1) * u.micron).inject_noise()
-    h.inject_transit(per=0.1)
-    h.inject_transit(planet_radius=np.zeros(50) + 0.1)
+    s = SimulatedRainbow()
+    x = (s.wavelength / max(s.wavelength)).value
 
-    i = SimulatedRainbow(dt=2 * u.minute).inject_noise(signal_to_noise=1000)
-    fi, ax = plt.subplots(3, 1, sharex=True, figsize=(8, 8))
-    i.imshow(ax=ax[0], vmin=0.975, vmax=1.005)
-    plt.xlabel("")
-    i.inject_transit(per=3, planet_radius=np.random.normal(0.1, 0.01, i.nwave)).imshow(
-        ax=ax[1], vmin=0.975, vmax=1.005
-    )
-    # test the limb darkening
-    i.inject_transit(
-        **{
-            "per": 3,
-            "limb_dark": "quadratic",
-            "u": np.transpose(
-                [np.linspace(1.0, 0.0, i.nwave), np.linspace(0.5, 0.0, i.nwave)]
-            ),
-        },
-    ).imshow(ax=ax[2], vmin=0.975, vmax=1.005)
+    # test that injected parameters are stored appropriately
+    delta = 0.5 * np.sin(x * 10)
+    t0 = 0.01
+    t = s.inject_transit(delta=delta, t0=t0, method="trapezoid")
+    assert t.metadata["injected_transit_parameters"]["t0"] == t0
+    assert np.all(t.wavelike["injected_transit_delta"] == delta)
+
+    # test that all methods work
+    fi, ax = plt.subplots(2, 2, figsize=(8, 6), constrained_layout=True, dpi=300)
+
+    method = "trapezoid"
+    s.inject_transit(method=method).imshow(ax=ax[0, 0])
+    plt.title(f"{method} | default")
+    s.inject_transit(
+        planet_radius=0.5 * np.sin(x * 10),
+        tau=0.02,
+        t0=x * 0.03,
+        T=x * 0.05,
+        method=method,
+    ).imshow(ax=ax[0, 1])
+    plt.title(f"{method} | wacky")
+
+    method = "batman"
+    plt.title(f"{method} | default")
+    s.inject_transit(method=method).imshow(ax=ax[1, 0])
+    plt.title(f"{method} | default")
+    s.inject_transit(
+        planet_radius=0.5 * np.sin(x * 10),
+        t0=x * 0.03,
+        inc=89,
+        a=1 / x * 10,
+        limb_dark="nonlinear",
+        u=np.random.uniform(0, 0.5, [s.nwave, 4]),
+        method=method,
+    ).imshow(ax=ax[1, 1])
+    plt.title(f"{method} | wacky")
+
     plt.savefig(os.path.join(test_directory, "demonstration-of-injecting-transit.pdf"))
     plt.close("all")
 

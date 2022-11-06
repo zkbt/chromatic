@@ -86,7 +86,6 @@ setup(
         "astropy>=4.0",
         "pandas",
         "tqdm",
-        "batman-package>=2.4.9",
         "altair",
         "xarray",
         "h5py",
@@ -109,7 +108,9 @@ setup(
             "mkdocs-exclude",
             "twine",
             "pre-commit",
-        ]
+            "batman-package>=2.4.9",
+        ],
+        "modeling": ["batman-package>=2.4.9"],
     },
     # (I think just leave this set to False)
     zip_safe=False,
