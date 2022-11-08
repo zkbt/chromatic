@@ -208,7 +208,7 @@ def batman_transit(
 
 def exoplanet_transit(*args, **kwargs):
     raise NotImplementedError(
-        "The `exoplanet-core` transit option isn't available yet. Sorry!"
+        "The `exoplanet-core` transit option isn't available yet. Sorry! WORKING ON IT"
     )
 
 
