@@ -310,6 +310,7 @@ def exoplanet_transit(
     r_sky = np.sqrt(x**2 + y**2)
 
     # use exoplanet_core functions to extract light curve:
+    # u_arr = np.array(u)
     flux = quad_limbdark_light_curve(u[0], u[1], r_sky, rp)
     # we only want the lightcurve where z > 0 (planet is between us and star)
     flux[z < 0] = 0
@@ -401,6 +402,24 @@ def inject_transit(
                     coefficient vs wavelength variations itself; there exist codes
                     (such as hpparvi/PyLDTk and nespinoza/limb-darkening) which
                     can be used for this.
+            `'exoplanet-core'` accepts the following keyword arguments:
+                `rp` = (planet radius)/(star radius), unitless (default 0.1)
+                (If not provided, it will be set by depth or radius_ratio.)
+                `t0` = Mid-transit time of the transit, in days (default 0.0)
+                `per` = The orbital period of the planet, in days (default 3.0)
+                `a` = (semi-major axis)/(star radius), unitless (default 10)
+                `inc` = The orbital inclination, in degrees (default 90)
+                `ecc` = The orbital eccentricity, unitless (default 0.0)
+                `w` = The longitude of periastron, in degrees (default 0.0)
+                `u` = The quadratic limb-darkening coefficients (default [0.2, 0.2])
+                    These coefficients can only be a 2D array of the form (n_wavelengths, n_coefficients) where
+                    each row is the set of limb-darkening coefficients corresponding
+                    to a single wavelength
+                    Note that this currently does not calculate the appropriate
+                    coefficient vs wavelength variations itself; there exist codes
+                    (such as hpparvi/PyLDTk and nespinoza/limb-darkening) which
+                    can be used for this.
+
     """
 
     # create a history entry for this action (before other variables are defined)
