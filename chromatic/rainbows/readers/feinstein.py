@@ -1,6 +1,5 @@
 # import the general list of packages
 from ...imports import *
-from h5py import File
 
 # define list of the only things that will show up in imports
 __all__ = ["from_feinstein_numpy", "from_feinstein_h5"]
@@ -19,6 +18,16 @@ def from_feinstein_numpy(rainbow, filepath):
         The path to the file to load.
     """
 
+    try:
+        from h5py import File
+    except ImportError:
+        warnings.warn(
+            f"""
+        Please try to install `h5py` into your current environment with
+            `pip install --upgrade h5py`
+        to have access to the `h5py` reader needed for HDF5 files.
+        """
+        )
     time, wavelength, spectra, err = np.load(filepath, allow_pickle=True)
 
     rainbow.wavelike["wavelength"] = wavelength * u.micron * 1
