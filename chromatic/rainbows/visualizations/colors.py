@@ -14,11 +14,11 @@ def setup_wavelength_colors(self, cmap=None, vmin=None, vmax=None, log=None):
 
     Parameters
     ----------
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap
         The color map to use.
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The wavelength at the bottom of the cmap.
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The wavelength at the top of the cmap.
     log : bool
         If True, colors will scale with log(wavelength).
@@ -27,7 +27,7 @@ def setup_wavelength_colors(self, cmap=None, vmin=None, vmax=None, log=None):
     """
 
     # populate the cmap object
-    self.cmap = cm.get_cmap(cmap)
+    self.cmap = plt.cm.get_cmap(cmap)
 
     vmin = vmin
     if vmin is None:
@@ -55,11 +55,11 @@ def _make_sure_cmap_is_defined(self, cmap=None, vmin=None, vmax=None):
 
     Parameters
     ----------
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap
         The color map to use for expressing wavelength.
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The minimum value to use for the wavelength colormap.
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The maximum value to use for the wavelength colormap.
     """
 
@@ -92,13 +92,13 @@ def get_wavelength_color(self, wavelength):
 
     Parameters
     ----------
-    wavelength : astropy.units.Quantity
+    wavelength : Quantity
         The wavelength value(s), either an individual
         wavelength or an array of N wavelengths.
 
     Returns
     -------
-    colors : np.array
+    colors : array
         An array of RGBA colors [or an (N,4) array].
     """
     w_unitless = wavelength.to("micron").value

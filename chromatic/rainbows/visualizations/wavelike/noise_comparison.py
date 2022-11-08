@@ -27,20 +27,20 @@ def plot_noise_comparison(
 
     Parameters
     ----------
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which to make this plot.
     method : string
         What method to use to obtain measured scatter. Current options are 'MAD', 'standard-deviation'.
     minimum_acceptable_ok : float
         The smallest value of `ok` that will still be included.
         (1 for perfect data, 1e-10 for everything but terrible data, 0 for all data)
-    w_unit : str, astropy.unit.Unit
+    w_unit : str, Unit
         The unit for plotting wavelengths.
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap
         The color map to use for expressing wavelength.
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The wavelength at the bottom of the cmap.
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The wavelength at the top of the cmap.
     scatterkw : dict
         A dictionary of keywords passed to `plt.scatter`
@@ -133,7 +133,7 @@ def plot_noise_comparison(
 
     # add text labels to the plot
     plt.xlabel(f"Wavelength ({w_unit.to_string('latex_inline')})")
-    plt.ylabel(f"$\sigma$ ('{method}')")
+    plt.ylabel(rf"$\sigma$ ('{method}')")
     if legend:
         this_legendkw = dict(frameon=False)
         this_legendkw.update(**legendkw)

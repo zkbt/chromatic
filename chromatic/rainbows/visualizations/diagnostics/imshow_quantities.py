@@ -11,15 +11,15 @@ def imshow_quantities(
 
     Parameters
     ----------
-    quantities : list like
+    quantities : None, list, optional
         The fluxlike quantity to imshow.
-    maxcol : int
+    maxcol : int, optional
         The maximum number of columns to show (Optional).
-    panel_size : tuple
+    panel_size : tuple, optional
         The (approximate) size of a single panel, which will
         be used to set the overall figsize based on the
         number of rows and columns (Optional).
-    kw : dict
+    **kw : dict, optional
         Additional keywords will be passed on to `imshow`
 
     """

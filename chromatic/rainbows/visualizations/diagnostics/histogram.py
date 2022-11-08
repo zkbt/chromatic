@@ -22,35 +22,32 @@ def plot_histogram(
     """
     Plots a histogram of the flux value for one wavelength of a rainbow.
 
+    This makes a histogram of flux values for one wavelength, with flux bin
+    values on the x-axis and the number of occurrences (= histogram) of
+    flux values within a particular bin on the y-axis.
+
     Parameters
     ----------
     i_wavelength : integer
         The wavelength row we want to plot.
-    ax : matplotlib.axes.Axes
+    ax : Axes, optional
         The axes into which the plot should be drawn.
-    quantity : string
+    quantity : str, optional
         The quantity for which we want a histogram.
         Currently available options are ['flux', 'residuals']
-    offset :
+    offset : float, optional
         An offset to add to each value (needed for `plot_with_model_and_residuals`)
-    color : string
+    color : str, optional
         The color for the histogram. If 'auto', guess from wavelength.
-    expected : Boolean
+    expected : bool, optional
         Allows user to choose whether an expected normal distribution for the
         data will be plotted over the histogram.
-    expected_plotkw : dict
+    expected_plotkw : dict, optional
         Keywords to pass to `plt.plot` for plotting the expected distribution.
     **kw : dictionary
         All additional keywords will be passed to `plt.hist`.
         Please see the documentation for that function for options.
         (https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.hist.html)
-
-    Returns
-    -------
-        A plotted histogram of flux values for one wavelength, with flux bin
-        values on the x-axis and the number of occurrences (= histogram) of
-        flux values within a particular bin on the y-axis.
-
     """
 
     if ax is None:

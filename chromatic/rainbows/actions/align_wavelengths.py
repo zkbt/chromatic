@@ -100,13 +100,26 @@ def _create_shared_wavelength_axis(
     return shared_w
 
 
-def align_wavelengths(self, minimum_acceptable_ok=1, minimum_points_per_bin=0, **kw):
+def align_wavelengths(
+    self,
+    minimum_acceptable_ok=1,
+    minimum_points_per_bin=0,
+    wscale="linear",
+    supersampling=1,
+    visualize=False,
+):
     """
     Use 2D wavelength information to align onto a single 1D wavelength array.
 
+    This relies on the existence of a `.fluxlike['wavelength_2d']` array,
+    expressing the wavelength associated with each flux element.
+    Those wavelengths will be used to (a) establish a new compromise
+    wavelength grid and (b) bin the individual timepoints onto that
+    new grid, effectively shifting the wavelengths to align.
+
     Parameters
     ----------
-    minimum_acceptable_ok : float
+    minimum_acceptable_ok : float, optional
         The numbers in the `.ok` attribute express "how OK?" each
         data point is, ranging from 0 (not OK) to 1 (super OK).
         In most cases, `.ok` will be binary, but there may be times
@@ -130,24 +143,29 @@ def align_wavelengths(self, minimum_acceptable_ok=1, minimum_points_per_bin=0, *
             minimum_acceptable_ok < 0
                   All data points will be included in the bin.
                   The OK-ness will propagate onward.
-    wscale : str
+    wscale : str, optional
         What kind of a new wavelength axis should be created?
         Options include:
             'linear' = constant d[wavelength] between grid points
             'log' = constant d[wavelength]/[wavelength] between grid points
-
-    supersampling : float
+    supersampling : float, optional
         By how many times should we increase or decrease the wavelength sampling?
         In general, values >1 will split each input wavelength grid point into
         multiple supersampled wavelength grid points, values close to 1 will
         produce approximately one output wavelength for each input wavelength,
         and values <1 will average multiple input wavelengths into a single output
         wavelength bin.
-
         Unless this is significantly less than 1, there's a good chance your output
         array may have strong correlations between one or more adjacent wavelengths.
         Be careful when trying to use the resulting uncertainties!
+    visualize : bool
+        Should we make some plots showing how the shared wavelength
+        axis compares to the original input wavelength axes?
 
+    Returns
+    -------
+    rainbow : RainbowWithModel
+        A new `RainbowWithModel` object, with the model attached.
     """
     # create a history entry for this action (before other variables are defined)
     h = self._create_history_entry("align_wavelengths", locals())
@@ -163,7 +181,9 @@ def align_wavelengths(self, minimum_acceptable_ok=1, minimum_points_per_bin=0, *
         shifted = self._create_copy()
     else:
         # create a shared wavelength array
-        shared_wavelengths = self._create_shared_wavelength_axis(**kw)
+        shared_wavelengths = self._create_shared_wavelength_axis(
+            wscale=wscale, supersampling=supersampling, visualize=visualize
+        )
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")

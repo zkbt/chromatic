@@ -10,16 +10,16 @@ def calculate_planck_flux(wavelength, temperature):
 
     Parameters
     ----------
-    wavelength : u.Quantity
+    wavelength : Quantity
         The wavelengths at which to calculate,
         with units of wavelength.
-    temperature : u.Quantity
+    temperature : Quantity
         The temperature of the thermal emitter,
         with units of K.
 
     Returns
     -------
-    surface_flux : u.Quantity
+    surface_flux : Quantity
         The surface flux, evaluated at the wavelengths.
     """
 
@@ -48,34 +48,35 @@ def get_planck_photons(
     Calculate the surface flux from a thermally emitted surface,
     according to Planck function, in units of photons/(s * m**2 * nm).
 
-    (Note, this evaluates the Planck function at the exact
-    wavelength values; it doesn't do anything fancy to integrate
-    over binwidths, so if you're using very wide (R~a few) bins
-    your integrated fluxes will be messed up.)
-
     Parameters
     ----------
-    temperature : u.Quantity
+    temperature : Quantity
         The temperature of the thermal emitter,
         with units of K.
-    wavelength : u.Quantity
+    wavelength : Quantity, optional
         The wavelengths at which to calculate,
         with units of wavelength.
-    R : float
+    R : float, optional
         The spectroscopic resolution for creating a log-uniform
         grid that spans the limits set by `wlim`, only if
         `wavelength` is not defined.
-    wlim : u.Quantity
+    wlim : Quantity, optional
         The two-element [lower, upper] limits of a wavelength
         grid that would be populated with resolution `R`, only if
         `wavelength` is not defined.
-    kw : dict
+    **kw : dict, optional
         Other keyword arguments will be ignored.
 
     Returns
     -------
-    photons : u.Quantity
-        The surface flux in units of photons
+    photons : Quantity
+        The surface flux in photon units
+
+    This evaluates the Planck function at the exact
+    wavelength values; it doesn't do anything fancy to integrate
+    over binwidths, so if you're using very wide (R~a few) bins
+    your integrated fluxes will be messed up.
+
     """
 
     # make sure the temperature unit is good (whether or not it's supplied)

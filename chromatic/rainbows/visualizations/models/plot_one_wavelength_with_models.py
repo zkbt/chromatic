@@ -51,40 +51,40 @@ def plot_one_wavelength_with_models(
     ----------
     i_wavelength : int
         The index of the wavelength to plot.
-    models : list
+    models : list, optional
         The list of model quantities to display,
         each in its own panel. A popular option might be:
         `models = ['systematics_model', 'planet_model']
         Whatever you include here does not affect the
         values of the Residuals panel, which are always
         exactly 'flux' - 'model'.
-    vlimits_data : list
+    vlimits_data : list, optional
         The value limits for the data and model colormap,
         specified as `vlimits_data = [vmin, vmax]`.
         If `None` or `[None, None]`, the limits will be
         replaced with the [1,99] percentiles of the flux.
-    vspan_residuals : float
+    vspan_residuals : float, optional
         The distance away from zero where the colormap
         for the residuals will cut off. If `None`, the
         span will be set to 3 standard deviations.
-    panelsize : tuple
+    panelsize : tuple, optional
         The size of each panel of the multipanel plot.
         It should probably be wider than it is tall.
-    orientation : string
+    orientation : str, optional
         The direction in which the panels should spread out.
         Options include ['vertical', 'horizontal'].
-    errorbar : boolean
+    errorbar : boolean, optional
         Should we plot errorbars?
-    text : boolean
+    text : boolean, optional
         Should we label each wavelength?
-    data_errorbarkw : dict
+    data_errorbarkw : dict, optional
         A dictionary of keywords passed to `plt.errorbar`
         so you can have more detailed control over the data
         appearance. Common keyword arguments might include:
         `[alpha, elinewidth, color, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.errorbar.html
-    model_plotkw : dict
+    model_plotkw : dict, optional
         A dictionary of keywords passed to `plt.plot`
         so you can have more detailed control over the model
         appearance. Common keyword arguments might include:
@@ -92,7 +92,7 @@ def plot_one_wavelength_with_models(
           linewidth, linestyle, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html
-    wavelength_textkw : dict
+    wavelength_textkw : dict, optional
         A dictionary passed to `plt.text` for the wavelength label
         so you can have more detailed control over the text
         appearance. Common keyword arguments might include:
@@ -100,22 +100,22 @@ def plot_one_wavelength_with_models(
           fontstyle, fontweight, rotation, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap, optional
         The color map to use for expressing wavelength
-    vmin : astropy.units.Quantity
+    vmin : Quantity, optional
         The minimum value to use for the wavelength colormap
-    vmax : astropy.units.Quantity
+    vmax : Quantity, optional
         The maximum value to use for the wavelength colormap
-    w_unit : str, astropy.unit.Unit
+    w_unit : str, Unit, optional
         The unit for plotting wavelengths.
-    t_unit : str, astropy.unit.Unit
+    t_unit : str, Unit, optional
         The unit for plotting times.
-    label : bool
+    label : bool, optional
         Should we add (a), (b), (c) labels to the panels,
         and where? False or None give no labels, 'inside'
         sets them in the upper left inside corner, 'outside'
         sets them above the upper left corner.
-    label_textkw : dict
+    label_textkw : dict, optional
         A dictionary passed to `plt.text` for the (a), (b), (c) label
         so you can have more detailed control over the text
         appearance. Common keyword arguments might include:
@@ -123,10 +123,10 @@ def plot_one_wavelength_with_models(
           fontstyle, fontweight, rotation, zorder]` (and more)
         More details are available at
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html
-    animation : bool
+    animation : bool, optional
         Are we in the middle of an animation
         (so shouldn't make a new figure)?
-    **kw : dict
+    **kw : dict, optional
         All additional keywords will be ignored.
     """
 
@@ -325,7 +325,26 @@ def animate_with_models(
     orientation="horizontal",
     **kw,
 ):
+    """
+    Animate light curves with models by flipping through wavelengths.
 
+    Parameters
+    ----------
+    filename : str
+        Name of file you'd like to save results in.
+        Currently supports only .gif or .html files.
+    fps : float
+        frames/second of animation
+    bitrate : None
+        How many bits/second should be allowed in the file?
+    dpi : float
+        How many dots per inch should go into the animation rendering?
+    orientation : str, optional
+        The direction in which the panels should spread out.
+        Options include ['vertical', 'horizontal'].
+    **kw : dict
+        All other keywords will be passed to `.plot_one_wavelength_with_models`
+    """
     try:
         del self._animate_with_models_setup
     except AttributeError:
@@ -338,7 +357,7 @@ def animate_with_models(
     filename = self._label_plot_file(filename)
 
     # initialize the animator
-    writer, displayer = _get_animation_writer_and_displayer(
+    writer, displayer = get_animation_writer_and_displayer(
         filename=filename, fps=fps, bitrate=bitrate
     )
 

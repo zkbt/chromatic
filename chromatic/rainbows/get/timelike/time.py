@@ -3,33 +3,33 @@ from ....imports import *
 
 def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentric=None):
     """
-    Convert times from a Rainbow into an astropy Time object.
+    Convert times from a `Rainbow` into an astropy `Time` object.
 
     Parameters
     ----------
-    time : u.Quantity
+    time : Quantity, optional
         The time-like Quantity to be converted.
         If None (default), convert the time values in `self.time`
         If another time-like Quantity, convert those values.
-    format : str
+    format : str, optional
         The time format to supply to astropy.time.Time.
         If None (default), format will be pulled from
         `self.metadata['time_details']['format']`
-    scale : str
+    scale : str, optional
         The time scale to supply to astropy.time.Time.
         If None (default), scale will be pulled from
         `self.metadata['time_details']['scale']`
-    is_barycentric : bool
+    is_barycentric : bool, optional
         Are the times already measured relative to the
         Solar System barycenter? This is mostly for warning
         the user that it's not.
-        If None (default), is_barycentric will be pulled from
+        If `None` (default), `is_barycentric` will be pulled from
         `self.metadata['time_details']['is_barycentric']`
 
     Returns
     -------
-    astropy_time : astropy.time.Time
-        The times as an astropy Time object.
+    astropy_time : Time
+        The times as an astropy `Time` object.
     """
 
     # take times from self or from the keyword
@@ -125,32 +125,32 @@ def get_times_as_astropy(self, time=None, format=None, scale=None, is_barycentri
 
 def set_times_from_astropy(self, astropy_time, is_barycentric=None):
     """
-    Set the times for this Rainbow from an astropy Time object.
+    Set the times for this `Rainbow` from an astropy `Time` object.
 
     Parameters
     ----------
-    astropy_time : astropy.time.Time
-        The times as an astropy Time object.
-    is_barycentric : bool
+    astropy_time : Time
+        The times as an astropy `Time` object.
+    is_barycentric : bool, optional
         Are the times already measured relative to the
         Solar System barycenter? This is mostly for warning
         the user that it's not. Options are True, False,
         None (= don't know).
 
-
     Returns
     -------
-    time : u.Quantity
+    time : Quantity
         An astropy Quantity with units of time,
         expressing the Time as julian day.
         In addition to this returned variable,
         the function sets the following internal
         variables:
-
-        self.time (= the astropy Quantity of times)
-        self.metadata['time_format'] (= the format to convert back to Time)
-        self.metadata['time_scale'] (= the scale to convert back to Time)
-        self.metadata['time_is_barycentric'] (= is it barycentric?)
+        ```
+        self.time # (= the astropy Quantity of times)
+        self.metadata['time_format'] # (= the format to convert back to Time)
+        self.metadata['time_scale'] # (= the scale to convert back to Time)
+        self.metadata['time_is_barycentric'] # (= is it barycentric?)
+        ```
     """
 
     # set the formats

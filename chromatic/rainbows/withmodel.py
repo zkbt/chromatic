@@ -20,22 +20,46 @@ class RainbowWithModel(Rainbow):
         """
         Calculate the residuals on the fly,
         to make sure they're always up to date.
+
+        The residuals are calculated simply
+        as the `.flux` - `.model`, so they are
+        in whatever units those arrays have.
+
+        Returns
+        -------
+        residuals : array, Quantity
+            The 2D array of residuals (nwave, ntime).
         """
         return self.flux - self.model
 
     @property
-    def residuals_ppm(self):
+    def chi_squared(self):
         """
-        Calculate the residuals on the fly,
-        to make sure they're always up to date.
+        Calculate $\chi^2$.
+
+        This calculates the sum of the squares of
+        the uncertainty-normalized residuals,
+        sum(((flux - model)/uncertainty)**2)
+
+        Data points marked as not OK are ignored.
+
+        Returns
+        -------
+        chi_squared : float
+            The chi-squared value.
         """
-        return (self.flux - self.model) * 1e6
+        r = (self.flux - self.model) / self.uncertainty
+        return np.sum(r[self.ok] ** 2)
 
     @property
     def residuals_plus_one(self):
         """
-        Calculate the residuals on the fly,
-        to make sure they're always up to date.
+        A tiny wrapper to get the residuals + 1.
+
+        Returns
+        -------
+        residuals_plus_one : array, Quantity
+            The 2D array of residuals + 1 (nwave, ntime).
         """
         return self.flux - self.model + 1
 
@@ -44,6 +68,11 @@ class RainbowWithModel(Rainbow):
         """
         Generate an array of ones that looks like the flux.
         (A tiny wrapper needed for `plot_with_model`)
+
+        Returns
+        -------
+        ones : array, Quantity
+            The 2D array ones (nwave, ntime).
         """
         return np.ones_like(self.flux)
 

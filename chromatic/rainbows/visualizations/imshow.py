@@ -26,26 +26,26 @@ def imshow(
 
     Parameters
     ----------
-    ax : matplotlib.axes.Axes
+    ax : Axes, optional
         The axes into which to make this plot.
-    quantity : str
+    quantity : str, optional
         The fluxlike quantity to imshow.
         (Must be a key of `rainbow.fluxlike`).
-    w_unit : str, astropy.unit.Unit
+    w_unit : str, Unit, optional
         The unit for plotting wavelengths.
-    t_unit : str, astropy.unit.Unit
+    t_unit : str, Unit, optional
         The unit for plotting times.
-    colorbar : bool
+    colorbar : bool, optional
         Should we include a colorbar?
-    aspect : str
+    aspect : str, optional
         What aspect ratio should be used for the imshow?
-    mask_ok : bool
+    mask_ok : bool, optional
         Should we mark which data are not OK?
-    color_ok : str
+    color_ok : str, optional
         The color to be used for masking data points that are not OK.
-    alpha_ok : float
+    alpha_ok : float, optional
         The transparency to be used for masking data points that are not OK.
-    kw : dict
+    **kw : dict, optional
         All other keywords will be passed on to `plt.imshow`,
         so you can have more detailed control over the plot
         appearance. Common keyword arguments might include:

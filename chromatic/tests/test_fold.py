@@ -14,7 +14,7 @@ def test_fold(N=5):
         N = np.random.randint(-10, 10)
         s = (
             SimulatedRainbow(time=original_time + t0 + period * N, R=5)
-            .inject_transit(per=period.to_value("day"), t0=t0.to_value("day"))
+            .inject_transit(P=period.to_value("day"), t0=t0.to_value("day"))
             .inject_noise(signal_to_noise=1000)
         )
         f = s.fold(period=period, t0=t0)

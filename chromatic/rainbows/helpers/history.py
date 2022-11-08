@@ -132,14 +132,17 @@ def _create_history_entry(self, name, inputs={}):
 
 def history(self):
     """
-    Return a summary of the history of actions that have gone into this object.
-
+    Return a summary of the history of actions that have gone into this `Rainbow`.
 
     Returns
     -------
-    history : ?
-        The history of actions, in the requested format
-
+    history : str
+        A string that does its best to try to summarize
+        all the actions that have been applied to this
+        `Rainbow` object from the moment it was created.
+        In some (but not all) cases, it may be possible
+        to copy, paste, and rerun this code to recreate
+        the `Rainbow`.
     """
 
     calls = self.metadata["history"]

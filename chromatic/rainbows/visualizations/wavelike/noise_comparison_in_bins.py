@@ -17,13 +17,13 @@ def plot_noise_comparison_in_bins(
     **kw,
 ):
     """
-    ax : matplotlib.axes.Axes
+    ax : Axes
         The axes into which the plot should be drawn.
-    cmap : str, matplotlib.colors.Colormap
+    cmap : str, Colormap
         The color map to use for expressing wavelength.
-    vmin : astropy.units.Quantity
+    vmin : Quantity
         The wavelength at the bottom of the cmap.
-    vmax : astropy.units.Quantity
+    vmax : Quantity
         The wavelength at the top of the cmap.
     errorbar_kw : dict
 

@@ -7,12 +7,10 @@ def get_median_lightcurve(self):
     """
     Return a lightcurve of the star, medianed over all wavelengths.
 
-    Parameters
-    ----------
-
     Returns
     -------
-    median_lightcurve : np.array (wavelike)
+    median_lightcurve : array
+        Timelike array of fluxes.
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
