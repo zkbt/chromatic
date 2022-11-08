@@ -82,6 +82,7 @@ def plot_with_model(
     )
     if filename is not None:
         self.savefig(filename)
+    return ax
 
 
 def plot_with_model_and_residuals(
@@ -92,7 +93,7 @@ def plot_with_model_and_residuals(
     histogramkw={},
     residual_scaling=1,
     ax=None,
-    label_scatter="{measured_rms[i]*1e6:.0f}ppm/({self.dt:.1f}) [{measured_rms[i]/expected_rms[i]:.1f}x]",
+    label_scatter="{measured*1e6:.0f} ppm [{measured/expected:.1f}x]",
     **kw,
 ):
     """
@@ -132,8 +133,6 @@ def plot_with_model_and_residuals(
             gridspec_kw=gridspec_kw,
         )
 
-    if "ax" in kw:
-        kw.pop("ax")
     self.plot_with_model(ax=ax[0], **kw)
     spacing = ax[0]._most_recent_chromatic_plot_spacing
     if "spacing" not in kw:
@@ -167,7 +166,7 @@ def plot_with_model_and_residuals(
             self.plot_histogram(i, offset=1 - i * spacing, ax=ax[2], **kw)
         plt.axis("off")
 
-    return ax
-
     if filename is not None:
         self.savefig(filename)
+
+    return ax
