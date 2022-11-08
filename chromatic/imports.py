@@ -57,9 +57,6 @@ from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
 from scipy.interpolate import interp1d
 
-# For modelling transits.
-import batman
-
 # For converting Rainbows to pandas dataframe
 import pandas as pd
 
