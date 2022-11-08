@@ -208,9 +208,9 @@ def batman_transit(
 
 def exoplanet_transit(
     t,
+    rp=0.1,
     per=3.0,
     t0=0.0,
-    ror=0.1,
     a=10.0,
     inc=90.0,
     ecc=0.0,
@@ -228,12 +228,12 @@ def exoplanet_transit(
     ----------
     t : array
         The times at which to evaluate the model.
+    rp : float, array
+        The radius of the planet in stellar radii
     per : float
         The period of the planet, in days.
     t0 : float
         Mid-transit time of the transit, in days.
-    ror : float
-        The radius ratio between planet and star
     a : float, array
         The semi-major axis of the orbit, in stellar radii.
     inc : float, array
@@ -310,10 +310,10 @@ def exoplanet_transit(
     r_sky = np.sqrt(x**2 + y**2)
 
     # use exoplanet_core functions to extract light curve:
-    flux = quad_limbdark_light_curve(u[0], u[1], r_sky, ror)
+    flux = quad_limbdark_light_curve(u[0], u[1], r_sky, rp)
     # we only want the lightcurve where z > 0 (planet is between us and star)
     flux[z < 0] = 0
-    return flux
+    return 1 + flux, {}
 
 
 transit_model_functions = dict(
@@ -438,6 +438,18 @@ def inject_transit(
             "limb_dark": "quadratic",
             "u": [[0.2, 0.2]],
         }
+    elif method == "exoplanet-core":
+        parameters_to_use = {
+            "rp": planet_radius,
+            "t0": 0.0,
+            "per": 3.0,
+            "a": 10.0,
+            "inc": 90.0,
+            "ecc": 0.0,
+            "w": 0.0,
+            "u": [[0.2, 0.2]],
+        }
+        method = "exoplanet"
 
     # update based on explicit keyword arguments
     parameters_to_use.update(**transit_parameters)
