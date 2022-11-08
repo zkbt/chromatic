@@ -1,5 +1,4 @@
 from ...imports import *
-import batman
 
 __all__ = [
     "inject_systematics",
