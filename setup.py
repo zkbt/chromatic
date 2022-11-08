@@ -88,7 +88,6 @@ setup(
         "tqdm",
         "altair",
         "xarray",
-        "h5py",
     ],
     # what version of Python is required?
     python_requires=">=3.7",  # f-strings are introduced in 3.6!
@@ -109,6 +108,7 @@ setup(
             "twine",
             "pre-commit",
             "batman-package>=2.4.9",
+            "h5py",
         ],
         "modeling": ["batman-package>=2.4.9"],
     },
