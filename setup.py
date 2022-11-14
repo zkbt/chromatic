@@ -89,6 +89,7 @@ setup(
         "altair",
         "xarray",
         "h5py",
+        "exoplanet-core",
     ],
     # what version of Python is required?
     python_requires=">=3.7",  # f-strings are introduced in 3.6!
