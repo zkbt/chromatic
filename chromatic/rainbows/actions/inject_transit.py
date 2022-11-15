@@ -164,8 +164,8 @@ def batman_transit(
         The flux evaluated at each time.
     cached_inputs : dict
         A kludge to store any intermediate variables
-        needed to speed up computation (= none for
-        the trapezoidal transit).
+        needed to speed up computation (= batman_model
+        and batman_parameters for `batman`)
     """
 
     try:
@@ -206,10 +206,114 @@ def batman_transit(
     return flux, cached_inputs
 
 
-def exoplanet_transit(*args, **kwargs):
-    raise NotImplementedError(
-        "The `exoplanet-core` transit option isn't available yet. Sorry!"
+def exoplanet_transit(
+    t,
+    rp=0.1,
+    per=3.0,
+    t0=0.0,
+    a=10.0,
+    inc=90.0,
+    ecc=0.0,
+    w=0.0,
+    u=[0.2, 0.2],
+    *args,
+    **kwargs,
+):
+    """
+    One dimensional transit model with quadratic
+    limb-darkening, using the `exoplanet-core` package.
+
+    Parameters
+    ----------
+    t : array
+        The times at which to evaluate the model.
+    rp : float, array
+        The radius of the planet in stellar radii
+    per : float
+        The period of the planet, in days.
+    t0 : float
+        Mid-transit time of the transit, in days.
+    a : float, array
+        The semi-major axis of the orbit, in stellar radii.
+    inc : float, array
+        The inclination of the orbit, in degrees.
+    ecc: float, array
+        The eccentricity of the orbit, unitless.
+    w : float, array
+        The argument of periastron, in degrees.
+    u : array
+        The quadratic limb-darkening coefficients.
+
+    Returns
+    -------
+    monochromatic_flux : array
+        The flux evaluated at each time.
+    cached_inputs : dict
+        A kludge to store any intermediate variables
+        needed to speed up computation (= none for
+        `exoplanet` transits).
+    """
+
+    try:
+        from exoplanet_core import kepler, quad_limbdark_light_curve
+    except ImportError:
+        warnings.warn(
+            f"""
+        You're trying to produce a transit model using `exoplanet_core`,
+        but it looks like you don't have `exoplanet_core` installed
+        in the environment from which you're running `chromatic`.
+
+        Please either install it with `pip install exoplanet-core`
+        (see https://github.com/exoplanet-dev/exoplanet-core for details)
+        or use the `.inject_transit(..., method='trapezoid')`
+        option instead.
+        """
+        )
+
+    # these two handy functions were adapted from the Exoplanet code:
+    def warp_times(times, t_0, _pad=True):
+        if _pad:
+            return np.pad(t, (0, len(times)), "constant", constant_values=1) - t_0
+        return times - t_0
+
+    def get_true_anomaly(times, t_0, t_ref, n_per, e, _pad=True):
+        M = (warp_times(times, t_0, _pad=_pad) - t_ref) * n_per
+        if e == 0:
+            return np.sin(M), np.cos(M)
+        sin_f, cos_f = kepler(M, e + np.zeros(len(M)))
+        return sin_f, cos_f
+
+    n = 2 * np.pi / per
+    opsw = 1 + np.sin(w)
+    E0 = 2 * np.arctan2(
+        np.sqrt(1 - ecc) * np.cos(w),
+        np.sqrt(1 + ecc) * opsw,
     )
+    M0 = E0 - ecc * np.sin(E0)
+    t_periastron = t0 - M0 / n
+    tref = t_periastron - t0
+
+    # calculate the true anomaly as a function of time:
+    sinf, cosf = get_true_anomaly(t, t0, tref, n, ecc, _pad=False)
+    cosi = np.cos(inc * np.pi / 180)  # convert inclination to radians
+    sini = np.sin(inc * np.pi / 180)  # convert inclination to radians
+    w_rad = w * np.pi / 180  # convert omega to radians
+    cos_w_plus_f = (np.cos(w_rad) * cosf) - (np.sin(w_rad) * sinf)  # cos(f+w)
+    sin_w_plus_f = (np.sin(w_rad) * cosf) + (np.cos(w_rad) * sinf)  # sin(f+w)
+
+    # x,y,z equations from Winn (2010):
+    r = (a * (1 - (ecc**2))) / (1 + ecc * cosf)
+    x = -r * cos_w_plus_f
+    y = -r * sin_w_plus_f * cosi
+    z = r * sin_w_plus_f * sini
+    r_sky = np.sqrt(x**2 + y**2)
+
+    # use exoplanet_core functions to extract light curve:
+    # u_arr = np.array(u)
+    flux = quad_limbdark_light_curve(u[0], u[1], r_sky, rp)
+    # we only want the lightcurve where z > 0 (planet is between us and star)
+    flux[z < 0] = 0
+    return 1 + flux, {}
 
 
 transit_model_functions = dict(
@@ -220,7 +324,7 @@ transit_model_functions = dict(
 def inject_transit(
     self,
     planet_radius=0.1,
-    method="trapezoid",
+    method="exoplanet",
     **transit_parameters,
 ):
 
@@ -244,15 +348,15 @@ def inject_transit(
     that can be finicky to compile and/or install on different
     operating systems.
 
+    `'exoplanet'` to inject a limb-darkened transit using [exoplanet-core](https://github.com/exoplanet-dev/exoplanet-core).
+    This option requires `exoplanet-core` be installed,
+    but it doesn't require complicated dependencies or
+    compiling steps, so it's already included as a dependency.
+
     `'batman'` to inject a limb-darkened transit using [batman-package](https://lkreidberg.github.io/batman/docs/html/index.html)
     This method requires that `batman-package` be installed,
     and it will try to throw a helpful warning message if
     it's not.
-
-    `'exoplanet-core'` to inject a limb-darkened transit using [exoplanet-core](https://github.com/exoplanet-dev/exoplanet-core).
-    This option is still under developed. Coming soon! We hope
-    this will be the best of both worlds, prodiving a limb-darkened
-    transit without scary installation dependencies.
 
     Parameters
     ----------
@@ -269,15 +373,28 @@ def inject_transit(
         The accepted keywords for the different methods are as follows.
             `'trapezoid'` accepts the following keyword arguments:
                 `delta` = The depth of the transit, as a fraction of the out-of-transit flux (default 0.01)
-                (If not provided, it will be set by `depth` or `radius_ratio`.)
+                (If not provided, it will be set by `planet_radius`.)
                 `P` = The orbital period of the planet, in days (default 3.0)
                 `t0` = Mid-transit time of the transit, in days (default 0.0)
                 `T` = The duration of the transit (from mid-ingress to mid-egress), in days (default 0.1)
                 `tau` = The duration of ingress/egress, in days (default 0.01)
                 `baseline` = The baseline, out-of-transit flux level (default 1.0)
+            `'exoplanet-core'` accepts the following keyword arguments:
+                `rp` = (planet radius)/(star radius), unitless (default 0.1)
+                (If not provided, it will be set by `planet_radius`.)
+                `t0` = Mid-transit time of the transit, in days (default 0.0)
+                `per` = The orbital period of the planet, in days (default 3.0)
+                `a` = (semi-major axis)/(star radius), unitless (default 10)
+                `inc` = The orbital inclination, in degrees (default 90)
+                `ecc` = The orbital eccentricity, unitless (default 0.0)
+                `w` = The longitude of periastron, in degrees (default 0.0)
+                `u` = The quadratic limb-darkening coefficients (default [0.2, 0.2])
+                    These coefficients can only be a 2D array of the form (n_wavelengths, n_coefficients) where
+                    each row is the set of limb-darkening coefficients corresponding
+                    to a single wavelength
             `'batman'` accepts the following keyword arguments:
                 `rp` = (planet radius)/(star radius), unitless (default 0.1)
-                (If not provided, it will be set by depth or radius_ratio.)
+                (If not provided, it will be set by `planet_radius`.)
                 `t0` = Mid-transit time of the transit, in days (default 0.0)
                 `per` = The orbital period of the planet, in days (default 1.0)
                 `a` = (semi-major axis)/(star radius), unitless (default 10)
@@ -297,6 +414,8 @@ def inject_transit(
                     coefficient vs wavelength variations itself; there exist codes
                     (such as hpparvi/PyLDTk and nespinoza/limb-darkening) which
                     can be used for this.
+
+
     """
 
     # create a history entry for this action (before other variables are defined)
@@ -322,6 +441,17 @@ def inject_transit(
             "tau": 0.01,
             "baseline": 1.0,
         }
+    elif method == "exoplanet":
+        parameters_to_use = {
+            "rp": planet_radius,
+            "t0": 0.0,
+            "per": 3.0,
+            "a": 10.0,
+            "inc": 90.0,
+            "ecc": 0.0,
+            "w": 0.0,
+            "u": [[0.2, 0.2]],
+        }
     elif method == "batman":
         parameters_to_use = {
             "rp": planet_radius,
@@ -334,6 +464,12 @@ def inject_transit(
             "limb_dark": "quadratic",
             "u": [[0.2, 0.2]],
         }
+    else:
+        raise ValueError(
+            f"""
+        'method' must be one of ['exoplanet', 'trapezoid', 'batman']
+        """
+        )
 
     # update based on explicit keyword arguments
     parameters_to_use.update(**transit_parameters)
