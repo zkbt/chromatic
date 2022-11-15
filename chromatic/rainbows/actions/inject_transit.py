@@ -220,8 +220,8 @@ def exoplanet_transit(
     **kwargs,
 ):
     """
-    One dimensional transit model,
-    using the `exoplanet-core` package.
+    One dimensional transit model with quadratic
+    limb-darkening, using the `exoplanet-core` package.
 
     Parameters
     ----------
@@ -324,7 +324,7 @@ transit_model_functions = dict(
 def inject_transit(
     self,
     planet_radius=0.1,
-    method="e",
+    method="exoplanet",
     **transit_parameters,
 ):
 
@@ -373,7 +373,7 @@ def inject_transit(
         The accepted keywords for the different methods are as follows.
             `'trapezoid'` accepts the following keyword arguments:
                 `delta` = The depth of the transit, as a fraction of the out-of-transit flux (default 0.01)
-                (If not provided, it will be set by `depth` or `radius_ratio`.)
+                (If not provided, it will be set by `planet_radius`.)
                 `P` = The orbital period of the planet, in days (default 3.0)
                 `t0` = Mid-transit time of the transit, in days (default 0.0)
                 `T` = The duration of the transit (from mid-ingress to mid-egress), in days (default 0.1)
@@ -381,7 +381,7 @@ def inject_transit(
                 `baseline` = The baseline, out-of-transit flux level (default 1.0)
             `'exoplanet-core'` accepts the following keyword arguments:
                 `rp` = (planet radius)/(star radius), unitless (default 0.1)
-                (If not provided, it will be set by depth or radius_ratio.)
+                (If not provided, it will be set by `planet_radius`.)
                 `t0` = Mid-transit time of the transit, in days (default 0.0)
                 `per` = The orbital period of the planet, in days (default 3.0)
                 `a` = (semi-major axis)/(star radius), unitless (default 10)
@@ -392,13 +392,9 @@ def inject_transit(
                     These coefficients can only be a 2D array of the form (n_wavelengths, n_coefficients) where
                     each row is the set of limb-darkening coefficients corresponding
                     to a single wavelength
-                    Note that this currently does not calculate the appropriate
-                    coefficient vs wavelength variations itself; there exist codes
-                    (such as hpparvi/PyLDTk and nespinoza/limb-darkening) which
-                    can be used for this.
             `'batman'` accepts the following keyword arguments:
                 `rp` = (planet radius)/(star radius), unitless (default 0.1)
-                (If not provided, it will be set by depth or radius_ratio.)
+                (If not provided, it will be set by `planet_radius`.)
                 `t0` = Mid-transit time of the transit, in days (default 0.0)
                 `per` = The orbital period of the planet, in days (default 1.0)
                 `a` = (semi-major axis)/(star radius), unitless (default 10)
@@ -468,6 +464,12 @@ def inject_transit(
             "limb_dark": "quadratic",
             "u": [[0.2, 0.2]],
         }
+    else:
+        raise ValueError(
+            f"""
+        'method' must be one of ['exoplanet', 'trapezoid', 'batman']
+        """
+        )
 
     # update based on explicit keyword arguments
     parameters_to_use.update(**transit_parameters)

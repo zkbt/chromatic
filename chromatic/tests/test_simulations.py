@@ -57,13 +57,13 @@ def test_inject_transit():
     assert np.all(t.wavelike["injected_transit_delta"] == delta)
 
     # test that all methods work
-    fi, ax = plt.subplots(2, 2, figsize=(8, 6), constrained_layout=True, dpi=300)
+    fi, ax = plt.subplots(3, 2, figsize=(8, 6), constrained_layout=True, dpi=300)
 
     method = "trapezoid"
     s.inject_transit(method=method).imshow(ax=ax[0, 0])
     plt.title(f"{method} | default")
     s.inject_transit(
-        planet_radius=0.5 * np.sin(x * 10),
+        planet_radius=np.sqrt(x) / 10,
         tau=0.02,
         t0=x * 0.03,
         T=x * 0.05,
@@ -71,19 +71,31 @@ def test_inject_transit():
     ).imshow(ax=ax[0, 1])
     plt.title(f"{method} | wacky")
 
-    method = "batman"
-    plt.title(f"{method} | default")
+    method = "exoplanet"
     s.inject_transit(method=method).imshow(ax=ax[1, 0])
     plt.title(f"{method} | default")
     s.inject_transit(
-        planet_radius=0.5 * np.sin(x * 10),
+        planet_radius=np.sqrt(x) / 10,
+        t0=x * 0.03,
+        inc=89,
+        a=1 / x * 10,
+        u=np.random.uniform(0, 0.5, [s.nwave, 2]),
+        method=method,
+    ).imshow(ax=ax[1, 1])
+    plt.title(f"{method} | wacky")
+
+    method = "batman"
+    s.inject_transit(method=method).imshow(ax=ax[2, 0])
+    plt.title(f"{method} | default")
+    s.inject_transit(
+        planet_radius=np.sqrt(x) / 10,
         t0=x * 0.03,
         inc=89,
         a=1 / x * 10,
         limb_dark="nonlinear",
         u=np.random.uniform(0, 0.5, [s.nwave, 4]),
         method=method,
-    ).imshow(ax=ax[1, 1])
+    ).imshow(ax=ax[2, 1])
     plt.title(f"{method} | wacky")
 
     plt.savefig(os.path.join(test_directory, "demonstration-of-injecting-transit.pdf"))
