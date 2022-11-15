@@ -110,6 +110,7 @@ setup(
             "twine",
             "pre-commit",
             "batman-package>=2.4.9",
+            "h5py",
         ],
         "modeling": ["batman-package>=2.4.9"],
     },
