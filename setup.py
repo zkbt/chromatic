@@ -89,6 +89,7 @@ setup(
         "altair",
         "xarray",
         "h5py",
+        "h5netcdf",
         "exoplanet-core",
     ],
     # what version of Python is required?

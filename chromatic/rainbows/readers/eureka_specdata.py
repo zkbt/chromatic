@@ -59,11 +59,28 @@ def from_eureka_SpecData(rainbow, filepath, optimal=True):
 
     # populate a 1D array of times (with astropy units of time)
     k = "time"
-    if dataset[k].attrs["time_units"] == "BJD_TDB":
+    if dataset[k].attrs["time_units"] == "BMJD_TDB":
         astropy_times = Time(dataset[k].data, format="mjd", scale="tdb")
         rainbow.set_times_from_astropy(astropy_times, is_barycentric=True)
+    elif dataset[k].attrs["time_units"] == "BJD_TDB":
+        astropy_times = Time(dataset[k].data, format="mjd", scale="tdb")
+        rainbow.set_times_from_astropy(astropy_times, is_barycentric=True)
+        cheerfully_suggest(
+            f"""
+        Times are being estimated from the 'BJD_TDB'
+        keyword but being interpreted as "modified"
+        BJD_TDB ("modified" = BJD_TDB - 2400000.5).
+        This accounts for an earlier version of Eureka;
+        in the latest version times should likely be
+        listed as 'BMJD_TDB' to be more honest about
+        the fact that they're modified.
+
+        If we're interpreting times wrongly, please
+        raise an issue on the chromatic github!
+        """
+        )
     else:
-        t_unit = u.Unit(dataset[t_key].attrs["time_units"])
+        t_unit = u.Unit(dataset[k].attrs["time_units"])
         t_without_unit = dataset[k].data
         rainbow.timelike["time"] = t_without_unit * t_unit
     keys_used.append(k)

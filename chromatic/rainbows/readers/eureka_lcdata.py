@@ -63,8 +63,24 @@ def from_eureka_LCData(rainbow, filepath):
     # populate a 1D array of times (with astropy units of time)
     k = "time"
     t_without_unit = dataset[k].data
-    if dataset[k].attrs["time_units"] == "BJD_TDB":
+    if dataset[k].attrs["time_units"] == "BMJD_TDB":
         t_unit = u.day
+    elif dataset[k].attrs["time_units"] == "BJD_TDB":
+        t_unit = u.day
+        cheerfully_suggest(
+            f"""
+        Times are being estimated from the 'BJD_TDB'
+        keyword but being interpreted as "modified"
+        BJD_TDB ("modified" = BJD_TDB - 2400000.5).
+        This accounts for an earlier version of Eureka;
+        in the latest version times should likely be
+        listed as 'BMJD_TDB' to be more honest about
+        the fact that they're modified.
+
+        If we're interpreting times wrongly, please
+        raise an issue on the chromatic github!
+        """
+        )
     else:
         t_unit = u.Unit(dataset[t_key].attrs["time_units"])
     rainbow.timelike["time"] = t_without_unit * t_unit
