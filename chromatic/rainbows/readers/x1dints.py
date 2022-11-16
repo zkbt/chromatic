@@ -155,6 +155,27 @@ def get_wavelengths_from_x1dints_files(
         return {"wavelength": hdu[e].data["wavelength"] * wavelength_unit * 1}
 
 
+def get_versions_from_x1dints_files(filenames):
+    try:
+        versions = []
+        for f in filenames:
+            with fits.open(f) as hdu:
+                versions.append(hdu["PRIMARY"].header["CAL_VER"])
+    except KeyError:
+        cheerfully_suggest(
+            f"""
+                There's no calibration version in the header of file {f} """
+        )
+
+    if not all(x == versions[0] for x in versions):
+        cheerfully_suggest(
+            f"""There is a mismatch in calibration versions between your files, are you sure you want to stitch 
+            them all together?"""
+        )
+
+    return versions
+
+
 def from_x1dints(rainbow, filepath, order=None, **kw):
     """
     Populate a Rainbow from an STScI pipeline x1dints file,
@@ -177,6 +198,9 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
 
     # create a list of filenames (which might be just 1)
     filenames = expand_filenames(filepath)
+
+    # extract the versions of the calibration pipeline
+    cal_versions = get_versions_from_x1dints_files(filenames)
 
     # loop over file (each one a segment)
     for i_file, f in enumerate(filenames):
@@ -231,11 +255,11 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
                     """
                     )
 
-                # define a complete list of
-                non_spectrum_extensions = [
-                    x for x in ["PRIMARY", "SCI", "INT_TIMES", "ASDF"] if x in hdu
-                ]
-                non_asdf_non_spectrum_extensions = non_spectrum_extensions[:-1]
+            # define a complete list of
+            non_spectrum_extensions = [
+                x for x in ["PRIMARY", "SCI", "INT_TIMES", "ASDF"] if x in hdu
+            ]
+            non_asdf_non_spectrum_extensions = non_spectrum_extensions[:-1]
 
             # set the index to the start of this segment
             integration_counter = hdu["PRIMARY"].header["INTSTART"]
