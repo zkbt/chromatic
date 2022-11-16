@@ -271,23 +271,31 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
                 x for x in ["PRIMARY", "SCI", "INT_TIMES", "ASDF"] if x in hdu
             ]
             non_asdf_non_spectrum_extensions = non_spectrum_extensions[:-1]
-
-            # set the index to the start of this segment
-            integration_counter = hdu["PRIMARY"].header["INTSTART"]
-            n_integrations_in_this_segment = (
-                hdu["PRIMARY"].header["INTEND"] - hdu["PRIMARY"].header["INTSTART"] + 1
-            )
-
-            # make sure sizes match, ignoring PRIMARY, SCI, ASDF
             N_integration_extensions = len(hdu) - len(non_spectrum_extensions)
-            N_expected_integration_extensions = (
-                n_integrations_in_this_segment * n_orders
-            )
 
             if pipeline_stage == 2:
+                # set the index to the start of this segment
+                integration_counter = hdu["PRIMARY"].header["INTSTART"]
+                n_integrations_in_this_segment = (
+                    hdu["PRIMARY"].header["INTEND"]
+                    - hdu["PRIMARY"].header["INTSTART"]
+                    + 1
+                )
+
+                # make sure sizes match, ignoring PRIMARY, SCI, ASDF
+                N_expected_integration_extensions = (
+                    n_integrations_in_this_segment * n_orders
+                )
+
                 # so far, all real Stage 2 files seem to behave normally
                 assert N_expected_integration_extensions == N_integration_extensions
             elif pipeline_stage == 3:
+                # in stage 3 files it looks like integration counters get copied wrongly; ignore them?
+                # (assume single segment?!)
+                integration_counter = 1
+                N_expected_integration_extensions = (
+                    hdu["PRIMARY"].header["NINTS"] * n_orders
+                )
                 # some Stage 3 files seem to have errors in the `INTSTART` + `INTEND` keywords
                 if N_expected_integration_extensions != N_integration_extensions:
                     cheerfully_suggest(
