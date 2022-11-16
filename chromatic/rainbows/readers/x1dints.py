@@ -246,25 +246,6 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
 
                 # guess if this file is stage 3 or earlier (= stage 2)
                 pipeline_stage = guess_jwst_pipeline_stage(hdu)
-                if pipeline_stage == 3:
-                    cheerfully_suggest(
-                        f"""
-                    YIKES! In our testing, we've found that some data products from Stage 3 of the
-                    STScI `jwst` pipeline have weird problems, including integration segments that
-                    have been stitched together in the wrong temporal order and/or missing time
-                    information for the individual integrations. If the `chromatic` reader succeeds
-                    in loading your requested data into a `Rainbow` object, you should still be
-                    very suspicious of them!
-
-                    A reasonable alternative, if you just want a quick look at the time-series
-                    spectra for your dataset, is to try to load the Stage 2 pipeline `x1dints`
-                    files. They won't have Stage 3's outlier-rejection applied (of which folks
-                    anyway still a little suspicious) but should otherwise be similar. These
-                    file(s) may be split into multiple segments, each with a format like
-                    `jw02734002001_04101_00001-seg*_nis_x1dints.fits`
-                    where the `*` can be used to point to all matching files in a location.
-                    """
-                    )
 
             # define a complete list of
             non_spectrum_extensions = [
@@ -363,8 +344,13 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
                     # get a lower case name for the unit
                     c = column.name.lower()
 
+                    if pipeline_stage == 2:
+                        current_time_index = integration_counter - 1
+                    elif pipeline_stage == 3:
+                        current_time_index = hdu[e].header["int_num"] - 1
+
                     # store in the appropriate column of fluxlike array
-                    rainbow.fluxlike[c][:, integration_counter - 1] = (
+                    rainbow.fluxlike[c][:, current_time_index] = (
                         hdu[e].data[c] * column_units[c] * 1
                     )
 
