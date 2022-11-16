@@ -150,7 +150,7 @@ def get_wavelengths_from_x1dints_files(
         unit_string = hdu[e].columns["wavelength"].unit
         if unit_string is None:
             unit_string = "micron"
-            cheerfully_suggest("No wavelength unit was found; assuming 'micron'.")
+            # cheerfully_suggest("No wavelength unit was found; assuming 'micron'.")
         wavelength_unit = u.Unit(unit_string)
         return {"wavelength": hdu[e].data["wavelength"] * wavelength_unit * 1}
 
