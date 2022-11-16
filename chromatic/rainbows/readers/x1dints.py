@@ -169,7 +169,7 @@ def get_versions_from_x1dints_files(filenames):
 
     if not all(x == versions[0] for x in versions):
         cheerfully_suggest(
-            f"""There is a mismatch in calibration versions between your files, are you sure you want to stitch 
+            f"""There is a mismatch in calibration versions between your files, are you sure you want to stitch
             them all together?"""
         )
 
@@ -207,6 +207,17 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
 
         # open this fits file
         with fits.open(f) as hdu:
+
+            if "EXTRACT1D" not in hdu:
+                raise ValueError(
+                    f"""
+                {filenames[0]}
+                contains no 'EXTRACT1D' extensions, meaning
+                it has no extracted spectra in it. Are you
+                sure that the file you're trying to load
+                should indeed contain extracted spectra?
+                """
+                )
 
             # if this is the first one, populate the shared stuff
             if i_file == 0:
