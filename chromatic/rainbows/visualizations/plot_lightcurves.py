@@ -15,7 +15,7 @@ def plot_lightcurves(
     vmax=None,
     errorbar=True,
     text=True,
-    minimum_acceptable_ok=1,
+    minimum_acceptable_ok=0.8,
     plotkw={},
     errorbarkw={},
     textkw={},
@@ -152,7 +152,7 @@ def plot_lightcurves(
                 color = self.get_wavelength_color(w)
 
                 # plot the data points (with offsets)
-                this_plotkw = dict(marker="o", linestyle="-", color=color)
+                this_plotkw = dict(marker="o", linestyle="-", markersize=5, color=color)
                 this_plotkw.update(**plotkw)
 
                 # set default for error bar lines

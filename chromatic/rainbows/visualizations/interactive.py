@@ -86,7 +86,7 @@ def imshow_interact(
     if len(source) > N_warning:
         cheerfully_suggest(
             f"""
-        The dataset {self} has {N_warning} data points/
+        The dataset {self} has >{N_warning} data points.
         The interactive plot may lag. Try binning first!
         """
         )
@@ -115,84 +115,92 @@ def imshow_interact(
     if len(ylim) > 0:
         domain = ylim
     else:
-        domain = [source[z].min() - 0.005, source[z].max() + 0.005]
+        domain = [
+            np.percentile(source[z], 2) - 0.001,
+            np.percentile(source[z], 98) + 0.001,
+        ]
 
-    # Add interactive part
-    brush = alt.selection(type="interval", encodings=["y"])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
 
-    # Define the 3D spectrum plot
-    spectrum = (
-        alt.Chart(source, width=280, height=230)
-        .mark_rect(
-            clip=False,
-            width=280 / len(self.timelike["time"]),
-            height=230 / len(self.wavelike["wavelength"]),
+        # Add interactive part
+        brush = alt.selection(type="interval", encodings=["y"])
+
+        # Define the 3D spectrum plot
+        spectrum = (
+            alt.Chart(source, width=280, height=230)
+            .mark_rect(
+                clip=False,
+                width=280 / len(self.timelike["time"]),
+                height=230 / len(self.wavelike["wavelength"]),
+            )
+            .encode(
+                x=alt.X(
+                    f"{xlabel}:Q",
+                    scale=alt.Scale(
+                        zero=False,
+                        nice=False,
+                        domain=[np.min(source[xlabel]), np.max(source[xlabel])],
+                    ),
+                ),
+                y=alt.Y(
+                    f"{ylabel}:Q",
+                    scale=alt.Scale(
+                        zero=False,
+                        nice=False,
+                        domain=[np.max(source[ylabel]), np.min(source[ylabel])],
+                    ),
+                ),
+                fill=alt.Color(
+                    f"{z}:Q",
+                    scale=alt.Scale(
+                        scheme=cmap,
+                        zero=False,
+                        domain=domain,
+                    ),
+                ),
+                tooltip=[f"{xlabel}", f"{ylabel}", f"{z}"],
+            )
         )
-        .encode(
-            x=alt.X(
-                f"{xlabel}:Q",
-                scale=alt.Scale(
-                    zero=False,
-                    nice=False,
-                    domain=[np.min(source[xlabel]), np.max(source[xlabel])],
+
+        # gray out the background with selection
+        background = spectrum.encode(color=alt.value("#ddd")).add_selection(brush)
+
+        # highlights on the transformed data
+        highlight = spectrum.transform_filter(brush)
+
+        # Layer the various plotting parts
+        spectrum_int = alt.layer(background, highlight, data=source)
+
+        # Add the 2D averaged lightcurve (or uncertainty)
+        lightcurve = (
+            alt.Chart(
+                source, width=280, height=230, title=f"Mean {z} for Wavelength Range"
+            )
+            .mark_point(filled=True, size=20, color="black")
+            .encode(
+                x=alt.X(
+                    f"{xlabel}:Q",
+                    scale=alt.Scale(
+                        zero=False,
+                        nice=False,
+                        domain=[
+                            np.min(source[xlabel])
+                            - (0.02 * np.abs(np.min(source[xlabel]))),
+                            1.02 * np.max(source[xlabel]),
+                        ],
+                    ),
                 ),
-            ),
-            y=alt.Y(
-                f"{ylabel}:Q",
-                scale=alt.Scale(
-                    zero=False,
-                    nice=False,
-                    domain=[np.max(source[ylabel]), np.min(source[ylabel])],
+                y=alt.Y(
+                    f"mean({z}):Q",
+                    scale=alt.Scale(zero=False, domain=domain),
+                    title="Mean " + z,
                 ),
-            ),
-            fill=alt.Color(
-                f"{z}:Q",
-                scale=alt.Scale(
-                    scheme=cmap,
-                    zero=False,
-                    domain=domain,
-                ),
-            ),
-            tooltip=[f"{xlabel}", f"{ylabel}", f"{z}"],
+            )
+            .transform_filter(brush)
         )
-    )
 
-    # gray out the background with selection
-    background = spectrum.encode(color=alt.value("#ddd")).add_selection(brush)
-
-    # highlights on the transformed data
-    highlight = spectrum.transform_filter(brush)
-
-    # Layer the various plotting parts
-    spectrum_int = alt.layer(background, highlight, data=source)
-
-    # Add the 2D averaged lightcurve (or uncertainty)
-    lightcurve = (
-        alt.Chart(source, width=280, height=230, title=f"Mean {z} for Wavelength Range")
-        .mark_point(filled=True, size=20, color="black")
-        .encode(
-            x=alt.X(
-                f"{xlabel}:Q",
-                scale=alt.Scale(
-                    zero=False,
-                    nice=False,
-                    domain=[
-                        np.min(source[xlabel])
-                        - (0.02 * np.abs(np.min(source[xlabel]))),
-                        1.02 * np.max(source[xlabel]),
-                    ],
-                ),
-            ),
-            y=alt.Y(
-                f"mean({z}):Q",
-                scale=alt.Scale(zero=False, domain=domain),
-                title="Mean " + z,
-            ),
-        )
-        .transform_filter(brush)
-    )
-
-    # display the interactive Altair plot
-    (spectrum_int | lightcurve).display()
-    if filename is not None:
-        (spectrum_int | lightcurve).save(self._label_plot_file(filename))
+        # display the interactive Altair plot
+        (spectrum_int | lightcurve).display()
+        if filename is not None:
+            (spectrum_int | lightcurve).save(self._label_plot_file(filename))

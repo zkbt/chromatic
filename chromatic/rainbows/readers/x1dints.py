@@ -150,9 +150,30 @@ def get_wavelengths_from_x1dints_files(
         unit_string = hdu[e].columns["wavelength"].unit
         if unit_string is None:
             unit_string = "micron"
-            cheerfully_suggest("No wavelength unit was found; assuming 'micron'.")
+            # cheerfully_suggest("No wavelength unit was found; assuming 'micron'.")
         wavelength_unit = u.Unit(unit_string)
         return {"wavelength": hdu[e].data["wavelength"] * wavelength_unit * 1}
+
+
+def get_versions_from_x1dints_files(filenames):
+    try:
+        versions = []
+        for f in filenames:
+            with fits.open(f) as hdu:
+                versions.append(hdu["PRIMARY"].header["CAL_VER"])
+    except KeyError:
+        cheerfully_suggest(
+            f"""
+                There's no calibration version in the header of file {f} """
+        )
+
+    if not all(x == versions[0] for x in versions):
+        cheerfully_suggest(
+            f"""There is a mismatch in calibration versions between your files, are you sure you want to stitch
+            them all together?"""
+        )
+
+    return versions
 
 
 def from_x1dints(rainbow, filepath, order=None, **kw):
@@ -178,11 +199,25 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
     # create a list of filenames (which might be just 1)
     filenames = expand_filenames(filepath)
 
+    # extract the versions of the calibration pipeline
+    cal_versions = get_versions_from_x1dints_files(filenames)
+
     # loop over file (each one a segment)
     for i_file, f in enumerate(filenames):
 
         # open this fits file
         with fits.open(f) as hdu:
+
+            if "EXTRACT1D" not in hdu:
+                raise ValueError(
+                    f"""
+                {filenames[0]}
+                contains no 'EXTRACT1D' extensions, meaning
+                it has no extracted spectra in it. Are you
+                sure that the file you're trying to load
+                should indeed contain extracted spectra?
+                """
+                )
 
             # if this is the first one, populate the shared stuff
             if i_file == 0:
@@ -211,48 +246,37 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
 
                 # guess if this file is stage 3 or earlier (= stage 2)
                 pipeline_stage = guess_jwst_pipeline_stage(hdu)
-                if pipeline_stage == 3:
-                    cheerfully_suggest(
-                        f"""
-                    YIKES! In our testing, we've found that some data products from Stage 3 of the
-                    STScI `jwst` pipeline have weird problems, including integration segments that
-                    have been stitched together in the wrong temporal order and/or missing time
-                    information for the individual integrations. If the `chromatic` reader succeeds
-                    in loading your requested data into a `Rainbow` object, you should still be
-                    very suspicious of them!
 
-                    A reasonable alternative, if you just want a quick look at the time-series
-                    spectra for your dataset, is to try to load the Stage 2 pipeline `x1dints`
-                    files. They won't have Stage 3's outlier-rejection applied (of which folks
-                    anyway still a little suspicious) but should otherwise be similar. These
-                    file(s) may be split into multiple segments, each with a format like
-                    `jw02734002001_04101_00001-seg*_nis_x1dints.fits`
-                    where the `*` can be used to point to all matching files in a location.
-                    """
-                    )
-
-                # define a complete list of
-                non_spectrum_extensions = [
-                    x for x in ["PRIMARY", "SCI", "INT_TIMES", "ASDF"] if x in hdu
-                ]
-                non_asdf_non_spectrum_extensions = non_spectrum_extensions[:-1]
-
-            # set the index to the start of this segment
-            integration_counter = hdu["PRIMARY"].header["INTSTART"]
-            n_integrations_in_this_segment = (
-                hdu["PRIMARY"].header["INTEND"] - hdu["PRIMARY"].header["INTSTART"] + 1
-            )
-
-            # make sure sizes match, ignoring PRIMARY, SCI, ASDF
+            # define a complete list of
+            non_spectrum_extensions = [
+                x for x in ["PRIMARY", "SCI", "INT_TIMES", "ASDF"] if x in hdu
+            ]
+            non_asdf_non_spectrum_extensions = non_spectrum_extensions[:-1]
             N_integration_extensions = len(hdu) - len(non_spectrum_extensions)
-            N_expected_integration_extensions = (
-                n_integrations_in_this_segment * n_orders
-            )
 
             if pipeline_stage == 2:
+                # set the index to the start of this segment
+                integration_counter = hdu["PRIMARY"].header["INTSTART"]
+                n_integrations_in_this_segment = (
+                    hdu["PRIMARY"].header["INTEND"]
+                    - hdu["PRIMARY"].header["INTSTART"]
+                    + 1
+                )
+
+                # make sure sizes match, ignoring PRIMARY, SCI, ASDF
+                N_expected_integration_extensions = (
+                    n_integrations_in_this_segment * n_orders
+                )
+
                 # so far, all real Stage 2 files seem to behave normally
                 assert N_expected_integration_extensions == N_integration_extensions
             elif pipeline_stage == 3:
+                # in stage 3 files it looks like integration counters get copied wrongly; ignore them?
+                # (assume single segment?!)
+                integration_counter = 1
+                N_expected_integration_extensions = (
+                    hdu["PRIMARY"].header["NINTS"] * n_orders
+                )
                 # some Stage 3 files seem to have errors in the `INTSTART` + `INTEND` keywords
                 if N_expected_integration_extensions != N_integration_extensions:
                     cheerfully_suggest(
@@ -320,8 +344,13 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
                     # get a lower case name for the unit
                     c = column.name.lower()
 
+                    if pipeline_stage == 2:
+                        current_time_index = integration_counter - 1
+                    elif pipeline_stage == 3:
+                        current_time_index = hdu[e].header["int_num"] - 1
+
                     # store in the appropriate column of fluxlike array
-                    rainbow.fluxlike[c][:, integration_counter - 1] = (
+                    rainbow.fluxlike[c][:, current_time_index] = (
                         hdu[e].data[c] * column_units[c] * 1
                     )
 
