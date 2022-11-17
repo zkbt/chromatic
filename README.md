@@ -36,4 +36,4 @@ A great initial way to contribute would be to [submit an Issue](https://github.c
 
 *And for context, Zach is a little new to trying to manage a big collaborative code project, so if there are things we could be doing better, please let him know!*
 
-The approximate goal is currently (as of May 2022) to have the code ready and the documentation complete enough to submit `chromatic-lightcurves` to the [Journal of Open Source Software](https://joss.theoj.org/) early enough to be a documented tool in support of the real ERS data (so, like, early late June 2022). If you contribute before then, you'll be included on the paper!
+The goal is to submit `chromatic-lightcurves` to the [Journal of Open Source Software](https://joss.theoj.org/) before the end of 2022. If you contribute before then, you'll be included on the paper!
