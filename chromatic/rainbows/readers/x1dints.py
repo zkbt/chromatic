@@ -236,7 +236,7 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
                     if n_orders > 1:
                         cheerfully_suggest(
                             f"""
-                        This file contains data for {n_orders} spectrosopic orders. Because no
+                        This file contains data for {n_orders} spectroscopic orders. Because no
                         `order=` keyword was supplied, we're defaulting to first order. You can
                         hide this warning by expliciting stating which order you want to load.
                         For this file, the options include {np.arange(n_orders) + 1}.
