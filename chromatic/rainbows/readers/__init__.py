@@ -16,6 +16,7 @@ from .xarray_fitted_light_curves import *
 # some particular instruments
 from .nres import *
 from .atoca import *
+from .hst import *
 
 # some individual-ish folks
 from .espinoza import *
