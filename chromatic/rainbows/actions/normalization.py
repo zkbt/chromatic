@@ -3,7 +3,7 @@ from ...imports import *
 __all__ = ["normalize", "_is_probably_normalized"]
 
 
-def normalize(self, axis="wavelength", percentile=50):
+def normalize(self, axis="wavelength", percentile=50, ignore_bad_values=False):
     """
     Normalize by dividing through by the median spectrum and/or lightcurve.
 
@@ -47,9 +47,13 @@ def normalize(self, axis="wavelength", percentile=50):
     # (ignore nan warnings)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
+        ok_flux = new.flux.copy()
+        if ignore_bad_values:
+            ok_flux, sigma = new.get_ok_data(express_badness_with_uncertainty=True)[1]
+            ok_flux[~np.isfinite(sigma)] = np.nan
 
         if axis.lower()[0] == "w":
-            normalization = np.nanpercentile(new.flux, percentile, axis=self.timeaxis)
+            normalization = np.nanpercentile(ok_flux, percentile, axis=self.timeaxis)
             for k in self._keys_that_respond_to_math:
                 new.fluxlike[k] = new.get(k) / normalization[:, np.newaxis]
             try:
@@ -59,7 +63,11 @@ def normalize(self, axis="wavelength", percentile=50):
             except ValueError:
                 pass
         elif axis.lower()[0] == "t":
-            normalization = np.nanpercentile(self.flux, percentile, axis=self.waveaxis)
+            normalization = []
+            for i in range(self.ntime):
+                wave_avg_data = self.get_ok_data_for_time(i=i)[1]
+                normalization.append(np.nanpercentile(wave_avg_data, percentile))
+            # normalization = np.nanpercentile(ok_flux, percentile, axis=self.waveaxis)
             for k in self._keys_that_respond_to_math:
                 new.fluxlike[k] = new.get(k) / normalization[np.newaxis, :]
             try:

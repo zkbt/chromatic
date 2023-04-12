@@ -817,8 +817,9 @@ class Rainbow:
 
         # make sure 2D arrays are uniquely named from 1D
         for k in tuple(self.fluxlike.keys()):
-            if (k in self.wavelike) or (k in self.timelike):
-                self.fluxlike[f"{k}_2d"] = self.fluxlike.pop(k)
+            if k is not "ok":
+                if (k in self.wavelike) or (k in self.timelike):
+                    self.fluxlike[f"{k}_2d"] = self.fluxlike.pop(k)
 
         if "ok" in self.fluxlike:
             is_nan = np.isnan(self.fluxlike["flux"])
@@ -1014,6 +1015,9 @@ class Rainbow:
         get_times_as_astropy,
         set_times_from_astropy,
     )
+
+    # import 2D summary statistics
+    from .get.fluxlike import get_ok_data
 
     # import visualizations that can act on Rainbows
     from .visualizations import (
