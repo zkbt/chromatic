@@ -85,11 +85,11 @@ def normalize(self, axis="wavelength", percentile=50):
         fix = {
             "w": """
                 ok = rainbow.get_median_spectrum() > 0
-                rainbow[ok, :]
+                rainbow[ok, :].normalize()
         """,
             "t": """
                 ok = rainbow.get_median_lightcurve() > 0
-                rainbow[:, ok]
+                rainbow[:, ok].normalize()
         """,
         }[a]
         if np.any(normalization < 0):
