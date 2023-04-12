@@ -44,12 +44,20 @@ def normalize(self, axis="wavelength", percentile=50):
     # create an empty copy
     new = self._create_copy()
 
+    # shortcut for the first letter of the axis
+    a = axis.lower()[0]
+
     # (ignore nan warnings)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
-        if axis.lower()[0] == "w":
-            normalization = np.nanpercentile(new.flux, percentile, axis=self.timeaxis)
+        # get fluxes, with not-OK replaced with nans
+        flux_for_normalizing = new.get_ok_data()
+        negative_normalization_message = ""
+        if a == "w":
+            normalization = np.nanpercentile(
+                flux_for_normalizing, percentile, axis=self.timeaxis
+            )
             for k in self._keys_that_respond_to_math:
                 new.fluxlike[k] = new.get(k) / normalization[:, np.newaxis]
             try:
@@ -58,8 +66,11 @@ def normalize(self, axis="wavelength", percentile=50):
                 )
             except ValueError:
                 pass
-        elif axis.lower()[0] == "t":
-            normalization = np.nanpercentile(self.flux, percentile, axis=self.waveaxis)
+
+        elif a == "t":
+            normalization = np.nanpercentile(
+                flux_for_normalizing, percentile, axis=self.waveaxis
+            )
             for k in self._keys_that_respond_to_math:
                 new.fluxlike[k] = new.get(k) / normalization[np.newaxis, :]
             try:
@@ -68,6 +79,33 @@ def normalize(self, axis="wavelength", percentile=50):
                 )
             except ValueError:
                 pass
+
+    if a in "wt":
+        thing = {"w": "wavelengths", "t": "times"}[a]
+        fix = {
+            "w": """
+                ok = rainbow.get_median_spectrum() > 0
+                rainbow[ok, :].normalize()
+        """,
+            "t": """
+                ok = rainbow.get_median_lightcurve() > 0
+                rainbow[:, ok].normalize()
+        """,
+        }[a]
+        if np.any(normalization < 0):
+            cheerfully_suggest(
+                f"""
+            There are {np.sum(normalization < 0)} negative {thing} that
+            are going into the normalization of this Rainbow. If you're
+            not expecting negative fluxes, it may be useful to trim them
+            away with something like:
+
+            {fix}
+
+            Otherwise, watch out that your fluxes and uncertainties may
+            potentially have flipped sign!
+            """
+            )
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
