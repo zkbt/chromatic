@@ -5,7 +5,7 @@ from ...imports import *
 __all__ = ["from_hst_stis"]
 
 
-def get_wavelengths_from_x1dints_files(filenames, order=1):
+def get_wavelengths_from_x1dints_files(filenames, order=1, end_wavelengths_to_remove=0):
     """
     Wrapper to extract wavelengths from a list of file segments.
 
@@ -14,7 +14,9 @@ def get_wavelengths_from_x1dints_files(filenames, order=1):
     filenames : list
         The files to open, hopefully sorted.
     order : int or list or None
-        The orders to extract
+        The orders to extract, default=1
+    end_wavelengths_to_remove : int
+        The number of 'edge' wavelengths to remove from each order, default=0
 
     """
     with fits.open(filenames[0]) as hdu:
@@ -29,19 +31,48 @@ def get_wavelengths_from_x1dints_files(filenames, order=1):
             if unit_string[-1] == "s":
                 wavelength_unit = u.Unit(unit_string[:-1])
 
+        wave_shape = np.shape(hdu["SCI"].data["wavelength"])
+
         if order is None:
-            n_orders = np.shape(hdu["SCI"].data["wavelength"])[0]
-            wave = []
+            n_orders = wave_shape[0]
+            wavelengths_per_order = wave_shape[1]
+            wave, not_ok = [], []
             for n in range(n_orders):
-                wave.extend(hdu["SCI"].data["wavelength"][n])
+                w = hdu["SCI"].data["wavelength"][n]
+                wave.extend(w)
+                not_ok.extend(
+                    1
+                    * (
+                        (np.arange(wave_shape[1]) >= end_wavelengths_to_remove)
+                        & (
+                            np.arange(wave_shape[1])
+                            < wave_shape[1] - end_wavelengths_to_remove
+                        )
+                    )
+                )
         elif type(order) == int:
             wave = hdu["SCI"].data["wavelength"][order]
+            not_ok = 1 * (
+                (np.arange(wave_shape[1]) >= end_wavelengths_to_remove)
+                & (np.arange(wave_shape[1]) < wave_shape[1] - end_wavelengths_to_remove)
+            )
         else:
-            wave = []
+            wave, not_ok = [], []
             for n, order_n in enumerate(order):
-                wave.extend(hdu["SCI"].data["wavelength"][order_n])
+                w = hdu["SCI"].data["wavelength"][order_n]
+                wave.extend(w)
+                not_ok.extend(
+                    1
+                    * (
+                        (np.arange(wave_shape[1]) >= end_wavelengths_to_remove)
+                        & (
+                            np.arange(wave_shape[1])
+                            < wave_shape[1] - end_wavelengths_to_remove
+                        )
+                    )
+                )
 
-    return {"wavelength": wave * wavelength_unit * 1}  # , "order":orders}
+    return {"wavelength": wave * wavelength_unit * 1}, not_ok  # , "order":orders}
 
 
 def get_times_from_x1dints_files(filenames):
@@ -85,9 +116,11 @@ def get_times_from_x1dints_files(filenames):
         )
 
 
-def from_hst_stis(rainbow, filepath, order=None, different_visits=True):
+def from_hst_stis(
+    rainbow, filepath, order=None, different_visits=True, end_wavelengths_to_remove=0
+):
     """
-    Populate a Rainbow from a file in the HST STIS format.
+    Populate a Rainbow from a file in the HST format.
 
     Parameters
     ----------
@@ -119,6 +152,7 @@ def from_hst_stis(rainbow, filepath, order=None, different_visits=True):
         Whether we want to store the headers/metadata from each
         time rather than just the first.
     """
+
     # create a list of filenames (which might be just 1)
     filenames = expand_filenames(filepath)
 
@@ -140,11 +174,15 @@ def from_hst_stis(rainbow, filepath, order=None, different_visits=True):
                     # just use one header for all data
                     rainbow.metadata["header"] = hdu["PRIMARY"].header
 
+                wave_shape = np.shape(hdu["SCI"].data["wavelength"])
+
                 # find the number of orders
-                if len(np.shape(hdu["SCI"].data["wavelength"])) > 1:
-                    n_orders = np.shape(hdu["SCI"].data["wavelength"])[0]
+                if len(wave_shape) > 1:
+                    n_orders = wave_shape[0]
+                    wavelengths_per_order = wave_shape[1]
                 else:
                     n_orders = 1
+                    wavelengths_per_order = wave_shape[0]
 
                     if order is None:
                         if n_orders > 1:
@@ -158,8 +196,13 @@ def from_hst_stis(rainbow, filepath, order=None, different_visits=True):
                             )
                 #                 assert (order >= 1) and (order <= n_orders)
 
-                wavelike = get_wavelengths_from_x1dints_files(filenames, order=order)
+                wavelike, not_ok = get_wavelengths_from_x1dints_files(
+                    filenames,
+                    order=order,
+                    end_wavelengths_to_remove=end_wavelengths_to_remove,
+                )
                 rainbow.wavelike.update(**wavelike)
+                rainbow.wavelike["ok"] = np.array(not_ok)
 
                 timelike = get_times_from_x1dints_files(filenames)
                 rainbow.timelike.update(**timelike)
@@ -204,33 +247,38 @@ def from_hst_stis(rainbow, filepath, order=None, different_visits=True):
                 if order is None:
                     for n in range(n_orders):
                         # store in the appropriate column of fluxlike array
+                        sci_data = hdu["SCI"].data[c][n]
                         rainbow.fluxlike[c][
                             n
                             * int(rainbow.nwave / n_orders) : (n + 1)
                             * int(rainbow.nwave / n_orders),
                             current_time_index,
                         ] = (
-                            hdu["SCI"].data[c][n] * column_units[c] * 1
+                            sci_data * column_units[c] * 1
                         )
                 elif type(order) == int:
                     # store in the appropriate column of fluxlike array
+                    sci_data = hdu["SCI"].data[c][order - 1]
                     rainbow.fluxlike[c][:, current_time_index] = (
-                        hdu["SCI"].data[c][order - 1] * column_units[c] * 1
+                        sci_data * column_units[c] * 1
                     )
                 else:
                     n_orders = len(order)
                     for n, order_n in enumerate(order):
                         # store in the appropriate column of fluxlike array
+                        sci_data = hdu["SCI"].data[c][order_n - 1]
                         rainbow.fluxlike[c][
                             n
                             * int(rainbow.nwave / n_orders) : (n + 1)
                             * int(rainbow.nwave / n_orders),
                             current_time_index,
                         ] = (
-                            hdu["SCI"].data[c][order_n - 1] * column_units[c] * 1
+                            sci_data * column_units[c] * 1
                         )
 
     if "uncertainty" not in rainbow.fluxlike.keys():
         if "error" in rainbow.fluxlike.keys():
             rainbow.fluxlike["uncertainty"] = rainbow.fluxlike["error"]
             rainbow.fluxlike.pop("error")
+
+    rainbow.fluxlike["ok"] = rainbow.fluxlike["uncertainty"] > 0
