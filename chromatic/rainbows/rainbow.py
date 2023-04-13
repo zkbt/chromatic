@@ -1006,7 +1006,7 @@ class Rainbow:
         get_ok_data_for_wavelength,
     )
 
-    # import summary statistics for each wavelength
+    # import summary statistics for each time
     from .get.timelike import (
         get_average_lightcurve,
         get_median_lightcurve,
@@ -1017,7 +1017,9 @@ class Rainbow:
     )
 
     # import 2D summary statistics
-    from .get.fluxlike import get_ok_data
+    from .get.fluxlike import (
+        get_ok_data,
+    )
 
     # import visualizations that can act on Rainbows
     from .visualizations import (
