@@ -1,4 +1,4 @@
 cartoon | name | description
 🙋🌈📄 | help | Get one-line help summaries of available methods.
 📓🌈🪵 | history | Get the history that went into this Rainbow.
-💾🌈📼 | save | Get the history that went into this Rainbow.
+💾🌈📼 | save | Save this Rainbow out to a permanent file.

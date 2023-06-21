@@ -105,12 +105,13 @@ def from_aylin(self, filepaths):
     self.timelike["time"] = u.Quantity(times)
     # self.timelike["filename"] = np.array(files)
 
-    # add some warnings if there's any funny business
     cheerfully_suggest(
         """
     These spectra may have slightly different wavelength grids for different time-points.
     These per-time wavelength arrays are stored in rainbow.fluxlike['wavelength_2d'].
     To align the fluxes onto a shared wavelength grid, we strongly suggest running
-    `aligned = rainbow.align_wavelengths(visualize=True)`
+        `aligned = rainbow.align_wavelengths()`
+    which will shift the flux values so that everything is on one shared wavelength grid,
+    at the cost of introducing slight correlations between adjacent data points.
     """
     )
