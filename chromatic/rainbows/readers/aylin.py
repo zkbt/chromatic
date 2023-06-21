@@ -46,10 +46,10 @@ def from_aylin(self, filepaths):
     N_wavelengths = np.max([len(t) for t in tables.values()])
 
     # create empty 2D arrays
-    unshifted_wavelengths = np.zeros((N_wavelengths, N_times))
-    shifted_wavelengths = np.zeros((N_wavelengths, N_times))
-    fluxes = np.zeros((N_wavelengths, N_times))
-    flux_uncertainties = np.zeros((N_wavelengths, N_times))
+    unshifted_wavelengths = np.zeros((N_wavelengths, N_times)) * np.nan
+    shifted_wavelengths = np.zeros((N_wavelengths, N_times)) * np.nan
+    fluxes = np.zeros((N_wavelengths, N_times)) * np.nan
+    flux_uncertainties = np.zeros((N_wavelengths, N_times)) * np.nan
 
     # create empty list for times
     times = []
@@ -61,10 +61,9 @@ def from_aylin(self, filepaths):
         t = tables[f]
 
         # use only finite wavelengths
-        ok = t["wavelength"] > 0
-        N_ok = np.sum(ok)
-        unshifted_wavelengths[:N_ok, i] = t["wavelength"][ok]
-        fluxes[:N_ok, i] = t["flux"][ok]
+        N_ok = len(t)
+        unshifted_wavelengths[:N_ok, i] = t["wavelength"]
+        fluxes[:N_ok, i] = t["flux"]
         flux_uncertainties[:N_ok, i] = t["flux_err"]
 
         # load the shifted wavelengths
@@ -77,7 +76,7 @@ def from_aylin(self, filepaths):
             data_start=1,
             names=["index", "wavelength"],
         )
-        shifted_wavelengths[:N_ok, i] = wavelength_table["wavelength"][ok]
+        shifted_wavelengths[:N_ok, i] = wavelength_table["wavelength"]
 
         # figure out the time from the filename
         s = f.split("Original_Spectrum")[0].split("_")[-1]
