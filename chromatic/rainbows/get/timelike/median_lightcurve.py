@@ -14,4 +14,4 @@ def get_median_lightcurve(self):
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        return np.nanmedian(self.flux, axis=0)
+        return np.nanmedian(self.get_ok_data(), axis=0)

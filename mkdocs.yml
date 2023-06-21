@@ -57,6 +57,8 @@ plugins:
       glob:
         - "example-datasets/*"
         - "*.pdf"
+        - "*.fits"
+        - "*.npy"
 markdown_extensions:
     - toc:
         permalink: "#"

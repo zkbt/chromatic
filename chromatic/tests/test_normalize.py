@@ -30,6 +30,30 @@ def test_normalize(plot=False):
     plt.close("all")
 
 
+def test_normalization_negative_warnings():
+    snr = 0.1
+    rainbow = SimulatedRainbow().inject_noise(signal_to_noise=0.1)
+
+    with pytest.warns(match="get_median_spectrum"):
+        rainbow.normalize(axis="wavelength")
+    ok = rainbow.get_median_spectrum() > 0
+    rainbow[ok, :].normalize(axis="wavelength")
+
+    with pytest.warns(match="get_median_lightcurve"):
+        rainbow.normalize(axis="time")
+    ok = rainbow.get_median_lightcurve() > 0
+    rainbow[:, ok].normalize(axis="time")
+
+
+def test_normalization_with_not_ok():
+    snr = 0.1
+    rainbow = SimulatedRainbow().inject_noise(signal_to_noise=0.1)
+    rainbow.ok = rainbow.flux > 0
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        rainbow.normalize()
+
+
 def test_is_probably_normalized():
     f = [2] * u.W / u.m**2
     kw = dict(star_flux=f, R=10, dt=10 * u.minute)

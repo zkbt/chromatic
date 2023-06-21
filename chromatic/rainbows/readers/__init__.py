@@ -25,6 +25,7 @@ from .schlawin import *
 from .coulombe import *
 from .kirk import *
 from .radica import *
+from .aylin import *
 
 
 # construct a dictionary of available readers
@@ -107,6 +108,8 @@ def guess_reader(filepath, format=None):
         return from_nres
     elif fnmatch(f, "*spec_*.fits"):
         return from_schlawin
+    elif fnmatch(f, "*Original_Spectrum.csv"):
+        return from_aylin
     else:
         raise ValueError(
             f"""

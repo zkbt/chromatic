@@ -91,10 +91,15 @@ def imshow(
         at least have its wavelength edges defined. We're giving up
         and just using the wavelength index as the wavelength axis.
 
-        If you want a real wavelength axis, one solution would
-        be to bin your wavelengths to a more uniform grid with
-        `rainbow.bin(R=...)` (for logarithmic wavelengths) or
-        `rainbow.bin(dw=...)` (for linear wavelengths)
+        If you want a real wavelength axis, one solution would be
+        to use `rainbow.pcolormesh()` instead of `rainbow.imshow()`.
+        It takes basically the same inputs but can handle non-uniform
+        grids.
+
+        Or, you could bin your wavelengths to a more uniform grid with
+        `binned = rainbow.bin(R=...)` (for logarithmic wavelengths)
+        or `binned = rainbow.bin(dw=...)` (for linear wavelengths)
+        and then `binned.imshow()` will give more informative axes.
         """
         cheerfully_suggest(message)
         wlower, wupper = -0.5, self.nwave - 0.5
@@ -125,9 +130,14 @@ def imshow(
         at least have its time edges defined. We're giving up
         and just using the time index as the time axis.
 
-        If you want a real time axis, one solution would
-        be to bin your times to a more uniform grid with
-        `rainbow.bin(dt=...)` (for linear times).
+        If you want a real time axis, one solution would be
+        to use `rainbow.pcolormesh()` instead of `rainbow.imshow()`.
+        It takes basically the same inputs but can handle non-uniform
+        grids.
+
+        Or, you could bin your times to a more uniform grid with
+        `binned = rainbow.bin(dt=...)` (for linear times) and then
+        `binned.imshow()` will give more informative axes.
         """
         cheerfully_suggest(message)
         tlower, tupper = -0.5, self.ntime - 0.5

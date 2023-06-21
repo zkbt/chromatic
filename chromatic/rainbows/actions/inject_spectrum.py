@@ -52,7 +52,7 @@ def inject_spectrum(
     new = self._create_copy()
 
     # warn if maybe we shouldn't inject anything
-    if np.all(self.flux != 1):
+    if np.all(u.Quantity(self.flux).value != 1):
         cheerfully_suggest(
             f"""
         None of the pre-existing flux values were 1,
