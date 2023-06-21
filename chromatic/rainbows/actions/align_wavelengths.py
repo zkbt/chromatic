@@ -18,6 +18,7 @@ def _create_shared_wavelength_axis(
         Options include:
             'linear' = constant d[wavelength] between grid points
             'log' = constant d[wavelength]/[wavelength] between grid points
+            'nonlinear' = the median wavelength grid for all time points
 
     supersampling : float
         By how many times should we increase or decrease the wavelength sampling?
@@ -37,7 +38,7 @@ def _create_shared_wavelength_axis(
         Should we make some plots showing how the shared wavelength
         axis compares to the original input wavelength axes?
     """
-    w = rainbow.fluxlike["wavelength_2d"] * 1
+    w = (rainbow.fluxlike["wavelength_2d"] * 1).to(u.micron)
     w[rainbow.ok == False] = np.nan
     dw_per_time = np.gradient(w, axis=rainbow.waveaxis)
     R_per_time = w / dw_per_time
@@ -65,6 +66,8 @@ def _create_shared_wavelength_axis(
     elif wscale == "log":
         R = np.nanmedian(w / dw_per_time) * supersampling
         shared_w = np.exp(np.arange(np.log(min_w), np.log(max_w) + 1 / R, 1 / R))
+    elif wscale == "nonlinear":
+        shared_w = np.nanmedian(w, axis=1)
     shared_dw = np.gradient(shared_w)
     shared_R = shared_w / shared_dw
 
@@ -148,6 +151,7 @@ def align_wavelengths(
         Options include:
             'linear' = constant d[wavelength] between grid points
             'log' = constant d[wavelength]/[wavelength] between grid points
+            'nonlinear' = the median wavelength grid for all time points
     supersampling : float, optional
         By how many times should we increase or decrease the wavelength sampling?
         In general, values >1 will split each input wavelength grid point into

@@ -15,4 +15,4 @@ cartoon | name | description
 🌈🫓😑 | normalize | Normalize by dividing through by a typical spectrum (and/or light curve).
 🌈🏴‍☠️🛁 | remove_trends | Remove smooth trends in time and/or wavelength.
 🌈🚇🌊 | shift | Doppler shift wavelengths.
-🌈🍱💇 | trim | Trim away wavelengths or times that contain no good data.
+🌈🍱💇 | trim | Trim away wavelengths or times.

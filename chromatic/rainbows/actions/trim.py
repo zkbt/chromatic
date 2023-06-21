@@ -3,12 +3,26 @@ from ...imports import *
 __all__ = ["trim", "trim_times", "trim_wavelengths"]
 
 
-def trim_times(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
+def trim_times(
+    self,
+    t_min=None,
+    t_max=None,
+    just_edges=True,
+    when_to_give_up=1,
+    minimum_acceptable_ok=1,
+):
     """
-    Trim times that are all (or mostly) useless.
+    Trim in time.
+
+    This removes times that either (a) fall outside of a desired time range
+    or (b) are mostly useless.
 
     Parameters
     ----------
+    t_min : u.Quantity
+        The minimum time to keep.
+    t_max : u.Quantity
+        The maximum time to keep.
     just_edges : bool, optional
         Should we only trim the outermost bad time bins?
             `True` = Just trim off the bad edges and keep
@@ -49,6 +63,12 @@ def trim_times(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1
     fraction_bad = np.sum(is_nan | isnt_ok, axis=self.waveaxis) / self.nwave
     should_be_kept = fraction_bad < when_to_give_up
 
+    # trim in time
+    if t_min is not None:
+        should_be_kept = should_be_kept * (self.time >= t_min)
+    if t_max is not None:
+        should_be_kept = should_be_kept * (self.time <= t_max)
+
     # only make cuts on the edges (if desired)
     if just_edges:
         isnt_before_first = np.cumsum(should_be_kept) > 0
@@ -67,12 +87,23 @@ def trim_times(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1
     return new
 
 
-def trim_wavelengths(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
+def trim_wavelengths(
+    self,
+    w_min=None,
+    w_max=None,
+    just_edges=True,
+    when_to_give_up=1,
+    minimum_acceptable_ok=1,
+):
     """
     Trim wavelengths that are all (or mostly) useless.
 
     Parameters
     ----------
+    w_min : u.Quantity
+        The minimum wavelength to keep.
+    w_max : u.Quantity
+        The maximum wavelength to keep.
     just_edges : bool, optional
         Should we only trim the outermost bad wavelength bins?
             `True` = Just trim off the bad edges and keep
@@ -113,6 +144,12 @@ def trim_wavelengths(self, just_edges=True, when_to_give_up=1, minimum_acceptabl
     fraction_bad = np.sum(is_nan | isnt_ok, axis=self.timeaxis) / self.ntime
     should_be_kept = fraction_bad < when_to_give_up
 
+    # trim in wavelength
+    if w_min is not None:
+        should_be_kept = should_be_kept * (self.wavelength >= w_min)
+    if w_max is not None:
+        should_be_kept = should_be_kept * (self.wavelength <= w_max)
+
     # only make cuts on the edges (if desired)
     if just_edges:
         isnt_before_first = np.cumsum(should_be_kept) > 0
@@ -131,7 +168,16 @@ def trim_wavelengths(self, just_edges=True, when_to_give_up=1, minimum_acceptabl
     return new
 
 
-def trim(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
+def trim(
+    self,
+    t_min=None,
+    t_max=None,
+    w_min=None,
+    w_max=None,
+    just_edges=True,
+    when_to_give_up=1,
+    minimum_acceptable_ok=1,
+):
     """
     Trim away bad wavelengths and/or times.
 
@@ -143,6 +189,14 @@ def trim(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
 
     Parameters
     ----------
+    t_min : u.Quantity
+        The minimum time to keep.
+    t_max : u.Quantity
+        The maximum time to keep.
+    w_min : u.Quantity
+        The minimum wavelength to keep.
+    w_max : u.Quantity
+        The maximum wavelength to keep.
     just_edges : bool, optional
         Should we only trim the outermost bad wavelength bins?
             `True` = Just trim off the bad edges and keep
@@ -175,11 +229,15 @@ def trim(self, just_edges=True, when_to_give_up=1, minimum_acceptable_ok=1):
     """
 
     trimmed = self.trim_times(
+        t_min=t_min,
+        t_max=t_max,
         when_to_give_up=when_to_give_up,
         just_edges=just_edges,
         minimum_acceptable_ok=minimum_acceptable_ok,
     )
     trimmed = trimmed.trim_wavelengths(
+        w_min=w_min,
+        w_max=w_max,
         when_to_give_up=when_to_give_up,
         just_edges=just_edges,
         minimum_acceptable_ok=minimum_acceptable_ok,
