@@ -991,6 +991,8 @@ class Rainbow:
         remove_trends,
         attach_model,
         inflate_uncertainty,
+        concatenate_in_time,
+        concatenate_in_wavelength,
     )
 
     # import summary statistics for each wavelength
