@@ -54,11 +54,24 @@ def concatenate_in_time(self, other, maximum_fractional_difference=0.01):
 
     # loop through timelike quantities
     for k in self.timelike:
-        new.timelike[k] = np.hstack([self.timelike[k], other.timelike[k]])
-
+        try:
+            new.timelike[k] = np.hstack([self.timelike[k], other.timelike[k]])
+        except (KeyError, AttributeError):
+            cheerfully_suggest(
+                f"""
+            .timelike['{k}'] didn't exist for one of the objects; not merging.
+            """
+            )
     # loop through fluxlike quantities
     for k in self.fluxlike:
-        new.fluxlike[k] = np.hstack([self.fluxlike[k], other.fluxlike[k]])
+        try:
+            new.fluxlike[k] = np.hstack([self.fluxlike[k], other.fluxlike[k]])
+        except (KeyError, AttributeError):
+            cheerfully_suggest(
+                f"""
+            .fluxlike['{k}'] didn't exist for one of the objects; not merging.
+            """
+            )
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
@@ -106,11 +119,25 @@ def concatenate_in_wavelength(self, other, maximum_fractional_difference=0.01):
 
     # loop through wavelike quantities
     for k in self.wavelike:
-        new.wavelike[k] = np.hstack([self.wavelike[k], other.wavelike[k]])
+        try:
+            new.wavelike[k] = np.hstack([self.wavelike[k], other.wavelike[k]])
+        except (KeyError, AttributeError):
+            cheerfully_suggest(
+                f"""
+            .wavelike['{k}'] didn't exist for one of the objects; not merging.
+            """
+            )
 
     # loop through fluxlike quantities
     for k in self.fluxlike:
-        new.fluxlike[k] = np.hstack([self.fluxlike[k], other.fluxlike[k]])
+        try:
+            new.fluxlike[k] = np.hstack([self.fluxlike[k], other.fluxlike[k]])
+        except (KeyError, AttributeError):
+            cheerfully_suggest(
+                f"""
+            .fluxlike['{k}'] didn't exist for one of the objects; not merging.
+            """
+            )
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
