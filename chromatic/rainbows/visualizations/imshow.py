@@ -156,6 +156,7 @@ def imshow(
         else:
             return self.fluxlike.get(k, None)
 
+    # choose between time and wavelength on the x-axis
     if xaxis.lower()[0] == "t":
         self.metadata["_imshow_extent"] = [tlower, tupper, wupper, wlower]
         xlabel, ylabel = tlabel, wlabel

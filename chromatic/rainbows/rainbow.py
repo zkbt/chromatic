@@ -1026,6 +1026,7 @@ class Rainbow:
     from .visualizations import (
         imshow,
         pcolormesh,
+        scatter,
         plot_lightcurves,
         _setup_animate_lightcurves,
         animate_lightcurves,
