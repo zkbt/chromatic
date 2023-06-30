@@ -144,3 +144,77 @@ def concatenate_in_wavelength(self, other, maximum_fractional_difference=0.01):
 
     # return the new Rainbow
     return new
+
+
+def concatenate_flexibly(self, other):
+    """
+    Merge another Rainbow into this one, allowing for arbitrary
+    and non-uniform wavelength/time grids.
+
+    Parameters
+    ----------
+    other : Rainbow
+        The other Rainbow to merge into this one.
+
+    """
+
+    cheerfully_suggest(
+        """
+    `concatenate_flexibly` will stitch two Rainbows together, but please be
+    VERY LOUDLY WARNED that it's still under heavy development. In particularly,
+    it interacts poorly with `.bin` (which you might naturally want to do).
+    If you can get by using `concatenate_in_time` or `concatenate_in_wavelength`,
+    we very strongly recommend you do so!
+    """
+    )
+
+    # create a history entry for this action (before other variables are defined)
+    h = self._create_history_entry("concatenate_flexibly", locals())
+
+    # create an exact copy of the first object
+    new = self._create_copy()
+
+    # loop through timelike quantities
+    for k in self.timelike:
+        try:
+            new.timelike[k] = np.hstack([self.timelike[k], other.timelike[k]])
+        except (KeyError, AttributeError):
+            cheerfully_suggest(
+                f"""
+            .timelike['{k}'] didn't exist for one of the objects; not merging.
+            """
+            )
+
+    # loop through wavelike quantities
+    for k in self.wavelike:
+        try:
+            new.wavelike[k] = np.hstack([self.wavelike[k], other.wavelike[k]])
+        except (KeyError, AttributeError):
+            cheerfully_suggest(
+                f"""
+            .wavelike['{k}'] didn't exist for one of the objects; not merging.
+            """
+            )
+
+    # loop through fluxlike quantities
+    new_shape = (new.nwave, new.ntime)
+    for k in self.fluxlike:
+        try:
+            new.fluxlike[k] = np.nan * np.ones(new_shape) * self.fluxlike[k][0, 0]
+            new.fluxlike[k][: self.nwave, : self.ntime] = self.fluxlike[k]
+            new.fluxlike[k][self.nwave :, self.ntime :] = other.fluxlike[k]
+        except (KeyError, AttributeError):
+            cheerfully_suggest(
+                f"""
+            .fluxlike['{k}'] didn't exist for one of the objects; not merging.
+            """
+            )
+
+    # sort the merged object in place to make binning easier
+    new._sort()
+
+    # append the history entry to the new Rainbow
+    new._record_history_entry(h)
+
+    # return the new Rainbow
+    return new
