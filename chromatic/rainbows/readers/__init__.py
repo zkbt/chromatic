@@ -26,6 +26,7 @@ from .coulombe import *
 from .kirk import *
 from .radica import *
 from .aylin import *
+from .oceanview import *
 
 
 # construct a dictionary of available readers
