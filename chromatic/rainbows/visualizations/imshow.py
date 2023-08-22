@@ -18,11 +18,17 @@ def imshow(
     vmin=None,
     vmax=None,
     filename=None,
+    allow_switch_to_pcolormesh=True,
     **kw,
 ):
     """
     Paint a 2D image of flux as a function of time and wavelength,
     using `plt.imshow` where pixels will have constant size.
+
+    (`imshow_actual` is the actual code for using `imshow` to display.
+    The `imshow()` function is a wrapper that tries to choose cleverly
+    whether you really want to use `imshow` or if `pcolormesh` might be
+    better.)
 
     Parameters
     ----------
@@ -45,6 +51,12 @@ def imshow(
         The color to be used for masking data points that are not OK.
     alpha_ok : float, optional
         The transparency to be used for masking data points that are not OK.
+    allow_switch_to_pcolormesh : bool
+        If it makes more sense, is it OK if we switch to `pcolormesh`
+        instead of `imshow`? This would happen if the wavelengths or times
+        are significantly non-uniform or non-logarithmically uniform.
+        Setting this to `False` will display wavelengths and/or times
+        as "Wavelength/Time Index" instead of actual values.
     **kw : dict, optional
         All other keywords will be passed on to `plt.imshow`,
         so you can have more detailed control over the plot
@@ -81,6 +93,27 @@ def imshow(
             r"log$_{10}$" + f"[{self._wave_label}/({w_unit.to_string('latex_inline')})]"
         )
     else:
+        # switch to pcolormesh for irregular grids, if allowed
+        if allow_switch_to_pcolormesh:
+            keyword_arguments = {}
+            for k in [
+                "ax",
+                "quantity",
+                "xaxis",
+                "w_unit",
+                "t_unit",
+                "colorbar",
+                "mask_ok",
+                "color_ok",
+                "alpha_ok",
+                "vmin",
+                "vmax",
+                "filename",
+            ]:
+                keyword_arguments[k] = locals()[k]
+            keyword_arguments.update(**kw)
+            return self.pcolormesh(**keyword_arguments)
+
         message = f"""
         The wavelength scale for this rainbow is '{self.wscale}',
         and there are {self.nwave} wavelength centers and
@@ -94,7 +127,8 @@ def imshow(
         If you want a real wavelength axis, one solution would be
         to use `rainbow.pcolormesh()` instead of `rainbow.imshow()`.
         It takes basically the same inputs but can handle non-uniform
-        grids.
+        grids. You can make this choice automatically with
+        `rainbow.imshow(allow_switch_to_pcolormesh=True)`
 
         Or, you could bin your wavelengths to a more uniform grid with
         `binned = rainbow.bin(R=...)` (for logarithmic wavelengths)
@@ -120,6 +154,27 @@ def imshow(
             r"log$_{10}$" + f"[{self._time_label}/({t_unit.to_string('latex_inline')})]"
         )
     else:
+        # switch to pcolormesh for irregular grids, if allowed
+        if allow_switch_to_pcolormesh:
+            keyword_arguments = {}
+            for k in [
+                "ax",
+                "quantity",
+                "xaxis",
+                "w_unit",
+                "t_unit",
+                "colorbar",
+                "mask_ok",
+                "color_ok",
+                "alpha_ok",
+                "vmin",
+                "vmax",
+                "filename",
+            ]:
+                keyword_arguments[k] = locals()[k]
+            keyword_arguments.update(**kw)
+            return self.pcolormesh(**keyword_arguments)
+
         message = f"""
         The time scale for this rainbow is '{self.tscale}',
         and there are {self.ntime} time centers and
@@ -133,7 +188,8 @@ def imshow(
         If you want a real time axis, one solution would be
         to use `rainbow.pcolormesh()` instead of `rainbow.imshow()`.
         It takes basically the same inputs but can handle non-uniform
-        grids.
+        grids. You can make this choice automatically with
+        `rainbow.imshow(allow_switch_to_pcolormesh=True)`
 
         Or, you could bin your times to a more uniform grid with
         `binned = rainbow.bin(dt=...)` (for linear times) and then
