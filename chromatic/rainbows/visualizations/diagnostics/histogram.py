@@ -70,7 +70,7 @@ def plot_histogram(
     histkw = dict(alpha=0.5)
     histkw.update(**kw)
     plt.hist(
-        flux * scaling + offset,
+        remove_unit(flux * scaling + offset),
         color=color,
         density=True,
         orientation=orientation,

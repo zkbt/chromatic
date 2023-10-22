@@ -46,14 +46,14 @@ def _create_shared_wavelength_axis(
     if visualize:
         fi, ax = plt.subplots(1, 2, figsize=(8, 3), dpi=300)
         plt.sca(ax[0])
-        plt.imshow(dw_per_time, aspect="auto", vmin=0)
+        plt.imshow(remove_unit(dw_per_time), aspect="auto", vmin=0)
         plt.xlabel("Time Index")
         plt.ylabel("Wavelength Index")
         plt.title(r"$\Delta\lambda$")
         plt.colorbar(orientation="horizontal", pad=0.25)
 
         plt.sca(ax[1])
-        plt.imshow(R_per_time, aspect="auto", vmin=0)
+        plt.imshow(remove_unit(R_per_time), aspect="auto", vmin=0)
         plt.xlabel("Time Index")
         plt.ylabel("Wavelength Index")
         plt.title(r"R = $\lambda/\Delta\lambda$")
