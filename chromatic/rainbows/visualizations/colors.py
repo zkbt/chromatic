@@ -27,7 +27,7 @@ def setup_wavelength_colors(self, cmap=None, vmin=None, vmax=None, log=None):
     """
 
     # populate the cmap object
-    self.cmap = plt.cm.get_cmap(cmap)
+    self.cmap = plt.colormaps.get_cmap(cmap)
 
     vmin = vmin
     if vmin is None:

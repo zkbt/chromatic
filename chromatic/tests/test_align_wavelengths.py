@@ -11,7 +11,6 @@ def create_simulation_with_wobbly_wavelengths(
     dt=30 * u.minute,
     **kw
 ):
-
     # set up a function to create a fake absorption line spectrum
     N = 10
     centers = (
@@ -63,14 +62,14 @@ def test_align_wavelengths(fractional_shift=0.002, dw=0.001 * u.micron, **kw):
     fi, ax = plt.subplots(2, 2, dpi=300, figsize=(8, 6), constrained_layout=True)
     for i, x in enumerate([r, a]):
         plt.sca(ax[0, i])
-        plt.imshow(x.flux, aspect="auto", cmap="gray")
+        plt.imshow(remove_unit(x.flux), aspect="auto", cmap="gray")
         plt.title(["original", "aligned"][i] + " flux")
         plt.xlabel("time index")
         plt.ylabel("wavelength index")
         plt.colorbar()
 
         plt.sca(ax[1, i])
-        plt.imshow(x.fluxlike["wavelength_2d"], aspect="auto")
+        plt.imshow(remove_unit(x.fluxlike["wavelength_2d"]), aspect="auto")
         plt.title(["original", "aligned"][i] + " wavelength")
         plt.xlabel("time index")
         plt.ylabel("wavelength index")

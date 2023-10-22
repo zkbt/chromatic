@@ -1,6 +1,5 @@
 import matplotlib
 
-matplotlib.rcParams["figure.dpi"] = 300
 matplotlib.rcParams["figure.constrained_layout.use"] = True
 matplotlib.rcParams["figure.facecolor"] = "white"
 matplotlib.rcParams["savefig.facecolor"] = "white"
