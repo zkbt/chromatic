@@ -68,9 +68,9 @@ def extract_sn_from_image(images, extraction_box=3):
     return sn_extracted
 
 
-def set_image_slice(instrument):
-    if instrument.lower() == "p750l":
-        image_slice = slice(27, 399)
+def trim_image(image, disperser=None):
+    if disperser.lower() == "p750l":
+        return image.T[:, 27:399]
     else:
-        image_slice = slice(None)
-    return image_slice
+        return image
+    return image

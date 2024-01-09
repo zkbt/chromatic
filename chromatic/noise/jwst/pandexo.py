@@ -131,9 +131,9 @@ def read_pandexo(filename, extract=False):
 
     # get some images
     images = {}
-    image_slice = set_image_slice(d["input"]["Disperser"])
+    disperser = d["input"]["Disperser"]
     for k in ["detector", "snr", "saturation"]:
-        images[k] = d["PandeiaOutTrans"]["2d"][k][:, image_slice]
+        images[k] = trim_image(d["PandeiaOutTrans"]["2d"][k], disperser=disperser)
     images["snr"] /= np.sqrt(metadata["number_of_integrations_per_transit"])
 
     if extract:

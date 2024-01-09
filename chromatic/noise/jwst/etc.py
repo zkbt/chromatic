@@ -37,7 +37,8 @@ def read_etc(directory, t_integration=None, extract=False):
 
     spectra = {}
     images = {}
-    image_slice = set_image_slice(metadata["configuration"]["instrument"]["disperser"])
+
+    disperser = metadata["configuration"]["instrument"]["disperser"]
 
     for f in fits_filenames:
 
@@ -52,7 +53,7 @@ def read_etc(directory, t_integration=None, extract=False):
                 spectra[k] = fits.open(f)[1].data[k]
         if "image" in f:
             k = os.path.basename(f).split(".fits")[0].replace("image_", "")
-            images[k] = fits.open(f)[0].data[:, image_slice]
+            images[k] = trim_image(fits.open(f)[0].data, disperser=disperser)
 
     n_integrations_per_exposure = metadata["configuration"]["detector"]["nint"]
     spectra["snr_per_exposure"] = spectra["extracted_flux"] / spectra["extracted_noise"]
