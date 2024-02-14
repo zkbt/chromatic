@@ -1,0 +1,4 @@
+cartoon | name | description
+🌈👌🌈 | get_ok_data | Get a quantity associated with a time index.
+🌈🧵🌈 | get_flattened | Get a quantity, flattened into a 1D array.
+🌈🪡🌈 | unflatten | Unflatten a 1D array into a 2D flux-like array.

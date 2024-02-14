@@ -1018,9 +1018,7 @@ class Rainbow:
     )
 
     # import summary statistics for each time
-    from .get.fluxlike import (
-        get_ok_data,
-    )
+    from .get.fluxlike import get_ok_data, get_flattened, unflatten
 
     # import visualizations that can act on Rainbows
     from .visualizations import (
