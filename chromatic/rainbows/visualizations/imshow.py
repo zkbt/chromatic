@@ -32,6 +32,8 @@ def imshow(
     quantity : str, optional
         The fluxlike quantity to imshow.
         (Must be a key of `rainbow.fluxlike`).
+    xaxis : str
+        What to use as the horizontal axis, 'time' or 'wavelength'.
     w_unit : str, Unit, optional
         The unit for plotting wavelengths.
     t_unit : str, Unit, optional
@@ -207,7 +209,7 @@ def imshow(
     vmax = vmax or np.nanpercentile(remove_unit(z).flatten() * 1.0, 99)
 
     # define some default keywords
-    imshow_kw = dict(interpolation="nearest", vmin=vmin, vmax=vmax)
+    imshow_kw = dict(interpolation="antialiased", vmin=vmin, vmax=vmax)
     imshow_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
