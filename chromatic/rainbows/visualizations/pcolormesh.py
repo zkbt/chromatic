@@ -23,9 +23,10 @@ def pcolormesh(
     """
     Paint a 2D image of flux as a function of time and wavelength.
 
-    By using `.pcolormesh`, pixels can transform based on their edges,
+    By using `.pcolormesh()`, pixels can transform based on their edges,
     so non-uniform axes are allowed. This is a tiny bit slower than
-    `.imshow`, but otherwise very similar.
+    `.imshow()`, but otherwise very similar. `.paint()` will try to
+    choose the best between `.imshow()` and `.pcolormesh()`.
 
     Parameters
     ----------
@@ -166,14 +167,24 @@ def pcolormesh(
         if np.min(ratios) < aliasing_warning_threshold:
             cheerfully_suggest(
                 f"""
-            In `.pcolormesh`, aliasing/moiré might be a problem because at least one of
-            {(xlabel, ylabel)}
-            [display pixels {render_pixels}] / [data pixels {data_pixels}] = {ratios}
+            In using`.pcolormesh`, [display pixels] / [data pixels] =
+            {np.round(render_pixels)} / {data_pixels} = {ratios} {(xlabel.split()[0], ylabel.split()[0])}
             Is less than the suggested threshold of {aliasing_warning_threshold}.
 
-            One solution is to increase the `dpi` of the figure in which this appears.
-            Another is to use `.bin()` to decrease the number of pixels needed.
-            Yet another is to use, `.imshow()`, but it only works for uniform wavelengths/times.
+            This suggests that aliasing/moiré might be a problem, where too many
+            data pixels are trying to be displayed with too few pixels, and the
+            choices `matplotlib` makes for how to do that might not be intuitive.
+
+            Here are possible solutions:
+                - Use `.bin()` to decrease the number of data pixels in wavelength
+                and/or time, effectively averaging before displaying, rather than
+                asking `matplotlib` to decide how to visually average adjacent data.
+                - Increase the `dpi` of the figure in which this appears, so there are
+                enough display pixels to represent all the data pixels being shown.
+                - Use `.imshow()` instead of `.pcolormesh`, which can do better
+                built-in handling of antialiasing for large data arrays. Since `.imshow()`
+                can only show uniform wavelength and time grids, non-uniform grids will
+                be labeled via index instead of actual value.
             """
             )
     if filename is not None:
