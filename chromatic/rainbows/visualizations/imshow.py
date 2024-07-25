@@ -11,19 +11,22 @@ def imshow(
     w_unit="micron",
     t_unit="day",
     colorbar=True,
-    aspect="auto",
     mask_ok=True,
     color_ok="tomato",
     alpha_ok=0.8,
     vmin=None,
     vmax=None,
     filename=None,
-    use_pcolormesh=True,
     **kw,
 ):
     """
     Paint a 2D image of flux as a function of time and wavelength,
     using `plt.imshow` where pixels will have constant size.
+
+    By using `.imshow()`, pixels must have constant size, so non-uniform
+    axes will be displayed and labeled by index, rather than actual value.
+    This is faster than `.pcolormesh()` but less flexible.  `.paint()` will
+    try to choose the best between `.imshow()` and `.pcolormesh()`.
 
     Parameters
     ----------
@@ -40,19 +43,12 @@ def imshow(
         The unit for plotting times.
     colorbar : bool, optional
         Should we include a colorbar?
-    aspect : str, optional
-        What aspect ratio should be used for the imshow?
     mask_ok : bool, optional
         Should we mark which data are not OK?
     color_ok : str, optional
         The color to be used for masking data points that are not OK.
     alpha_ok : float, optional
         The transparency to be used for masking data points that are not OK.
-    use_pcolormesh : bool
-        If the grid is non-uniform, should jump to using `pcolormesh` instead?
-        Leaving this at the default of True will give the best chance of
-        having real Wavelength and Time axes; setting it to False will
-        end up showing Wavelength Index or Time Index instead (if non-uniform).
     **kw : dict, optional
         All other keywords will be passed on to `plt.imshow`,
         so you can have more detailed control over the plot
@@ -80,24 +76,6 @@ def imshow(
     except AttributeError:
         wmin, wmax = None, None
 
-    # define pcolormesh inputs, in case we need to use them below
-    if use_pcolormesh:
-        pcolormesh_inputs = dict(
-            ax=ax,
-            quantity=quantity,
-            xaxis=xaxis,
-            w_unit=w_unit,
-            t_unit=t_unit,
-            colorbar=colorbar,
-            mask_ok=mask_ok,
-            color_ok=color_ok,
-            alpha_ok=alpha_ok,
-            vmin=vmin,
-            vmax=vmax,
-            filename=filename,
-            **kw,
-        )
-
     if (self.wscale == "linear") and (wmin is not None) and (wmax is not None):
         wlower, wupper = wmin, wmax
         wlabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"
@@ -107,9 +85,6 @@ def imshow(
             r"log$_{10}$" + f"[{self._wave_label}/({w_unit.to_string('latex_inline')})]"
         )
     else:
-        if use_pcolormesh:
-            self.pcolormesh(**pcolormesh_inputs)
-            return
         message = f"""
         The wavelength scale for this rainbow is '{self.wscale}',
         and there are {self.nwave} wavelength centers and
@@ -149,9 +124,6 @@ def imshow(
             r"log$_{10}$" + f"[{self._time_label}/({t_unit.to_string('latex_inline')})]"
         )
     else:
-        if use_pcolormesh:
-            self.pcolormesh(**pcolormesh_inputs)
-            return
         message = f"""
         The time scale for this rainbow is '{self.tscale}',
         and there are {self.ntime} time centers and
@@ -209,7 +181,7 @@ def imshow(
     vmax = vmax or np.nanpercentile(remove_unit(z).flatten() * 1.0, 99)
 
     # define some default keywords
-    imshow_kw = dict(interpolation="antialiased", vmin=vmin, vmax=vmax)
+    imshow_kw = dict(interpolation="antialiased", aspect="auto", vmin=vmin, vmax=vmax)
     imshow_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
@@ -231,14 +203,12 @@ def imshow(
             plt.imshow(
                 remove_unit(ok),
                 extent=self.metadata["_imshow_extent"],
-                aspect=aspect,
                 origin="upper",
                 **okimshow_kw,
             )
         plt.imshow(
             remove_unit(z),
             extent=self.metadata["_imshow_extent"],
-            aspect=aspect,
             origin="upper",
             **imshow_kw,
         )

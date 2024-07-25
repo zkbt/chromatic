@@ -1024,6 +1024,7 @@ class Rainbow:
 
     # import visualizations that can act on Rainbows
     from .visualizations import (
+        paint,
         imshow,
         pcolormesh,
         scatter,
@@ -1036,7 +1037,7 @@ class Rainbow:
         setup_wavelength_colors,
         _make_sure_cmap_is_defined,
         get_wavelength_color,
-        imshow_quantities,
+        paint_quantities,
         plot_quantities,
         imshow_interact,
         plot_spectra,

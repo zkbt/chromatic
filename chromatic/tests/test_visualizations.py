@@ -66,13 +66,13 @@ def test_scatter():
     )
 
 
-def test_imshow_quantities():
+def test_paint_quantities():
     plt.close("all")
 
     s = SimulatedRainbow().inject_transit().inject_noise(signal_to_noise=500)
     for k in "abcde":
         s.fluxlike[k] = np.random.uniform(4, 5, s.shape)
-    s.imshow_quantities(maxcol=1, panel_size=(8, 2))
+    s.paint_quantities(maxcol=1, panel_size=(8, 2))
     plt.savefig(os.path.join(test_directory, "demonstration-of-imshow-quantities.pdf"))
 
 
@@ -203,12 +203,12 @@ def test_imshow_one_wavelength():
     with pytest.warns(match="hard to imshow "):
 
         s = SimulatedRainbow(wavelength=[1] * u.micron).inject_noise()
-        ax = s.imshow(use_pcolormesh=False)
+        ax = s.imshow()
         assert "Wavelength Index" in ax.get_ylabel()
 
         s = SimulatedRainbow().inject_noise()
         b = s.bin(nwavelengths=s.nwave)
-        ax = b.imshow(use_pcolormesh=False)
+        ax = b.imshow()
         assert "Wavelength (" in ax.get_ylabel()
         ylim = ax.get_ylim()
     plt.savefig(
@@ -237,11 +237,9 @@ def test_imshow_randomized_axes():
 
         fi, ax = plt.subplots(1, 3, figsize=(10, 3), constrained_layout=True)
         kw = dict(vmin=0.98, vmax=1.02)
-        s.imshow(ax=ax[0], use_pcolormesh=False, **kw)
-        s.get_average_spectrum_as_rainbow().imshow(ax=ax[1], use_pcolormesh=False, **kw)
-        s.get_average_lightcurve_as_rainbow().imshow(
-            ax=ax[2], use_pcolormesh=False, **kw
-        )
+        s.imshow(ax=ax[0], **kw)
+        s.get_average_spectrum_as_rainbow().imshow(ax=ax[1], **kw)
+        s.get_average_lightcurve_as_rainbow().imshow(ax=ax[2], **kw)
         for i in [0, 2]:
             assert "Time Index" in ax[i].get_xlabel()
         for i in [0, 1]:
@@ -362,6 +360,32 @@ def test_pcolormesh():
     plt.savefig(
         os.path.join(test_directory, "demonstration-of-pcolormesh-vs-imshow.pdf")
     )
+
+
+def test_pcolormesh_warning():
+    r = SimulatedRainbow(dt=10 * u.s, dw=0.01 * u.micron).inject_noise()
+
+    fi, ax = plt.subplots(1, 2, figsize=(8, 3))
+    with pytest.warns(match="aliasing"):
+        r.pcolormesh(ax=ax[0])
+    r.bin(dt=5 * u.minute, dw=0.1 * u.micron).pcolormesh(ax=ax[1])
+
+
+def test_paint():
+    uniform = SimulatedRainbow().inject_noise()
+    nonuniform = SimulatedRainbow(
+        wavelength=np.sort(np.random.uniform(1, 2, 100) * u.micron)
+    ).inject_noise()
+    fi, ax = plt.subplots(2, 2, figsize=(8, 6), dpi=300)
+
+    uniform.paint(ax=ax[0, 0])
+    plt.title("uniform | paint()")
+    nonuniform.paint(ax=ax[0, 1])
+    plt.title("non-uniform | paint()")
+    uniform.imshow(ax=ax[1, 0])
+    plt.title("uniform | imshow()")
+    nonuniform.pcolormesh(ax=ax[1, 1])
+    plt.title("non-uniform | pcolormesh()")
 
 
 def test_plot_noise_comparison():
