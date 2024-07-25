@@ -20,8 +20,8 @@ def test_fold(N=5):
         f = s.fold(period=period, t0=t0)
         assert np.all(np.isclose(f.time, original_time, atol=1e-12))
     fi, ax = plt.subplots(1, 2, figsize=(8, 3), constrained_layout=True)
-    s.imshow(ax=ax[0])
-    f.imshow(ax=ax[1])
+    s.paint(ax=ax[0])
+    f.paint(ax=ax[1])
     plt.savefig(
         os.path.join(test_directory, "demonstration-of-folding-to-period-and-t0.pdf")
     )

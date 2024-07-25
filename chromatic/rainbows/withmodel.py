@@ -35,7 +35,7 @@ class RainbowWithModel(Rainbow):
     @property
     def chi_squared(self):
         """
-        Calculate $\chi^2$.
+        Calculate chi-squared.
 
         This calculates the sum of the squares of
         the uncertainty-normalized residuals,
@@ -95,7 +95,7 @@ class RainbowWithModel(Rainbow):
     from .visualizations import (
         plot_with_model,
         plot_with_model_and_residuals,
-        imshow_with_models,
+        paint_with_models,
         plot_one_wavelength_with_models,
         animate_with_models,
     )

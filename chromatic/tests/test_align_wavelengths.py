@@ -97,9 +97,9 @@ def test_align_wavelengths_with_not_ok_data(visualize=False):
             cautious = r.align_wavelengths(minimum_acceptable_ok=1)
             carefree = r.align_wavelengths(minimum_acceptable_ok=0)
             if visualize:
-                cautious.imshow_quantities()
+                cautious.paint_quantities()
                 plt.suptitle(ok_fraction)
-                carefree.imshow_quantities()
+                carefree.paint_quantities()
                 plt.suptitle(ok_fraction)
 
         # if np.any(r.ok == 0):

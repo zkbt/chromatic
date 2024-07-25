@@ -1,7 +1,7 @@
 from ....imports import *
 from ..utilities import _add_panel_labels
 
-__all__ = ["imshow_with_models"]
+__all__ = ["paint_with_models"]
 
 
 def _create_title(s):
@@ -14,7 +14,7 @@ def _create_title(s):
         return s.replace("_", " ").title()
 
 
-def imshow_with_models(
+def paint_with_models(
     self,
     models=["systematics_model", "planet_model"],
     vlimits_data=[0.98, 1.02],

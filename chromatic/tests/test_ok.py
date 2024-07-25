@@ -61,7 +61,7 @@ def test_get_helpers():
 def test_get_ok_data_helpers(quantity="flux"):
     s = SimulatedRainbow(dw=0.5 * u.micron, dt=20 * u.minute).inject_noise()
     s.ok = np.random.uniform(0, 1, s.shape) > 0.5
-    s.imshow()
+    s.paint()
 
     fi, ax = plt.subplots(2, 2, sharex="col", sharey=True, constrained_layout=True)
     for r, e in enumerate([False, True]):
