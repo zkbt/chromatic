@@ -34,6 +34,8 @@ def pcolormesh(
     quantity : str, optional
         The fluxlike quantity to imshow.
         (Must be a key of `rainbow.fluxlike`).
+    xaxis : str
+        What to use as the horizontal axis, 'time' or 'wavelength'.
     w_unit : str, Unit, optional
         The unit for plotting wavelengths.
     t_unit : str, Unit, optional
@@ -111,6 +113,10 @@ def pcolormesh(
 
     # define some default keywords
     pcolormesh_kw = dict(shading="flat", vmin=vmin, vmax=vmax)
+    # I want to include `antialiased=True` to render nicely whether the plotting
+    # pixels super- or sub-sample the data pixels, but it appears not to have
+    # an effect in `pcolormesh`, so we just warn the user instead.
+
     pcolormesh_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
@@ -133,7 +139,7 @@ def pcolormesh(
                 remove_unit(ok),
                 **okpcolormesh_kw,
             )
-        plt.pcolormesh(
+        pcolormeshed = plt.pcolormesh(
             remove_unit(x),
             remove_unit(y),
             remove_unit(z),
@@ -150,6 +156,26 @@ def pcolormesh(
         plt.ylim(y[-1], y[0])
         plt.title(self.get("title"))
 
+        # offer warning if aliasing might be a problem
+        plt.draw()
+        bbox = pcolormeshed.get_window_extent()
+        render_pixels = np.abs([bbox.width, bbox.height])
+        data_pixels = np.array(z.shape[::-1])
+        ratios = render_pixels / data_pixels
+        aliasing_warning_threshold = 2
+        if np.min(ratios) < aliasing_warning_threshold:
+            cheerfully_suggest(
+                f"""
+            In `.pcolormesh`, aliasing/moiré might be a problem because at least one of
+            {(xlabel, ylabel)}
+            [display pixels {render_pixels}] / [data pixels {data_pixels}] = {ratios}
+            Is less than the suggested threshold of {aliasing_warning_threshold}.
+
+            One solution is to increase the `dpi` of the figure in which this appears.
+            Another is to use `.bin()` to decrease the number of pixels needed.
+            Yet another is to use, `.imshow()`, but it only works for uniform wavelengths/times.
+            """
+            )
     if filename is not None:
         self.savefig(filename)
     return ax
