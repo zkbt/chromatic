@@ -1,6 +1,7 @@
 """
 Define a reader for STScI pipeline x1dints.fits files.
 """
+
 from ...imports import *
 
 __all__ = ["from_x1dints"]
@@ -75,6 +76,16 @@ def get_times_from_x1dints_files(filenames):
             else:
                 timelike[c] = np.asarray(timelike[c])
 
+        i = timelike["integration_number"]
+        if np.max(i) != len(i):
+            cheerfully_suggest(
+                f"""
+            The total number of integrations found across all x1dints file segments ({len(i)})
+            does not to match the maximum integration number in the `int_times` extensions ({np.max(i)}).
+            This likely suggests that you might be trying to load a multi-segment exposure,
+            and one or more of the segments are missing.
+            """
+            )
         return timelike
 
     except KeyError:
@@ -338,16 +349,23 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
                         # populate the fluxlike dictionary with the empty array
                         rainbow.fluxlike[c] = this_quantity * 1
 
+                # Stage 3 seems to have more reliable integration number in spectrum extensions
+                if pipeline_stage == 2:
+                    current_integration = integration_counter
+                elif pipeline_stage == 3:
+                    current_integration = hdu[e].header["int_num"]
+
+                # in case of missing segments, convert integration to index
+                current_time_index = np.nonzero(
+                    timelike["integration_number"] == current_integration
+                )[0][0]
+                # print(current_integration, current_time_index)
+
                 # loop through all the columns in the data extension
                 for column in hdu[e].columns:
 
                     # get a lower case name for the unit
                     c = column.name.lower()
-
-                    if pipeline_stage == 2:
-                        current_time_index = integration_counter - 1
-                    elif pipeline_stage == 3:
-                        current_time_index = hdu[e].header["int_num"] - 1
 
                     # store in the appropriate column of fluxlike array
                     rainbow.fluxlike[c][:, current_time_index] = (
