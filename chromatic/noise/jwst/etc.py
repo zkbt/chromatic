@@ -15,15 +15,18 @@ def read_etc(directory, t_integration=None, extract=False):
     t_integration : float
         The integration time in seconds (used to provide a photon-only S/N).
     extract : bool
-        Should we try to extract a S/N from a 2D image?
+        Should we try to extract a S/N from a 2D image? (This seemed to be
+        necessary, at least a while ago, for MIRI/LRS. If any pixels
+        saturated it wouldn't return a tabular S/N estimate.)
 
     Returns
     -------
-    table : array
-        1D extracted results
-    images : array
-        2D image results
-
+    results : dict
+        A dictionary containing noise estimates and intermediate ingredients.
+        The typical keys are:
+            `1D` = tabular results along the wavelength axis
+            `2D` = image results along the wavelength axis and one spatial axis
+            `3D` = cube results along the wavelength axis and two spatial axes
     """
 
     # find all the FITS files in the directory
@@ -33,10 +36,10 @@ def read_etc(directory, t_integration=None, extract=False):
     # load the metadata inputs
     with open(input_filename) as f:
         metadata = json.load(f)
-    metadata.pop("background")
 
     spectra = {}
     images = {}
+    cubes = {}
 
     disperser = metadata["configuration"]["instrument"]["disperser"]
 
@@ -54,6 +57,9 @@ def read_etc(directory, t_integration=None, extract=False):
         if "image" in f:
             k = os.path.basename(f).split(".fits")[0].replace("image_", "")
             images[k] = trim_image(fits.open(f)[0].data, disperser=disperser)
+        if "cube" in f:
+            k = os.path.basename(f).split(".fits")[0].replace("cube_", "")
+            cubes[k] = fits.open(f)[0].data
 
     n_integrations_per_exposure = metadata["configuration"]["detector"]["nint"]
     spectra["snr_per_exposure"] = spectra["extracted_flux"] / spectra["extracted_noise"]
@@ -76,4 +82,4 @@ def read_etc(directory, t_integration=None, extract=False):
     if extract:
         t["snr_extracted_from_image"] = extract_sn_from_image(images)
 
-    return t, images
+    return {"1D": t, "2D": images, "3D": cubes}

@@ -25,10 +25,12 @@ def read_pandexo(filename, extract=False):
 
     Returns
     -------
-    table : array
-        1D extracted results
-    images : array
-        2D image results
+    results : dict
+        A dictionary containing noise estimates and intermediate ingredients.
+        The typical keys are:
+            `1D` = tabular results along the wavelength axis
+            `2D` = image results along the wavelength axis and one spatial axis
+            `3D` = cube results along the wavelength axis and two spatial axes
     """
 
     # read the pickle file
@@ -143,4 +145,5 @@ def read_pandexo(filename, extract=False):
         * np.sqrt(metadata["number_of_integrations_per_transit"])
         / np.sqrt(2)
     )
-    return t, images
+
+    return {"1D": t, "2D": images}
