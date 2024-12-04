@@ -90,6 +90,7 @@ def download_file_with_warning(*args, **kwargs):
         """
         )
     kwargs["show_progress"] = True
+    kwargs["allow_insecure"] = True
     return download_file(*args, **kwargs)
 
 

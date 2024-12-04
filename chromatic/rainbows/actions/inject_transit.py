@@ -327,7 +327,6 @@ def inject_transit(
     method="exoplanet",
     **transit_parameters,
 ):
-
     """
     Simulate a wavelength-dependent planetary transit.
 
