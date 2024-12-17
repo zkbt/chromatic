@@ -22,6 +22,7 @@ nav:
         - tools/binning.ipynb
         - tools/colormaps.ipynb
     - api.md
+    - acknowledgements.ipynb
 theme:
   name: "material"
   features:
@@ -50,7 +51,6 @@ plugins:
             show_if_no_docstring: False
             heading_level: 3
             show_bases: False
-      custom_templates: templates
       watch:
         - chromatic
   - exclude:
