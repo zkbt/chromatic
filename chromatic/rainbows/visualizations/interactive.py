@@ -17,14 +17,17 @@ __all__ = ["imshow_interact"]
 
 # Convert this grid to columnar data expected by Altair
 def imshow_interact(
-    self,
-    quantity="Flux",
-    t_unit="d",
-    w_unit="micron",
-    cmap="viridis",
-    ylim=[],
-    ylog=None,
-    filename=None,
+        self,
+        quantity="Flux",
+        t_unit="d",
+        w_unit="micron",
+        cmap="viridis",
+        xlim=[],
+        ylim=[],
+        ylog=None,
+        xbuffer=0.01,
+        ybuffer=0.01,
+        filename=None,
 ):
     """
     Display interactive spectrum plot for chromatic Rainbow with a
@@ -79,6 +82,7 @@ def imshow_interact(
 
     # convert rainbow object to pandas dataframe
     source = self.to_df(t_unit=t_unit, w_unit=w_unit)[[xlabel, ylabel, z]]
+    # source[xlabel] = source[xlabel] - source[xlabel][0]
 
     # if there are >10,000 data points Altair will be very laggy/slow. This is probably unbinned, therefore
     # encourage the user to bin the Rainbow before calling this function in future/
@@ -107,18 +111,35 @@ def imshow_interact(
     except AttributeError:
         ylog = ylog or False
 
+    # print([np.min(source[xlabel]), np.max(source[xlabel])])
+
     if ylog:
         source[ylabel] = np.log10(source[ylabel])
         source = source.rename(columns={ylabel: f"log10({ylabel})"})
         ylabel = f"log10({ylabel})"
 
+    wave = self.wavelike["wavelength"]
+    time = self.timelike["time"]
+
     if len(ylim) > 0:
-        domain = ylim
+        domainy = ylim
+        ywidth = 230 / len(wave[(wave.value >= ylim[0]) & (wave.value <= ylim[1])])
     else:
-        domain = [
-            np.percentile(source[z], 2) - 0.001,
-            np.percentile(source[z], 98) + 0.001,
+        domainy = [
+            np.percentile(source[z], 2) - ybuffer,
+            np.percentile(source[z], 98) + ybuffer,
         ]
+        ywidth = 230 / len(wave)
+
+    if len(xlim) > 0:
+        domainx = xlim
+        xwidth = 230 / len(time[(time.value >= xlim[0]) & (time.value <= xlim[1])])
+    else:
+        domainx = [
+            np.min(source[xlabel]) - xbuffer,
+            np.max(source[xlabel]) + xbuffer
+        ]
+        xwidth = 280 / len(time)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -130,9 +151,9 @@ def imshow_interact(
         spectrum = (
             alt.Chart(source, width=280, height=230)
             .mark_rect(
-                clip=False,
-                width=280 / len(self.timelike["time"]),
-                height=230 / len(self.wavelike["wavelength"]),
+                clip=True,
+                width=xwidth,
+                height=ywidth,
             )
             .encode(
                 x=alt.X(
@@ -140,8 +161,7 @@ def imshow_interact(
                     scale=alt.Scale(
                         zero=False,
                         nice=False,
-                        domain=[np.min(source[xlabel]), np.max(source[xlabel])],
-                    ),
+                        domain=domainx),
                 ),
                 y=alt.Y(
                     f"{ylabel}:Q",
@@ -156,7 +176,7 @@ def imshow_interact(
                     scale=alt.Scale(
                         scheme=cmap,
                         zero=False,
-                        domain=domain,
+                        domain=domainy,
                     ),
                 ),
                 tooltip=[f"{xlabel}", f"{ylabel}", f"{z}"],
@@ -172,28 +192,25 @@ def imshow_interact(
         # Layer the various plotting parts
         spectrum_int = alt.layer(background, highlight, data=source)
 
+        # axis=alt.Axis(title=f"{xlabel} - First Obs"),
         # Add the 2D averaged lightcurve (or uncertainty)
         lightcurve = (
             alt.Chart(
                 source, width=280, height=230, title=f"Mean {z} for Wavelength Range"
             )
-            .mark_point(filled=True, size=20, color="black")
+            .mark_point(filled=True, size=20, clip=True, color="black")
             .encode(
                 x=alt.X(
                     f"{xlabel}:Q",
                     scale=alt.Scale(
                         zero=False,
                         nice=False,
-                        domain=[
-                            np.min(source[xlabel])
-                            - (0.02 * np.abs(np.min(source[xlabel]))),
-                            1.02 * np.max(source[xlabel]),
-                        ],
+                        domain=domainx,
                     ),
                 ),
                 y=alt.Y(
                     f"mean({z}):Q",
-                    scale=alt.Scale(zero=False, domain=domain),
+                    scale=alt.Scale(zero=False, domain=domainy),
                     title="Mean " + z,
                 ),
             )
