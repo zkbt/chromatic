@@ -236,11 +236,17 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
                 # store the entire primary header in metadata
                 rainbow.metadata["header"] = hdu["PRIMARY"].header
 
+                def determine_number_of_orders(hdu):
+                    if hdu["PRIMARY"].header["INSTRUME"] == "NIRISS":
+                        n_orders = len(
+                            np.unique([h.header["SPORDER"] for h in hdu[3:-1]])
+                        )
+                    else:
+                        n_orders = 1
+                    return n_orders
+
                 # figure out the number of orders allowed for this dataset
-                if hdu["PRIMARY"].header["INSTRUME"] == "NIRISS":
-                    n_orders = 3
-                else:
-                    n_orders = 1
+                n_orders = determine_number_of_orders(hdu)
 
                 if order is None:
                     order = 1
