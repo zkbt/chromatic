@@ -58,6 +58,16 @@ def imshow_interact(
     ylim : list
         (optional, default=[])
         If the user wants to define their own ylimits on the lightcurve plot
+    xlim : list
+        (optional, default=[])
+        If the user wants to define their own xlimits on the lightcurve plot
+    xbuffer : float
+        (optional, default=0.01)
+        X-axis (time) buffer for plotting, xlims=[min(x)-xbuffer, max(x)+xbuffer]
+    ybuffer : float
+        (optional, default=0.01)
+        Y-axis (quantity) buffer for plotting, ylims=[min(y)-ybuffer, max(y)+ybuffer]
+
     """
 
     # preset the x and y axes as Time (in units defined by the user) and Wavelength
