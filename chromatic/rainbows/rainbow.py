@@ -223,7 +223,7 @@ class Rainbow:
             if metadata is not None:
                 self.metadata.update(**metadata)
         # then try to initialize from a file
-        elif isinstance(filepath, str) or isinstance(filepath, list):
+        elif isinstance(filepath, (str, list, Column)):
             self._initialize_from_file(filepath=filepath, format=format, **kw)
 
         # finally, tidy up by guessing the scales
