@@ -58,6 +58,8 @@ plugins:
         - "*.pdf"
         - "*.fits"
         - "*.npy"
+        - "downloads-for-exoatlas/*"
+        - "mastDownload/*"
 markdown_extensions:
     - toc:
         permalink: "#"
