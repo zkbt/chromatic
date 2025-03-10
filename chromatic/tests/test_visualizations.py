@@ -26,6 +26,46 @@ def test_imshow():
     plt.savefig(os.path.join(test_directory, "demonstration-of-imshow-units.pdf"))
 
 
+def test_scatter():
+    uniform = (
+        SimulatedRainbow(
+            dt=20 * u.minute, dw=0.02 * u.micron, wlim=[0.9, 1.1] * u.micron
+        )
+        .inject_transit()
+        .inject_noise(signal_to_noise=1000)
+        .inject_outliers()
+        .flag_outliers()
+    )
+    random = (
+        SimulatedRainbow(
+            time=np.random.normal(0, 1, 30) * u.hour,
+            wavelength=np.random.normal(1, 0.05, 20) * u.micron,
+        )
+        .inject_transit()
+        .inject_noise(signal_to_noise=1000)
+        .inject_outliers()
+        .flag_outliers()
+    )
+
+    fi, ax = plt.subplots(2, 3, figsize=(8, 4), sharex=True, sharey=True)
+    for i, r in enumerate([uniform, random]):
+        kw = dict(xaxis="wavelength", colorbar=False)
+        r.pcolormesh(ax=ax[i, 0], **kw)
+        r.scatter(ax=ax[i, 1], **kw)
+        r.pcolormesh(ax=ax[i, 2], **kw)
+        r.scatter(ax=ax[i, 2], edgecolor="black", s=9, **kw)
+    plt.ylim(-0.1, 0.1)
+    plt.xlim(0.85, 1.15)
+    ax[0, 0].set_title("pcolormesh")
+    ax[0, 1].set_title("scatter")
+    ax[0, 2].set_title("both")
+    plt.savefig(
+        os.path.join(
+            test_directory, "demonstration-of-scatter-compared-to-pcolormesh.pdf"
+        )
+    )
+
+
 def test_imshow_quantities():
     plt.close("all")
 
@@ -163,12 +203,12 @@ def test_imshow_one_wavelength():
     with pytest.warns(match="hard to imshow "):
 
         s = SimulatedRainbow(wavelength=[1] * u.micron).inject_noise()
-        ax = s.imshow()
+        ax = s.imshow(use_pcolormesh=False)
         assert "Wavelength Index" in ax.get_ylabel()
 
         s = SimulatedRainbow().inject_noise()
         b = s.bin(nwavelengths=s.nwave)
-        ax = b.imshow()
+        ax = b.imshow(use_pcolormesh=False)
         assert "Wavelength (" in ax.get_ylabel()
         ylim = ax.get_ylim()
     plt.savefig(
@@ -197,9 +237,11 @@ def test_imshow_randomized_axes():
 
         fi, ax = plt.subplots(1, 3, figsize=(10, 3), constrained_layout=True)
         kw = dict(vmin=0.98, vmax=1.02)
-        s.imshow(ax=ax[0], **kw)
-        s.get_average_spectrum_as_rainbow().imshow(ax=ax[1], **kw)
-        s.get_average_lightcurve_as_rainbow().imshow(ax=ax[2], **kw)
+        s.imshow(ax=ax[0], use_pcolormesh=False, **kw)
+        s.get_average_spectrum_as_rainbow().imshow(ax=ax[1], use_pcolormesh=False, **kw)
+        s.get_average_lightcurve_as_rainbow().imshow(
+            ax=ax[2], use_pcolormesh=False, **kw
+        )
         for i in [0, 2]:
             assert "Time Index" in ax[i].get_xlabel()
         for i in [0, 1]:

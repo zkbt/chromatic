@@ -18,6 +18,7 @@ def imshow(
     vmin=None,
     vmax=None,
     filename=None,
+    use_pcolormesh=True,
     **kw,
 ):
     """
@@ -45,6 +46,11 @@ def imshow(
         The color to be used for masking data points that are not OK.
     alpha_ok : float, optional
         The transparency to be used for masking data points that are not OK.
+    use_pcolormesh : bool
+        If the grid is non-uniform, should jump to using `pcolormesh` instead?
+        Leaving this at the default of True will give the best chance of
+        having real Wavelength and Time axes; setting it to False will
+        end up showing Wavelength Index or Time Index instead (if non-uniform).
     **kw : dict, optional
         All other keywords will be passed on to `plt.imshow`,
         so you can have more detailed control over the plot
@@ -72,6 +78,24 @@ def imshow(
     except AttributeError:
         wmin, wmax = None, None
 
+    # define pcolormesh inputs, in case we need to use them below
+    if use_pcolormesh:
+        pcolormesh_inputs = dict(
+            ax=ax,
+            quantity=quantity,
+            xaxis=xaxis,
+            w_unit=w_unit,
+            t_unit=t_unit,
+            colorbar=colorbar,
+            mask_ok=mask_ok,
+            color_ok=color_ok,
+            alpha_ok=alpha_ok,
+            vmin=vmin,
+            vmax=vmax,
+            filename=filename,
+            **kw,
+        )
+
     if (self.wscale == "linear") and (wmin is not None) and (wmax is not None):
         wlower, wupper = wmin, wmax
         wlabel = f"{self._wave_label} ({w_unit.to_string('latex_inline')})"
@@ -81,6 +105,9 @@ def imshow(
             r"log$_{10}$" + f"[{self._wave_label}/({w_unit.to_string('latex_inline')})]"
         )
     else:
+        if use_pcolormesh:
+            self.pcolormesh(**pcolormesh_inputs)
+            return
         message = f"""
         The wavelength scale for this rainbow is '{self.wscale}',
         and there are {self.nwave} wavelength centers and
@@ -120,6 +147,9 @@ def imshow(
             r"log$_{10}$" + f"[{self._time_label}/({t_unit.to_string('latex_inline')})]"
         )
     else:
+        if use_pcolormesh:
+            self.pcolormesh(**pcolormesh_inputs)
+            return
         message = f"""
         The time scale for this rainbow is '{self.tscale}',
         and there are {self.ntime} time centers and
@@ -156,6 +186,7 @@ def imshow(
         else:
             return self.fluxlike.get(k, None)
 
+    # choose between time and wavelength on the x-axis
     if xaxis.lower()[0] == "t":
         self.metadata["_imshow_extent"] = [tlower, tupper, wupper, wlower]
         xlabel, ylabel = tlabel, wlabel
@@ -172,8 +203,8 @@ def imshow(
         )
 
     # figure out a good shared color limits (unless already supplied)
-    vmin = vmin or np.nanpercentile(u.Quantity(z.flatten()).value * 1.0, 1)
-    vmax = vmax or np.nanpercentile(u.Quantity(z.flatten()).value * 1.0, 99)
+    vmin = vmin or np.nanpercentile(remove_unit(z).flatten() * 1.0, 1)
+    vmax = vmax or np.nanpercentile(remove_unit(z).flatten() * 1.0, 99)
 
     # define some default keywords
     imshow_kw = dict(interpolation="nearest", vmin=vmin, vmax=vmax)
@@ -196,14 +227,14 @@ def imshow(
                 vmax=1,
             )
             plt.imshow(
-                ok,
+                remove_unit(ok),
                 extent=self.metadata["_imshow_extent"],
                 aspect=aspect,
                 origin="upper",
                 **okimshow_kw,
             )
         plt.imshow(
-            z,
+            remove_unit(z),
             extent=self.metadata["_imshow_extent"],
             aspect=aspect,
             origin="upper",

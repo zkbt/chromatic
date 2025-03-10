@@ -560,7 +560,8 @@ class PHOENIXLibrary:
                 assert np.all(self.metadata[k] == metadata[k])
             for k in ["metallicity", "filename", "chromatic-version"]:
                 self.metadata[k] = np.hstack([self.metadata[k], metadata[k]])
-            self.models.update(**models)
+            for k in models:
+                self.models[k] = models[k]
 
         except (AttributeError, AssertionError):
             self.metadata = metadata

@@ -1,6 +1,5 @@
 import matplotlib
 
-matplotlib.rcParams["figure.dpi"] = 300
 matplotlib.rcParams["figure.constrained_layout.use"] = True
 matplotlib.rcParams["figure.facecolor"] = "white"
 matplotlib.rcParams["savefig.facecolor"] = "white"
@@ -44,7 +43,7 @@ warnings.formatwarning = custom_formatwarning
 """
 # astropy
 from astropy.io import ascii, fits
-from astropy.table import Table, QTable
+from astropy.table import Table, QTable, Column
 from astropy.time import Time
 from astropy.stats import sigma_clip, median_absolute_deviation, mad_std
 
@@ -100,6 +99,8 @@ def expand_filenames(filepath):
     """
     if type(filepath) == list:
         filenames = filepath
+    elif type(filepath) == Column:
+        filenames = list(filepath)
     elif "*" in filepath:
         filenames = np.sort(glob.glob(filepath))
     else:

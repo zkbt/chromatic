@@ -83,7 +83,7 @@ setup(
         "numpy",
         "scipy",
         "matplotlib>=3.5",
-        "astropy>=4.0",
+        "astropy>=5.0",
         "pandas",
         "tqdm",
         "altair",

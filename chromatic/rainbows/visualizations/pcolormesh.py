@@ -106,8 +106,8 @@ def pcolormesh(
         )
 
     # figure out a good shared color limits (unless already supplied)
-    vmin = vmin or np.nanpercentile(u.Quantity(z.flatten()).value, 1)
-    vmax = vmax or np.nanpercentile(u.Quantity(z.flatten()).value, 99)
+    vmin = vmin or np.nanpercentile(remove_unit(z).flatten(), 1)
+    vmax = vmax or np.nanpercentile(remove_unit(z).flatten(), 99)
 
     # define some default keywords
     pcolormesh_kw = dict(shading="flat", vmin=vmin, vmax=vmax)
@@ -128,15 +128,15 @@ def pcolormesh(
                 vmax=1,
             )
             plt.pcolormesh(
-                x,
-                y,
-                ok,
+                remove_unit(x),
+                remove_unit(y),
+                remove_unit(ok),
                 **okpcolormesh_kw,
             )
         plt.pcolormesh(
-            x,
-            y,
-            z,
+            remove_unit(x),
+            remove_unit(y),
+            remove_unit(z),
             **pcolormesh_kw,
         )
         plt.ylabel(ylabel)

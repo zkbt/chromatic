@@ -223,7 +223,7 @@ class Rainbow:
             if metadata is not None:
                 self.metadata.update(**metadata)
         # then try to initialize from a file
-        elif isinstance(filepath, str) or isinstance(filepath, list):
+        elif isinstance(filepath, (str, list, Column)):
             self._initialize_from_file(filepath=filepath, format=format, **kw)
 
         # finally, tidy up by guessing the scales
@@ -991,6 +991,8 @@ class Rainbow:
         remove_trends,
         attach_model,
         inflate_uncertainty,
+        concatenate_in_time,
+        concatenate_in_wavelength,
     )
 
     # import summary statistics for each wavelength
@@ -1024,6 +1026,7 @@ class Rainbow:
     from .visualizations import (
         imshow,
         pcolormesh,
+        scatter,
         plot_lightcurves,
         _setup_animate_lightcurves,
         animate_lightcurves,

@@ -593,6 +593,14 @@ def bin_in_wavelength(
     new.wavelike["unbinned_wavelengths_per_binned_wavelength"] = binned[
         "N_unbinned/N_binned"
     ]
+    uncertainty_per_wavelength = self.get_expected_uncertainty()
+    uncertainty_weighted_binned = binning_function(
+        x=self.wavelike["wavelength"],
+        y=self.wavelike["wavelength"],
+        unc=uncertainty_per_wavelength,
+        **binkw,
+    )
+    new.wavelike["effective_wavelength"] = uncertainty_weighted_binned["y"]
 
     # bin the flux-like variables
     # TODO (add more careful treatment of uncertainty + DQ)
