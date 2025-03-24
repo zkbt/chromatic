@@ -33,7 +33,7 @@ def from_feinstein_exotedrf(rainbow, filepath):
     rainbow.wavelike["wavelength"] = d['wavelength'] * u.micron * 1
 
     # populate a 1D array of times (with astropy units of time)
-    rainbow.timelike["time"] =  d['time'] * u.day * 1
+    rainbow.timelike["time"] =  (d['time'] + 2400000.5) * u.day * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes
     flux = np.zeros((len(d['wavelength']), len(d['time'])))
