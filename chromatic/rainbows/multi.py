@@ -50,6 +50,10 @@ class MultiRainbow:
         # make sure the names and rainbows match up
         assert len(self.names) == len(self.rainbows)
 
+        # slightly kludge, add names back to individual rainbows 
+        for r, n in zip(self.rainbows, self.names):
+            r.name = n 
+            
         # pull units from first rainbow
         self.w_unit = u.Unit(self.list_of_rainbows[0].wavelength.unit)
         self.t_unit = u.Unit(self.list_of_rainbows[0].time.unit)
@@ -66,10 +70,11 @@ class MultiRainbow:
         """
         How should this object be represented?
         """
-        return f"<MultiRainbow({self.rainbows})>"
+        d = self.dict_of_rainbows
+        s = ' + '.join([f'{k}{v}' for k, v in self.dict_of_rainbows.items()])
+        return f"<MultiRainbow({s})>"
 
-    @property
-    def nrainbows(self):
+    def __len__(self):
         """
         What's the number of rainbows in here?
         """
@@ -95,12 +100,12 @@ class MultiRainbow:
         # estimate a figure size from current matplotlib defaults
         if figsize == None:
             default_figsize = plt.matplotlib.rcParams["figure.figsize"]
-            figsize = [self.nrainbows * default_figsize[0], default_figsize[1]]
+            figsize = [len(self) * default_figsize[0], default_figsize[1]]
 
         # create the figure and grid of axes as subplots
         self.figure, self.axes = plt.subplots(
             rows,
-            int(np.ceil(self.nrainbows / rows)),
+            int(np.ceil(len(self) / rows)),
             sharex=True,
             sharey=True,
             figsize=figsize,
@@ -341,6 +346,15 @@ class MultiRainbow:
 
     def __getitem__(self, key):
         """
+        Extract some subset of Rainbows. 
+        """
+        try: 
+            return self.dict_of_rainbows[key]
+        except KeyError:
+            return self.list_of_rainbows[key]
+            
+    '''def __getitem__(self, key):
+        """
         Trim a rainbow by indexing, slicing, or masking.
         Two indices must be provided (`[:,:]`).
 
@@ -361,7 +375,25 @@ class MultiRainbow:
             The (wavelength, time) slices, indices, or masks.
         """
         new_rainbows = [r.__getitem__(key) for r in self.list_of_rainbows]
-        return MultiRainbow(new_rainbows, names=self.names)
+        return MultiRainbow(new_rainbows, names=self.names)'''
+
+
+    def __getattr__(self, key):
+        '''
+        Apply actions to all Rainbows. 
+        
+        Returns 
+        ------- 
+        f : function 
+            This creates a function that will loop over all Rainbows 
+            in the MultiRainbow, apply the action to it, and create 
+            a new MultiRainbow with the result. 
+        '''
+        def apply_action_to_all_rainbows(**kwargs):
+            new_rainbows = [getattr(r, key)(**kwargs) for r in self]
+            return MultiRainbow(new_rainbows, names=self.names)
+        apply_action_to_all_rainbows.__doc__ = getattr(self[0], key).__doc__
+        return apply_action_to_all_rainbows
 
     def normalize(self, **kwargs):
         """
@@ -450,12 +482,13 @@ class MultiRainbow:
         )
 
         # make all the individual imshows
-        for r, a, i in zip(self.list_of_rainbows, self.axes, range(self.nrainbows)):
+        for r, a, i in zip(self.list_of_rainbows, self.axes, range(len(self))):
             r.imshow(ax=a, vmin=vmin, vmax=vmax, colorbar=False, **kwargs)
             if i == 0:
                 xlabel, ylabel = a.get_xlabel(), a.get_ylabel()
             a.set_xlabel("")
             a.set_ylabel("")
+            a.set_title(r.name)
 
         self.figure.supxlabel(xlabel)
         self.figure.supylabel(ylabel)
@@ -469,6 +502,7 @@ class MultiRainbow:
             np.nanmax([x._imshow_extent[2] for x in self.list_of_rainbows]),
             np.nanmin([x._imshow_extent[3] for x in self.list_of_rainbows]),
         )
+
 
     def animate_lightcurves(
         self,
