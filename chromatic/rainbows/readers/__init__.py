@@ -21,6 +21,7 @@ from .atoca import *
 from .espinoza import *
 from .dossantos import *
 from .feinstein import *
+from .feinstein_exotedrf import *
 from .schlawin import *
 from .coulombe import *
 from .kirk import *
