@@ -22,6 +22,7 @@ nav:
         - tools/binning.ipynb
         - tools/colormaps.ipynb
     - api.md
+    - acknowledgements.ipynb
 theme:
   name: "material"
   features:
