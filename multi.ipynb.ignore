@@ -1,0 +1,124 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "2d585005",
+   "metadata": {},
+   "source": [
+    "# Comparing 🌈 to 🌈\n",
+    "\n",
+    "Often, we'll want to directly compare two different Rainbows. A wrapper called `compare_rainbows` tries to make doing so a little simpler, by providing an interface to apply many of the familiar `Rainbow` methods to multiple objects at once."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "54e2ace1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from chromatic import *"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ba1549ef",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "t = SimulatedRainbow().inject_transit()\n",
+    "a = t.inject_noise(signal_to_noise=1000)\n",
+    "b = t.inject_noise(signal_to_noise=np.sqrt(100 * 1000))\n",
+    "c = t.inject_noise(signal_to_noise=100)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9e14233e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "c = compare_rainbows([a, b, c], names=[\"noisy\", \"noisier\", \"noisiest\"])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9eb4c042",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "c.bin(R=4).plot(spacing=0.01)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "688dd9f0",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "c.imshow(cmap=\"gray\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "c0f5af80",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "c.animate_lightcurves()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "34c31359",
+   "metadata": {},
+   "source": [
+    "<img src='multi-animated-lightcurves.gif' align='left'>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d2bf4aa5",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "c.animate_spectra()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d6eb5762",
+   "metadata": {},
+   "source": [
+    "<img src='multi-animated-spectra.gif' align='spectra'>"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
