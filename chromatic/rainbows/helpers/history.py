@@ -1,6 +1,7 @@
 """
 Add ability for Rainbow to keep track of their own history.
 """
+
 from ...imports import *
 
 __all__ = [

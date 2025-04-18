@@ -17,17 +17,17 @@ __all__ = ["imshow_interact"]
 
 # Convert this grid to columnar data expected by Altair
 def imshow_interact(
-        self,
-        quantity="Flux",
-        t_unit="d",
-        w_unit="micron",
-        cmap="viridis",
-        xlim=[],
-        ylim=[],
-        ylog=None,
-        xbuffer=0.01,
-        ybuffer=0.01,
-        filename=None,
+    self,
+    quantity="Flux",
+    t_unit="d",
+    w_unit="micron",
+    cmap="viridis",
+    xlim=[],
+    ylim=[],
+    ylog=None,
+    xbuffer=0.01,
+    ybuffer=0.01,
+    filename=None,
 ):
     """
     Display interactive spectrum plot for chromatic Rainbow with a
@@ -145,10 +145,7 @@ def imshow_interact(
         domainx = xlim
         xwidth = 230 / len(time[(time.value >= xlim[0]) & (time.value <= xlim[1])])
     else:
-        domainx = [
-            np.min(source[xlabel]) - xbuffer,
-            np.max(source[xlabel]) + xbuffer
-        ]
+        domainx = [np.min(source[xlabel]) - xbuffer, np.max(source[xlabel]) + xbuffer]
         xwidth = 280 / len(time)
 
     with warnings.catch_warnings():
@@ -168,10 +165,7 @@ def imshow_interact(
             .encode(
                 x=alt.X(
                     f"{xlabel}:Q",
-                    scale=alt.Scale(
-                        zero=False,
-                        nice=False,
-                        domain=domainx),
+                    scale=alt.Scale(zero=False, nice=False, domain=domainx),
                 ),
                 y=alt.Y(
                     f"{ylabel}:Q",
