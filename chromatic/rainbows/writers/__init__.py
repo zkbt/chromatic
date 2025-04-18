@@ -20,8 +20,11 @@ def guess_writer(filepath, format=None):
     ----------
     filepath : str
         The path to the file to be written.
-    format : str, None
-        The file format to use.
+    format : str, function, (optional)
+        The file format with which to write the file.
+        If None, guess format from filepath. 
+        If str, pull reader from dictionary of writers. 
+        If function, treat as a `to_???` writer function.
     """
     from fnmatch import fnmatch
     import glob
@@ -29,8 +32,11 @@ def guess_writer(filepath, format=None):
     # get all the possible filenames (= expand wildcard)
     f = filepath
 
+    # if format is a function, return it as the reader
+    if callable(format):
+        return format
     # if format='abcdefgh', return the `to_abcdefgh` function
-    if format is not None:
+    elif format is not None:
         return available_writers[f"to_{format}"]
     # does it look like a .rainbow.npy chromatic file?
     elif fnmatch(f, "*.rainbow.npy"):
