@@ -1,6 +1,6 @@
 """
-    3. Edit the `to_xarray_stellar_spectra` function so that it will
-    write out a Rainbow to whatever format you want.
+3. Edit the `to_xarray_stellar_spectra` function so that it will
+write out a Rainbow to whatever format you want.
 """
 
 # import the general list of packages

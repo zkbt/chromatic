@@ -84,7 +84,7 @@ def test_inject_transit():
     ).imshow(ax=ax[1, 1])
     plt.title(f"{method} | wacky")
 
-    method = "batman"
+    method = "exoplanet"
     s.inject_transit(method=method).imshow(ax=ax[2, 0])
     plt.title(f"{method} | default")
     s.inject_transit(

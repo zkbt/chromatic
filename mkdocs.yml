@@ -21,6 +21,7 @@ nav:
         - tools/spectra.ipynb
         - tools/binning.ipynb
         - tools/colormaps.ipynb
+        - tools/transits.ipynb
     - api.md
 theme:
   name: "material"

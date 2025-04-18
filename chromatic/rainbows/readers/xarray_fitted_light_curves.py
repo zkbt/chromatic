@@ -1,37 +1,37 @@
 """
 
-    3. Edit the `from_xarray_fitted_light_curves` function so that it will
-    load a chromatic light curve file in your format and,
-    for some Rainbow object `rainbow`, populate at least:
+3. Edit the `from_xarray_fitted_light_curves` function so that it will
+load a chromatic light curve file in your format and,
+for some Rainbow object `rainbow`, populate at least:
 
-        + rainbow.timelike['time']
-        + rainbow.wavelike['wavelength']
-        + rainbow.fluxlike['flux']
+    + rainbow.timelike['time']
+    + rainbow.wavelike['wavelength']
+    + rainbow.fluxlike['flux']
 
-    You'll need to replace the cartoon functions on each
-    line with the actual code needed to load your file.
+You'll need to replace the cartoon functions on each
+line with the actual code needed to load your file.
 
-    (This template assumes that only one file needs to be
-    loaded. If you need to load multiple segments, or each
-    time point is stored in its own file or something, then
-    check out `stsci.py` for an example of loading and
-    stitching together multiple input files. You'll probably
-    want to change `filepath` to accept a glob-friendly string
-    like `my-neato-formatted-files-*.npy` or some such.)
+(This template assumes that only one file needs to be
+loaded. If you need to load multiple segments, or each
+time point is stored in its own file or something, then
+check out `stsci.py` for an example of loading and
+stitching together multiple input files. You'll probably
+want to change `filepath` to accept a glob-friendly string
+like `my-neato-formatted-files-*.npy` or some such.)
 
-    4. Edit the `readers/__init__.py` file to import your
-    `from_xarray_fitted_light_curves` function to be accessible when people
-    are trying to create new Rainbows. Add an `elif` statement
-    to the `guess_reader` function that will help guess which
-    reader to use from some aspect(s) of the filename.
+4. Edit the `readers/__init__.py` file to import your
+`from_xarray_fitted_light_curves` function to be accessible when people
+are trying to create new Rainbows. Add an `elif` statement
+to the `guess_reader` function that will help guess which
+reader to use from some aspect(s) of the filename.
 
-    (This `guess_reader` function also accepts a `format=`
-    keyword that allows the user to explicitly specify that
-    the xarray_fitted_light_curves reader should be used.)
+(This `guess_reader` function also accepts a `format=`
+keyword that allows the user to explicitly specify that
+the xarray_fitted_light_curves reader should be used.)
 
-    5. Submit a pull request to the github repository for
-    this package, so that other folks can use your handy
-    new reader too!
+5. Submit a pull request to the github repository for
+this package, so that other folks can use your handy
+new reader too!
 """
 
 # import the general list of packages

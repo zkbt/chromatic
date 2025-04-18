@@ -1,5 +1,5 @@
 from ..imports import *
-from ..resampling import bintoR, bintogrid
+from ..tools.resampling import bintoR, bintogrid
 from ..version import __version__
 import astropy.config.paths
 from astropy.utils.data import is_url_in_cache, cache_total_size
@@ -169,10 +169,10 @@ class PHOENIXLibrary:
         metallicity_string = self._stringify_metallicity(metallicity)
         self._raw_directory = f"PHOENIX-ACES-AGSS-COND-2011/Z{metallicity_string}"
         self._raw_directory_url = "/".join([self._raw_base_url, self._raw_directory])
-        self._raw_local_paths[
-            f"index-Z={metallicity_string}"
-        ] = download_file_with_warning(
-            self._raw_directory_url, pkgname=self._cache_label, cache=cache
+        self._raw_local_paths[f"index-Z={metallicity_string}"] = (
+            download_file_with_warning(
+                self._raw_directory_url, pkgname=self._cache_label, cache=cache
+            )
         )
         cheerfully_suggest(
             f"""
