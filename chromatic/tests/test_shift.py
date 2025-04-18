@@ -20,9 +20,9 @@ def test_shift():
         fi, ax = plt.subplots(
             1, 3, sharex=True, sharey=True, figsize=(8, 4), constrained_layout=True
         )
-        unshifted.imshow(ax=ax[0])
-        shifted.imshow(ax=ax[1])
-        shifted_and_then_shifted_back.imshow(ax=ax[2])
+        unshifted.paint(ax=ax[0])
+        shifted.paint(ax=ax[1])
+        shifted_and_then_shifted_back.paint(ax=ax[2])
         plt.savefig(
             os.path.join(
                 test_directory,

@@ -26,7 +26,7 @@ def test_normalize(plot=False):
             r.fluxlike["relative-uncertainty"] = r.uncertainty / r.flux
             assert np.all(np.isclose(r.uncertainty / r.flux, 1 / snr, rtol=0.1))
             if plot:
-                r.imshow_quantities(maxcol=4)
+                r.paint_quantities(maxcol=4)
     plt.close("all")
 
 

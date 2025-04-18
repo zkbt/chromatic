@@ -23,9 +23,10 @@ def pcolormesh(
     """
     Paint a 2D image of flux as a function of time and wavelength.
 
-    By using `.pcolormesh`, pixels can transform based on their edges,
+    By using `.pcolormesh()`, pixels can transform based on their edges,
     so non-uniform axes are allowed. This is a tiny bit slower than
-    `.imshow`, but otherwise very similar.
+    `.imshow()`, but otherwise very similar. `.paint()` will try to
+    choose the best between `.imshow()` and `.pcolormesh()`.
 
     Parameters
     ----------
@@ -34,6 +35,8 @@ def pcolormesh(
     quantity : str, optional
         The fluxlike quantity to imshow.
         (Must be a key of `rainbow.fluxlike`).
+    xaxis : str
+        What to use as the horizontal axis, 'time' or 'wavelength'.
     w_unit : str, Unit, optional
         The unit for plotting wavelengths.
     t_unit : str, Unit, optional
@@ -111,6 +114,10 @@ def pcolormesh(
 
     # define some default keywords
     pcolormesh_kw = dict(shading="flat", vmin=vmin, vmax=vmax)
+    # I want to include `antialiased=True` to render nicely whether the plotting
+    # pixels super- or sub-sample the data pixels, but it appears not to have
+    # an effect in `pcolormesh`, so we just warn the user instead.
+
     pcolormesh_kw.update(**kw)
     with quantity_support():
         plt.sca(ax)
@@ -133,7 +140,7 @@ def pcolormesh(
                 remove_unit(ok),
                 **okpcolormesh_kw,
             )
-        plt.pcolormesh(
+        pcolormeshed = plt.pcolormesh(
             remove_unit(x),
             remove_unit(y),
             remove_unit(z),
@@ -150,6 +157,36 @@ def pcolormesh(
         plt.ylim(y[-1], y[0])
         plt.title(self.get("title"))
 
+        # offer warning if aliasing might be a problem
+        plt.draw()
+        bbox = pcolormeshed.get_window_extent()
+        render_pixels = np.abs([bbox.width, bbox.height])
+        data_pixels = np.array(z.shape[::-1])
+        ratios = render_pixels / data_pixels
+        aliasing_warning_threshold = 2
+        if np.min(ratios) < aliasing_warning_threshold:
+            cheerfully_suggest(
+                f"""
+            In using`.pcolormesh`, [display pixels] / [data pixels] =
+            {np.round(render_pixels)} / {data_pixels} = {ratios} {(xlabel.split()[0], ylabel.split()[0])}
+            Is less than the suggested threshold of {aliasing_warning_threshold}.
+
+            This suggests that aliasing/moiré might be a problem, where too many
+            data pixels are trying to be displayed with too few pixels, and the
+            choices `matplotlib` makes for how to do that might not be intuitive.
+
+            Here are possible solutions:
+                - Use `.bin()` to decrease the number of data pixels in wavelength
+                and/or time, effectively averaging before displaying, rather than
+                asking `matplotlib` to decide how to visually average adjacent data.
+                - Increase the `dpi` of the figure in which this appears, so there are
+                enough display pixels to represent all the data pixels being shown.
+                - Use `.imshow()` instead of `.pcolormesh`, which can do better
+                built-in handling of antialiasing for large data arrays. Since `.imshow()`
+                can only show uniform wavelength and time grids, non-uniform grids will
+                be labeled via index instead of actual value.
+            """
+            )
     if filename is not None:
         self.savefig(filename)
     return ax

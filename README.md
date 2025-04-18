@@ -23,7 +23,7 @@ For an ultra-quick start try
 ```python
 from chromatic import *
 r = SimulatedRainbow().inject_transit().inject_noise()
-r.normalize().bin(dw=0.5*u.micron, dt=15*u.minute).imshow()
+r.normalize().bin(dw=0.5*u.micron, dt=15*u.minute).paint()
 ```
 and then see the 🌈[documentation](https://zkbt.github.io/chromatic/)🌈  for more.
 

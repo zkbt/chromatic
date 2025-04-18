@@ -13,13 +13,13 @@ def test_flag_outliers():
 
     kw = dict(vmin=0.9, vmax=1.1)
     fi, ax = plt.subplots(2, 3, figsize=(10, 4), dpi=300)
-    noisy.imshow(ax=ax[0, 0], **kw)
-    noisy_outliers.imshow(ax=ax[0, 1], **kw)
-    noisy_flagged.imshow(ax=ax[0, 2], **kw)
+    noisy.paint(ax=ax[0, 0], **kw)
+    noisy_outliers.paint(ax=ax[0, 1], **kw)
+    noisy_flagged.paint(ax=ax[0, 2], **kw)
 
-    noiseless.imshow(ax=ax[1, 0], **kw)
-    noiseless_outliers.imshow(ax=ax[1, 1], **kw)
-    noiseless_flagged.imshow(ax=ax[1, 2], **kw)
+    noiseless.paint(ax=ax[1, 0], **kw)
+    noiseless_outliers.paint(ax=ax[1, 1], **kw)
+    noiseless_flagged.paint(ax=ax[1, 2], **kw)
 
     plt.savefig(os.path.join(test_directory, "demonstration-of-flagging-outliers.pdf"))
     assert np.all(

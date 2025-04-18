@@ -13,8 +13,8 @@ def test_bin_in_time():
 
     fi, ax = plt.subplots(2, 1, sharex=True)
     imshowkw = dict(vmin=0.98, vmax=1.02)
-    s.imshow(ax=ax[0], **imshowkw)
-    b.imshow(ax=ax[1], **imshowkw)
+    s.paint(ax=ax[0], **imshowkw)
+    b.paint(ax=ax[1], **imshowkw)
     plt.savefig(os.path.join(test_directory, "demonstration-of-binning-in-time.pdf"))
     plt.close("all")
 
@@ -34,8 +34,8 @@ def test_bin_in_wavelength():
 
     fi, ax = plt.subplots(2, 1, sharex=True)
     imshowkw = dict(vmin=0.98, vmax=1.02)
-    s.imshow(ax=ax[0], **imshowkw)
-    b.imshow(ax=ax[1], **imshowkw)
+    s.paint(ax=ax[0], **imshowkw)
+    b.paint(ax=ax[1], **imshowkw)
     plt.savefig(
         os.path.join(test_directory, "demonstration-of-binning-in-wavelength.pdf")
     )
@@ -66,9 +66,9 @@ def test_bin():
 
     fi, ax = plt.subplots(2, 1, sharex=True, constrained_layout=True)
     imshowkw = dict(vmin=0.98, vmax=1.02)
-    s.imshow(ax=ax[0], **imshowkw)
+    s.paint(ax=ax[0], **imshowkw)
     plt.title("Unbinned")
-    b.imshow(ax=ax[1], **imshowkw)
+    b.paint(ax=ax[1], **imshowkw)
     plt.title("Binned")
     plt.savefig(
         os.path.join(
@@ -165,11 +165,11 @@ def test_bin_bad_data(visualize=False):
 
     if visualize:
         fi, ax = plt.subplots(2, 2, figsize=(8, 6), dpi=300, sharex=True, sharey=True)
-        s.imshow(ax=ax[0, 0], quantity="uncertainty", vmax=0.01)
-        s.imshow(ax=ax[0, 1], vmin=0.97, vmax=1.03)
+        s.paint(ax=ax[0, 0], quantity="uncertainty", vmax=0.01)
+        s.paint(ax=ax[0, 1], vmin=0.97, vmax=1.03)
 
-        b.imshow(ax=ax[1, 0], quantity="uncertainty", vmax=0.01)
-        b.imshow(ax=ax[1, 1], vmin=0.97, vmax=1.03)
+        b.paint(ax=ax[1, 0], quantity="uncertainty", vmax=0.01)
+        b.paint(ax=ax[1, 1], vmin=0.97, vmax=1.03)
 
     assert np.any(np.isfinite(b.flux))
     plt.savefig(
@@ -248,7 +248,7 @@ def test_bin_with_minimum_points_per_bin():
             b = s.bin(
                 dw=0.01 * u.micron, dt=0.1 * u.hour, minimum_points_per_bin=t, trim=trim
             )
-            b.imshow(ax=ax[i, j], colorbar=False)
+            b.paint(ax=ax[i, j], colorbar=False)
             plt.ylim(5, 0.5)
             plt.title(f"minimum_points_per_bin={t},\ntrim={trim}")
 
@@ -270,9 +270,9 @@ def test_integrated_wrappers():
 
         fi, ax = plt.subplots(1, 3, figsize=(10, 3), constrained_layout=True)
         kw = dict(vmin=0.98, vmax=1.02)
-        s.imshow(ax=ax[0], **kw)
-        s.get_average_spectrum_as_rainbow().imshow(ax=ax[1], **kw)
-        s.get_average_lightcurve_as_rainbow().imshow(ax=ax[2], **kw)
+        s.paint(ax=ax[0], **kw)
+        s.get_average_spectrum_as_rainbow().paint(ax=ax[1], **kw)
+        s.get_average_lightcurve_as_rainbow().paint(ax=ax[2], **kw)
 
 
 def test_uncertainty_weighting_during_binning():
@@ -285,10 +285,10 @@ def test_uncertainty_weighting_during_binning():
         t = s.inject_transit(planet_radius=np.linspace(0.1, 0.3, s.nwave)).inject_noise(
             signal_to_noise=np.logspace(1, 2, s.nwave)[::order]
         )
-        t.imshow(ax=ax[0, col])
+        t.paint(ax=ax[0, col])
 
         b = t.bin(R=3, dt=20 * u.minute)
-        b.imshow(ax=ax[1, col])
+        b.paint(ax=ax[1, col])
         b.plot_with_model(ax=ax[2, col])
 
         lc = t.get_average_lightcurve_as_rainbow()

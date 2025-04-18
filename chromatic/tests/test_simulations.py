@@ -23,9 +23,9 @@ def test_photon_noise(N=10000):
 
     # imshow the two ways
     fi, ax = plt.subplots(1, 2, figsize=(8, 3), dpi=300, constrained_layout=True)
-    gaussian.imshow(ax=ax[0])
+    gaussian.paint(ax=ax[0])
     ax[0].set_title(r"Gaussian ($\sigma=$" + f"{1/np.sqrt(N):.3f}=" + r"$1/\sqrt{N}$)")
-    poisson.imshow(ax=ax[1])
+    poisson.paint(ax=ax[1])
     ax[1].set_title(f"Poisson (N={N})")
 
     # make sure the standard deviation is about right
@@ -60,7 +60,7 @@ def test_inject_transit():
     fi, ax = plt.subplots(3, 2, figsize=(8, 6), constrained_layout=True, dpi=300)
 
     method = "trapezoid"
-    s.inject_transit(method=method).imshow(ax=ax[0, 0])
+    s.inject_transit(method=method).paint(ax=ax[0, 0])
     plt.title(f"{method} | default")
     s.inject_transit(
         planet_radius=np.sqrt(x) / 10,
@@ -68,11 +68,11 @@ def test_inject_transit():
         t0=x * 0.03,
         T=x * 0.05,
         method=method,
-    ).imshow(ax=ax[0, 1])
+    ).paint(ax=ax[0, 1])
     plt.title(f"{method} | wacky")
 
     method = "exoplanet"
-    s.inject_transit(method=method).imshow(ax=ax[1, 0])
+    s.inject_transit(method=method).paint(ax=ax[1, 0])
     plt.title(f"{method} | default")
     s.inject_transit(
         planet_radius=np.sqrt(x) / 10,
@@ -81,7 +81,7 @@ def test_inject_transit():
         a=1 / x * 10,
         u=np.random.uniform(0, 0.5, [s.nwave, 2]),
         method=method,
-    ).imshow(ax=ax[1, 1])
+    ).paint(ax=ax[1, 1])
     plt.title(f"{method} | wacky")
 
     method = "exoplanet"
@@ -95,7 +95,7 @@ def test_inject_transit():
         limb_dark="nonlinear",
         u=np.random.uniform(0, 0.5, [s.nwave, 4]),
         method=method,
-    ).imshow(ax=ax[2, 1])
+    ).paint(ax=ax[2, 1])
     plt.title(f"{method} | wacky")
 
     plt.savefig(os.path.join(test_directory, "demonstration-of-injecting-transit.pdf"))
@@ -105,7 +105,7 @@ def test_inject_transit():
 def test_inject_systematics():
     SimulatedRainbow().inject_transit().inject_noise().inject_systematics().bin(
         R=10, dt=10 * u.minute
-    ).imshow_with_models()
+    ).paint_with_models()
     plt.savefig(
         os.path.join(test_directory, "demonstration-of-injecting-fake-systematics.pdf")
     )
