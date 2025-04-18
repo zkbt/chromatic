@@ -26,7 +26,7 @@ from .coulombe import *
 from .kirk import *
 from .radica import *
 from .aylin import *
-from .carter_and_may import * 
+from .carter_and_may import *
 
 
 # construct a dictionary of available readers
@@ -35,13 +35,13 @@ available_readers = {k: globals()[k] for k in globals() if k[0:5] == "from_"}
 
 def guess_reader(filepath, format=None):
     """
-    A wrapper to guess the appropriate reader for a rainbow dataset. 
+    A wrapper to guess the appropriate reader for a rainbow dataset.
 
-    For some datasets, we can guess the data format fairly reliablely 
-    from the file extension and/or filepath structure. For others, 
-    we should explicitly provide a file format, either as a string 
-    referring to a pre-defined reader or as a new function. This 
-    wrapper uses a provided format, or otherwise defaults to trying 
+    For some datasets, we can guess the data format fairly reliablely
+    from the file extension and/or filepath structure. For others,
+    we should explicitly provide a file format, either as a string
+    referring to a pre-defined reader or as a new function. This
+    wrapper uses a provided format, or otherwise defaults to trying
     to guess the file format from the filepath.
 
     Parameters
@@ -52,9 +52,9 @@ def guess_reader(filepath, format=None):
         loaded together (for example, if an exposure was
         split into multiple segments).
     format : str, function, (optional)
-        The file format of the file to be read. 
-        If None, guess format from filepath. 
-        If str, pull reader from dictionary of readers. 
+        The file format of the file to be read.
+        If None, guess format from filepath.
+        If str, pull reader from dictionary of readers.
         If function, treat as a `from_???` reader function.
     """
 

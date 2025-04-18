@@ -1,5 +1,5 @@
 from ...imports import *
-from ...resampling import *
+from ...tools.resampling import *
 
 __all__ = [
     "bin",

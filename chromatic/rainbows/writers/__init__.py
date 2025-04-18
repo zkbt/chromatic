@@ -22,8 +22,8 @@ def guess_writer(filepath, format=None):
         The path to the file to be written.
     format : str, function, (optional)
         The file format with which to write the file.
-        If None, guess format from filepath. 
-        If str, pull reader from dictionary of writers. 
+        If None, guess format from filepath.
+        If str, pull reader from dictionary of writers.
         If function, treat as a `to_???` writer function.
     """
     from fnmatch import fnmatch

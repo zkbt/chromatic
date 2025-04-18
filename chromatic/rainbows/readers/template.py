@@ -94,7 +94,6 @@ def from_abcdefgh(self, filepath):
     self.fluxlike["uncertainty"] = the_2D_array_of_uncertainties()
     self.fluxlike["ok"] = the_2D_array_of_are_the_data_ok()
 
-
     # add some warnings if there's any funny business
     if something_goes_wonky():
         cheerfully_suggest(

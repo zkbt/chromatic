@@ -22,6 +22,9 @@ import warnings, textwrap
 
 from time import time as get_current_seconds
 
+# get binning tools
+from .tools.resampling import *
+
 
 def custom_formatwarning(message, *args, **kwargs):
     return f"🌈🤖 {textwrap.dedent(str(message)).strip().strip()}\n\n"
@@ -60,7 +63,7 @@ from scipy.interpolate import interp1d
 # For converting Rainbows to pandas dataframe
 import pandas as pd
 
-from .units import *
+from .tools.custom_units import *
 
 # For remove astrophysical signal
 from scipy.signal import savgol_filter, butter, filtfilt

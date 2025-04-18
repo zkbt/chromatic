@@ -1,6 +1,6 @@
 from ..imports import *
 from .readers import *
-from ..resampling import *
+from ..tools.resampling import *
 
 
 class Rainbow:
@@ -448,9 +448,9 @@ class Rainbow:
             The filepath pointing to the file or group of files
             that should be read.
         format : str, function, (optional)
-            The file format of the file to be read. 
-            If None, guess format from filepath. 
-            If str, pull reader from dictionary of readers. 
+            The file format of the file to be read.
+            If None, guess format from filepath.
+            If str, pull reader from dictionary of readers.
             If function, treat as a `from_???` reader function.
         **kw : dict,  (optional)
             Additional keywords will be passed on to the reader.

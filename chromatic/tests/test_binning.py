@@ -1,6 +1,6 @@
 from ..rainbows import *
 from .setup_tests import *
-from ..resampling import *
+from ..tools.resampling import *
 
 
 def test_bin_in_time():

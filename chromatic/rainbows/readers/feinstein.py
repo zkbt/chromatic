@@ -18,21 +18,21 @@ def from_feinstein_numpy(rainbow, filepath):
         The path to the file to load.
     """
 
-    #time, wavelength, spectra, err = np.load(filepath, allow_pickle=True)
+    # time, wavelength, spectra, err = np.load(filepath, allow_pickle=True)
     dat = np.load(filepath, allow_pickle=True).item()
 
-    rainbow.wavelike["wavelength"] = dat['wavelength'] * u.micron * 1
+    rainbow.wavelike["wavelength"] = dat["wavelength"] * u.micron * 1
 
     # populate a 1D array of times (with astropy units of time)
-    times = dat['time'] * u.day
+    times = dat["time"] * u.day
     rainbow.timelike["time"] = times * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes
-    flux = np.zeros((len(dat['wavelength']), len(times)))
-    uncertainty = np.zeros_like(dat['flux'])
+    flux = np.zeros((len(dat["wavelength"]), len(times)))
+    uncertainty = np.zeros_like(dat["flux"])
 
-    rainbow.fluxlike["flux"] = dat['flux'].T * 1
-    rainbow.fluxlike["uncertainty"] = dat['flux_err'].T * 1
+    rainbow.fluxlike["flux"] = dat["flux"].T * 1
+    rainbow.fluxlike["uncertainty"] = dat["flux_err"].T * 1
 
 
 def from_feinstein_h5(self, filepath, order=1, version="opt"):
