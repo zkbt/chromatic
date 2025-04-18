@@ -91,6 +91,9 @@ def from_abcdefgh(self, filepath):
 
     # populate a 2D (row = wavelength, col = time) array of fluxes
     self.fluxlike["flux"] = the_2D_array_of_fluxes()
+    self.fluxlike["uncertainty"] = the_2D_array_of_uncertainties()
+    self.fluxlike["ok"] = the_2D_array_of_are_the_data_ok()
+
 
     # add some warnings if there's any funny business
     if something_goes_wonky():

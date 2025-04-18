@@ -18,16 +18,6 @@ def from_feinstein_numpy(rainbow, filepath):
         The path to the file to load.
     """
 
-    try:
-        from h5py import File
-    except ImportError:
-        warnings.warn(
-            f"""
-        Please try to install `h5py` into your current environment with
-            `pip install --upgrade h5py`
-        to have access to the `h5py` reader needed for HDF5 files.
-        """
-        )
     #time, wavelength, spectra, err = np.load(filepath, allow_pickle=True)
     dat = np.load(filepath, allow_pickle=True).item()
 
@@ -58,7 +48,7 @@ def from_feinstein_h5(self, filepath, order=1, version="opt"):
         The path to the file to load.
     """
 
-    f = File(filepath)
+    f = h5.File(filepath)
 
     astropy_times = Time(np.array(f["time"]), format="mjd", scale="tdb")
     self.set_times_from_astropy(astropy_times, is_barycentric=True)  # ???

@@ -8,6 +8,7 @@ matplotlib.rcParams["savefig.dpi"] = 300
 # basics
 import numpy as np
 import matplotlib.pyplot as plt
+import h5py as h5
 
 
 import matplotlib.animation as ani
