@@ -108,7 +108,7 @@
 ## 🔨 Tools
 ::: chromatic.spectra.planck.get_planck_photons
 ::: chromatic.spectra.phoenix.get_phoenix_photons
-::: chromatic.resampling
+::: chromatic.tools.resampling
     options:
       show_root_heading: False
     selection:

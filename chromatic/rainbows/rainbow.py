@@ -1,6 +1,6 @@
 from ..imports import *
 from .readers import *
-from ..resampling import *
+from ..tools.resampling import *
 
 
 class Rainbow:
@@ -223,7 +223,7 @@ class Rainbow:
             if metadata is not None:
                 self.metadata.update(**metadata)
         # then try to initialize from a file
-        elif isinstance(filepath, str) or isinstance(filepath, list):
+        elif isinstance(filepath, (str, list, Column)):
             self._initialize_from_file(filepath=filepath, format=format, **kw)
 
         # finally, tidy up by guessing the scales
@@ -444,14 +444,15 @@ class Rainbow:
 
         Parameters
         ----------
-        filepath : str, optional
+        filepath : str
             The filepath pointing to the file or group of files
             that should be read.
-        format : str, optional
-            The file format of the file to be read. If None,
-            the format will be guessed automatically from the
-            filepath.
-        **kw : dict, optional
+        format : str, function, (optional)
+            The file format of the file to be read.
+            If None, guess format from filepath.
+            If str, pull reader from dictionary of readers.
+            If function, treat as a `from_???` reader function.
+        **kw : dict,  (optional)
             Additional keywords will be passed on to the reader.
         """
 

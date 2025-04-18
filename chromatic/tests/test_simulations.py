@@ -84,8 +84,8 @@ def test_inject_transit():
     ).paint(ax=ax[1, 1])
     plt.title(f"{method} | wacky")
 
-    method = "batman"
-    s.inject_transit(method=method).paint(ax=ax[2, 0])
+    method = "exoplanet"
+    s.inject_transit(method=method).imshow(ax=ax[2, 0])
     plt.title(f"{method} | default")
     s.inject_transit(
         planet_radius=np.sqrt(x) / 10,

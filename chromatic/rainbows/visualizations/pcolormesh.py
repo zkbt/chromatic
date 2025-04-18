@@ -1,5 +1,5 @@
 from ...imports import *
-from ...resampling import leftright_to_edges
+from ...tools.resampling import leftright_to_edges
 
 __all__ = ["pcolormesh"]
 

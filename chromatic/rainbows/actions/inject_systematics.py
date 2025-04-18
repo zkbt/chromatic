@@ -158,7 +158,6 @@ def inject_systematics(
     timelike=["x", "y", "time"],
     fluxlike=["background"],
 ):
-
     """
     Inject some (very cartoony) instrumental systematics.
 

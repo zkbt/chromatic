@@ -1,6 +1,6 @@
 from ..rainbows import *
 from .setup_tests import *
-from ..resampling import *
+from ..tools.resampling import *
 
 
 def test_bin_in_time():
@@ -304,3 +304,41 @@ def test_uncertainty_weighting_during_binning():
 def test_warning_about_binning_before_normalizing():
     with pytest.warns(match="Please consider normalizing"):
         SimulatedRainbow().inject_spectrum().inject_noise().bin(R=10)
+
+
+def test_binning_effective_wavelength():
+    N = 101
+    blank = SimulatedRainbow(wavelength=np.linspace(5, 10, N) * u.micron)
+    with_slope = blank * (1 + np.linspace(-1, 1, N) * 1e-1)
+    noisy = with_slope.inject_noise(signal_to_noise=np.logspace(2, 5, N))
+    binned = noisy.bin(dw=1 * u.micron)
+
+    i = 0
+    ekw = dict(marker="o", linewidth=0, elinewidth=1)
+    # plt.plot(s.wavelength, s.model[:,i])
+    plt.errorbar(
+        noisy.wavelength,
+        noisy.flux[:, i],
+        noisy.uncertainty[:, i],
+        color="gray",
+        alpha=0.25,
+        **ekw,
+    )
+    plt.errorbar(
+        binned.wavelength,
+        binned.flux[:, i],
+        binned.uncertainty[:, i],
+        color="red",
+        label="unweighted",
+        **ekw,
+    )
+    plt.errorbar(
+        binned.effective_wavelength,
+        binned.flux[:, i],
+        binned.uncertainty[:, i],
+        color="black",
+        label="weighted",
+        **ekw,
+    )
+    plt.plot(noisy.wavelength, noisy.model[:, 0])
+    plt.legend()
