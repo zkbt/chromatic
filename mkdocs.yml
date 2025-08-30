@@ -37,21 +37,6 @@ plugins:
       handlers:
         python:
           paths: [../chromatic]
-          selection:
-            docstring_style: "numpy"
-          rendering:
-            show_source: True
-            show_root_heading: True
-            show_root_toc_entry: False
-            show_root_full_path: False
-            show_category_heading: False
-            show_submodules: False
-            merge_init_into_class: False
-            show_if_no_docstring: False
-            heading_level: 3
-            show_bases: False
-      watch:
-        - chromatic
   - exclude:
       glob:
         - "example-datasets/*"

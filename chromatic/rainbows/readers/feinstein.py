@@ -33,7 +33,7 @@ def from_feinstein_numpy(rainbow, filepath):
     rainbow.wavelike["wavelength"] = wavelength * u.micron * 1
 
     # populate a 1D array of times (with astropy units of time)
-    times = time * u.day
+    times = dat["time"] * u.day + 2400000.5 * u.day
     rainbow.timelike["time"] = times * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes

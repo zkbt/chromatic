@@ -131,7 +131,7 @@ def concatenate_in_wavelength(self, other, maximum_fractional_difference=0.01):
     # loop through fluxlike quantities
     for k in self.fluxlike:
         try:
-            new.fluxlike[k] = np.hstack([self.fluxlike[k], other.fluxlike[k]])
+            new.fluxlike[k] = np.vstack([self.fluxlike[k], other.fluxlike[k]])
         except (KeyError, AttributeError):
             cheerfully_suggest(
                 f"""
