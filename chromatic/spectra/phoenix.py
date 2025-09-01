@@ -273,7 +273,6 @@ class Library_PHOENIX_NextGen(Library):
         shared["R"] = R
         shared["metallicity"] = metallicity
         shared["filename"] = os.path.basename(filename)
-        shared["chromatic-version"] = __version__
         unbinned_w = self._load_raw_wavelength()
         for k, v in shared.items():
             print(f"{k:>20} = {v}")

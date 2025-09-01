@@ -71,7 +71,7 @@ from scipy.signal import medfilt, convolve2d
 from scipy.ndimage import median_filter
 
 # define a directory where we can put any necessary data files
-data_directory = pkg_resources.resource_filename("chromatic", "data")
+# data_directory = pkg_resources.resource_filename("chromatic", "data")
 
 
 def is_being_run_from_jupyter():

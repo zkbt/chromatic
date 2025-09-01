@@ -160,7 +160,7 @@ class Library:
         filename = f"{self._library_name}_{unit_string}_metallicity={metallicity:3.1f}_R={R:.0f}.npy"
         return filename
 
-    def _create_grids(self, remake=False):
+    def _create_grids(self, remake=False, metallicities=None):
         """
         Create pre-processed grids for all resolutions.
 
@@ -171,7 +171,7 @@ class Library:
         remake : bool
             Should we remake the library even if a file exists?
         """
-        for metallicity in self._available_metallicities:
+        for metallicity in metallicities or self._available_metallicities:
             for R in self._available_resolutions:
                 self._create_grid(
                     R,
@@ -346,7 +346,8 @@ class Library:
             weight_above = (value - bounds[0]) / span
             return weight_below, weight_above
 
-    _available_metallicities = [-2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0]
+    #_available_metallicities = [-2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0]
+    _available_metallicities = [-0.5, 0.0, 0.5]
 
     def _wavelengths_to_hashable(self, w):
         """
