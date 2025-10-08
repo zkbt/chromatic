@@ -30,14 +30,14 @@ def from_feinstein_exotedrf(rainbow, filepath):
         )
     d = np.load(filepath, allow_pickle=True)[()]
 
-    rainbow.wavelike["wavelength"] = d['wavelength'] * u.micron * 1
+    rainbow.wavelike["wavelength"] = d["wavelength"][0, :] * u.micron * 1
 
     # populate a 1D array of times (with astropy units of time)
-    rainbow.timelike["time"] =  (d['time'] + 2400000.5) * u.day * 1
+    rainbow.timelike["time"] = (d["time"] + 2400000.5) * u.day * 1
 
     # populate a 2D (row = wavelength, col = array of fluxes
-    flux = np.zeros((len(d['wavelength']), len(d['time'])))
+    flux = np.zeros((len(d["wavelength"]), len(d["time"])))
     uncertainty = np.zeros_like(flux)
 
-    rainbow.fluxlike["flux"] = d['flux'].T * 1
-    rainbow.fluxlike["uncertainty"] = d['flux_err'].T * 1
+    rainbow.fluxlike["flux"] = d["flux"].T * 1
+    rainbow.fluxlike["uncertainty"] = d["flux_err"].T * 1
