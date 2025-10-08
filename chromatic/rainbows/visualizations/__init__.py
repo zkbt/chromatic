@@ -8,6 +8,7 @@ from .colors import *
 from .imshow import *
 from .scatter import *
 from .pcolormesh import *
+from .paint import *
 
 from .plot_lightcurves import *
 from .animate import *

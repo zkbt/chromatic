@@ -2,6 +2,7 @@
 Define a reader for NIRISS/SOSS extract1d files produced using the ATOCA
 algorithm.
 """
+
 from ...imports import *
 
 __all__ = ["from_atoca"]

@@ -2,7 +2,6 @@
 Define a writer for chromatic .rainbow.npy files.
 """
 
-
 # import the general list of packages
 from ...imports import *
 

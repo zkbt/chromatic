@@ -1,6 +1,6 @@
 from ..imports import *
-from ..resampling import *
-from ..resampling import leftright_to_edges
+from ..tools.resampling import *
+from ..tools.resampling import leftright_to_edges
 from .setup_tests import *
 
 

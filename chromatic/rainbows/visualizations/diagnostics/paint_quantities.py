@@ -1,9 +1,9 @@
 from ....imports import *
 
-__all__ = ["imshow_quantities"]
+__all__ = ["paint_quantities"]
 
 
-def imshow_quantities(
+def paint_quantities(
     self, quantities=None, maxcol=3, panel_size=(5, 4), filename=None, **kw
 ):
     """
@@ -56,9 +56,9 @@ def imshow_quantities(
 
     # display each quantity
     for k, key in enumerate(allkeys):
-        # make the imshow (or an empty box)
+        # make the painting (or an empty box)
         if key in self.fluxlike.keys():
-            self.imshow(quantity=key, ax=ax[k], **kw)
+            self.paint(quantity=key, ax=ax[k], **kw)
         else:
             ax[k].text(
                 0.5,

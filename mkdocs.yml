@@ -21,6 +21,7 @@ nav:
         - tools/spectra.ipynb
         - tools/binning.ipynb
         - tools/colormaps.ipynb
+        - tools/transits.ipynb
     - api.md
 theme:
   name: "material"
@@ -50,12 +51,10 @@ plugins:
             show_if_no_docstring: False
             heading_level: 3
             show_bases: False
-      custom_templates: templates
-      watch:
-        - chromatic
   - exclude:
       glob:
         - "example-datasets/*"
+        - "downloads-for-exoatlas/*"
         - "*.pdf"
         - "*.fits"
         - "*.npy"

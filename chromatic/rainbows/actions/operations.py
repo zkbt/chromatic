@@ -10,28 +10,6 @@ def _is_probably_rainbow(x):
     return "Rainbow" in x.__class__.__name__
 
 
-def _do_rainbows_match(a, b):
-    """
-    A check that two Rainbows have matching wavelengths and times.
-    If either of the others aren't Rainbows, an AssertionError
-    will be raised.
-
-    Parameters
-    ----------
-    a : Rainbow
-        One Rainbow other.
-    b : Rainbow
-        Another Rainbow other.
-
-    Returns
-    -------
-    match : bool
-        Do their wavelengths and times match?
-    """
-
-    return np.array_equal(a.wavelength, b.wavelength) and np.array_equal(a.time, b.time)
-
-
 def _raise_ambiguous_shape_error(self, x):
     """
     Raise an error if the shape of a Rainbow is ambiguous.
@@ -108,34 +86,69 @@ def _apply_operation(self, other, operation, dzdx="1", dzdy="1"):
     # create new Rainbow() to store results in.
     result = self._create_copy()
 
-    # other object is not Rainbow
+    # check that other object is a Rainbow
     if _is_probably_rainbow(other):
-        if _do_rainbows_match(self, other):
+        # do they have the same shape?
+        if self.shape == other.shape:
+            # do the math on the flux-like keys that should care about math
             for k in self._keys_that_respond_to_math:
                 result.fluxlike[k] = operation(self.fluxlike[k], other.fluxlike[k])
+            # warn if the wavelengths and/or times mis-match
+            if np.array_equal(self.wavelength, other.wavelength) == False:
+                cheerfully_suggest(
+                    f"""
+                The wavelength arrays between the two Rainbow objects
+                {self} and {other} do not exactly match.
+                The calculation will proceed because the flux arrays have
+                the right shapes, but watch out for funny business!"""
+                )
+            if np.array_equal(self.time, other.time) == False:
+                cheerfully_suggest(
+                    f"""
+                The time arrays between the two Rainbow objects
+                {self} and {other} do not exactly match.
+                The calculation will proceed because the flux arrays have
+                the right shapes, but watch out for funny business!"""
+                )
         else:
             raise ValueError(
-                f"The two Rainbow objects {self} and {other} don't share wavelength/time axes."
+                f"""
+                The two Rainbow objects have different shapes
+                ({self} and {other})
+                so we can't perform math between them. If you
+                really think these should line up somehow,
+                you may need to trim one to match the other.
+                Alternately, you could bin in time/wavelength
+                onto a shared grid.
+                """
             )
+
+        # set up error propagation, using model if present for stabler derivative
         sigma_y = other.uncertainty
         y = other.get("model")
         if y is None:
             y = other.flux
 
-    # other object not Rainbow
+    # if the other object not Rainbow, just treat it as an array
     else:
         y = self._broadcast_to_fluxlike(other)
         sigma_y = 0
         for k in self._keys_that_respond_to_math:
             result.fluxlike[k] = operation(self.fluxlike[k], y)
 
+    # set up error propagation, using model if present for stabler derivative
     sigma_x = self.uncertainty
     x = self.get("model")
     if x is None:
         x = self.flux
 
-    # If z = operation(x,y), then to propagate errors we need
-    # to use the derivatives of z with respect to x (dz/dx) and y (dz/dy):
+    """
+    If z = operation(x,y), then to propagate errors we need
+    to use the derivatives of z with respect to x (dz/dx) and y (dz/dy).
+    For addition and subtraction this reverits to simple adding
+    in quadrature, but for multiply and divide the non-linear derivatives
+    make the propagation a little more complicated.
+    """
     # print(f"mean(x) = {np.mean(x)}")
     # print(f"mean(sigma_x) = {np.mean(sigma_x)}")
     # print(f"dzdx = {dzdx}")
@@ -143,6 +156,7 @@ def _apply_operation(self, other, operation, dzdx="1", dzdy="1"):
     # print(f"mean(sigma_y) = {np.mean(sigma_y)}")
     # print(f"dzdy = {dzdy}")
 
+    # do uncertainty propagation, assuming uncertainties are fractionally small
     variance = sigma_x**2 * eval(dzdx) ** 2 + sigma_y**2 * eval(dzdy) ** 2
     result.fluxlike["uncertainty"] = np.sqrt(variance)
 

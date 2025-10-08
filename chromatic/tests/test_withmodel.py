@@ -20,7 +20,7 @@ def test_attach_model():
     assert withmodel == original
 
 
-def test_imshow_with_models():
+def test_paint_with_models():
     plt.close("all")
 
     s = (
@@ -30,27 +30,27 @@ def test_imshow_with_models():
         .inject_noise()
         .bin(R=50, dt=5 * u.minute)
     )
-    s.imshow_with_models(cmap="gray")
+    s.paint_with_models(cmap="gray")
     plt.savefig(
         os.path.join(test_directory, "demonstration-of-imshow-data-with-model.pdf")
     )
-    s.imshow_with_models(models=["systematics_model", "planet_model"], cmap="gray")
+    s.paint_with_models(models=["systematics_model", "planet_model"], cmap="gray")
     plt.savefig(
         os.path.join(
             test_directory, "demonstration-of-imshow-data-with-model-components.pdf"
         )
     )
 
-    s.imshow_with_models(models=["systematics_model", "planet_model"], cmap="gray")
-    s.imshow_with_models(
+    s.paint_with_models(models=["systematics_model", "planet_model"], cmap="gray")
+    s.paint_with_models(
         models=["systematics_model", "planet_model"], cmap="gray", label=False
     )
-    s.imshow_with_models(
+    s.paint_with_models(
         models=["systematics_model", "planet_model"],
         cmap="gray",
         label_textkw=dict(color="red"),
     )
-    s.imshow_with_models(
+    s.paint_with_models(
         models=["systematics_model", "planet_model"], cmap="gray", label="outside"
     )
 
@@ -64,7 +64,7 @@ def test_plot_with_model_and_residuals():
         u=np.transpose(
             [np.linspace(1.0, 0.0, s.nwave), np.linspace(0.5, 0.0, s.nwave)]
         ),
-        method="batman",
+        method="exoplanet",
     ).inject_noise(signal_to_noise=1000)
     for i, options in enumerate(
         [

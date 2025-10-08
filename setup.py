@@ -111,10 +111,8 @@ setup(
             "mkdocs-exclude",
             "twine",
             "pre-commit",
-            "batman-package>=2.4.9",
             "h5py",
-        ],
-        "modeling": ["batman-package>=2.4.9"],
+        ]
     },
     # (I think just leave this set to False)
     zip_safe=False,
