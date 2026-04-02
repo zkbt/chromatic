@@ -16,7 +16,7 @@ def help(self):
         )
     )
 
-    base_directory = pkg_resources.resource_filename("chromatic", "rainbows")
+    base_directory = os.fspath(package_files("chromatic").joinpath("rainbows"))
     descriptions_files = []
     for level in ["*", "*/*"]:
         descriptions_files += glob.glob(

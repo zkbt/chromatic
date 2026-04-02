@@ -15,7 +15,8 @@ import matplotlib.animation as ani
 import matplotlib.colors as col
 import matplotlib.gridspec as gs
 
-import copy, pkg_resources, os, glob, pickle
+import copy, os, glob, pickle
+from importlib.resources import files as package_files
 from tqdm.auto import tqdm
 
 import warnings, textwrap
@@ -71,7 +72,7 @@ from scipy.signal import medfilt, convolve2d
 from scipy.ndimage import median_filter
 
 # define a directory where we can put any necessary data files
-data_directory = pkg_resources.resource_filename("chromatic", "data")
+data_directory = os.fspath(package_files("chromatic").joinpath("data"))
 
 
 def is_being_run_from_jupyter():
