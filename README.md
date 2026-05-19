@@ -33,7 +33,3 @@ and then see the 🌈[documentation](https://zkbt.github.io/chromatic/)🌈  for
 We welcome contributions from anyone who agrees to follow the `ers-transit` [Code of Conduct](https://ers-transit.github.io/code-of-conduct.html#ers-transit). If you're on the `ers-transit` slack, please join the #hack-chromatic channel there and say hello; otherwise, please contact Zach directly or just dive right in!
 
 A great initial way to contribute would be to [submit an Issue](https://github.com/zkbt/chromatic/issues) about a bug, question, or suggestion you might have. If you want to contribute code, the [Developer Guide](https://zkbt.github.io/chromatic/designing/) is probably the best place to start. We know it can feel a little scary to try to contribute to a shared code package, so we try our best to be friendly and helpful to new contributors trying to learn how!
-
-*And for context, Zach is a little new to trying to manage a big collaborative code project, so if there are things we could be doing better, please let him know!*
-
-The goal is to submit `chromatic-lightcurves` to the [Journal of Open Source Software](https://joss.theoj.org/) before the end of 2022. If you contribute before then, you'll be included on the paper!
