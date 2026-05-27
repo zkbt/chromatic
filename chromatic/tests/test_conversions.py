@@ -90,3 +90,13 @@ def test_to_spectra():
     for w_unit, phys in zip(["micron", "nm", "Angstrom"], [u.micron, u.nm, u.Angstrom]):
         r_spec = r.to_spectra(w_unit=w_unit)
         assert r_spec[0].spectral_axis.unit == phys
+
+    # test the time format parameter
+    for t_unit, phys in zip(["h", "hour", "day", "minute", "second", "s"], [u.hour, u.hour, u.day, u.minute, u.second, u.second]):
+        r_spec = r.to_spectra(t_unit=t_unit)
+        assert r_spec[0].time.unit == phys
+
+    # test the flux format parameter
+    for f_unit, phys in zip(["W/m2/um", "erg/s/cm2/AA"], [u.Unit("W/m2/um"), u.Unit("erg/s/cm2/AA")]):
+        r_spec = r.to_spectra(f_unit=f_unit)
+        assert r_spec[0].flux.unit == phys
