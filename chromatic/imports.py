@@ -51,6 +51,7 @@ from astropy.io import ascii, fits
 from astropy.table import Table, QTable, Column
 from astropy.time import Time
 from astropy.stats import sigma_clip, median_absolute_deviation, mad_std
+from astropy.nddata import StdDevUncertainty
 
 # import astropy.units as u
 import astropy.constants as con
@@ -63,6 +64,9 @@ from scipy.interpolate import interp1d
 
 # For converting Rainbows to pandas dataframe
 import pandas as pd
+
+# For converting Rainbows to specutils Spectrum
+from specutils import Spectrum 
 
 from .tools.custom_units import *
 

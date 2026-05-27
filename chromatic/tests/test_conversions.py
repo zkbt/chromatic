@@ -64,3 +64,39 @@ def test_to_nparray():
     # test if the minutes format works
     rflux, rfluxu, rtime, rwavel = r.to_nparray(t_unit="s")
     assert np.all(np.isclose(rtime, r.time.to_value("h") * 3600, **closekw))
+
+def test_to_spectra():
+    times = np.arange(1, 30) * u.day
+    r = SimulatedRainbow(dt=1 * u.minute, R=50, time=times).inject_noise(signal_to_noise=10)
+
+    r_specs = r.to_spectra()
+
+    # ensure we have a spectrum for each discrete time
+    assert len(r_specs) == len(r.time)
+
+    # ensure the length of each quanity in each spectrum is the same as the original rainbow WLs
+    for index, obj in enumerate(r_specs):
+        assert len(obj.spectral_axis) == len(r.wavelength)
+        assert len(obj.flux) == len(r.flux[:, index])
+        assert len(obj.uncertainty) == np.shape( r.uncertainty[:, index])[0]
+
+
+    # check the values in the spectrums match the rainbow
+    for index, obj in enumerate(r_specs):
+        assert np.concat(obj.flux.value) == r.flux[:, index]
+        assert np.concat(obj.uncertainty.value) == r.uncertainty[:, index]
+
+    # test the wlformat parameter
+    for w_unit, phys in zip(["micron", "nm", "Angstrom"], [u.micron, u.nm, u.Angstrom]):
+        r_spec = r.to_spectra(w_unit=w_unit)
+        assert r_spec[0].spectral_axis.unit == phys
+
+    # test the time format parameter
+    for t_unit, phys in zip(["h", "hour", "day", "minute", "second", "s"], [u.hour, u.hour, u.day, u.minute, u.second, u.second]):
+        r_spec = r.to_spectra(t_unit=t_unit)
+        assert r_spec[0].time.unit == phys
+
+    # test the flux format parameter
+    for f_unit, phys in zip(["W/m2/um", "erg/s/cm2/AA"], [u.Unit("W/m2/um"), u.Unit("erg/s/cm2/AA")]):
+        r_spec = r.to_spectra(f_unit=f_unit)
+        assert r_spec[0].flux.unit == phys

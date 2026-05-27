@@ -1063,6 +1063,7 @@ class Rainbow:
     from .converters import (
         to_nparray,
         to_df,
+        to_spectra,
     )
 
     from .helpers import (
