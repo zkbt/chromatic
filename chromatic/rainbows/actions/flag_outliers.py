@@ -83,7 +83,7 @@ def flag_outliers(self, how_many_sigma=5, remove_trends=True, inflate_uncertaint
         inflated = filtered
 
     # decide which points are outliers
-    is_outlier = np.abs(inflated.flux - 1) > how_many_sigma * inflated.uncertainty
+    is_outlier = np.abs(inflated.flux - 1*inflated.flux.unit) > how_many_sigma * inflated.uncertainty
 
     # update the output object
     new.fluxlike["flagged_as_outlier"] = is_outlier
