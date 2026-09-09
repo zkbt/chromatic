@@ -5,7 +5,7 @@ def plot_pandexo(t):
     """
     Make a quick summary plot of PandExo tabular results.
     """
-    plt.figure(figsize=(8, 4))
+    plt.figure(figsize=(8, 6))
     plt.title(
         f"{t.meta['pandexo_input']['Instrument']}+{t.meta['pandexo_input']['Mode']}+{t.meta['pandexo_input']['Disperser']} | PandExo"
     )

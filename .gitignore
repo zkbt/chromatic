@@ -1,3 +1,5 @@
+.idea
+
 # a few extra things to watch out for
 .vscode/settings.json
 .DS_Store
