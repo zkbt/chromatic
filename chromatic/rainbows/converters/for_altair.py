@@ -148,12 +148,12 @@ def to_spectra(self, f_unit='erg', t_unit='d', w_unit='micron'):
         f_unit = u.Unit("erg")
    
     spectra = []
-    for time in times:
+    for index, time in enumerate(times):
         _temp = self.trim_times(t_min = time-halfday, t_max = time+halfday)
         _wl = _temp.wavelength.to(w_unit).value
-        _flux = np.concat([_temp.fluxlike['flux']])
-        _err = StdDevUncertainty(np.concat([_temp.fluxlike['uncertainty']]))
-        good_values = np.concat(np.isfinite(_flux))
+        _flux = _temp.flux[:, index]
+        _err = _temp.uncertainty[:, index]
+        good_values = np.isfinite(_flux)
         true_spec = Spectrum(flux = _flux[good_values]*f_unit, \
                              spectral_axis = _wl[good_values]*w_unit, \
                              uncertainty=_err[good_values], \
